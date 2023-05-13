@@ -13,8 +13,13 @@ import java.util.Map;
 
 @Data
 public class R<T> {
-
-    private Integer code; //编码：1成功，0和其它数字为失败
+    /**
+     * 编码：0成功，-1未知错误，表示第三方系统出现的问题
+     * -2参数格式不正确，-3接口调用次数超限
+     * -4未找到groupId， -5未开通权限
+     * -6 超出本月可调用次数限制
+     */
+    private Integer code;
 
     private String msg; //错误信息
 
