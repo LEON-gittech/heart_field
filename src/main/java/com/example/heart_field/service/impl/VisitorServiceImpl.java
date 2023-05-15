@@ -1,9 +1,9 @@
-package com.example.heart_field.service.impl.impl;
+package com.example.heart_field.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.entity.Visitor;
 import com.example.heart_field.mapper.VisitorMapper;
-import com.example.heart_field.service.impl.VisitorService;
+import com.example.heart_field.service.VisitorService;
 import org.springframework.stereotype.Service;
 
 @Service
