@@ -30,14 +30,14 @@ public class R<T> {
     public static <T> R<T> success(T object) {
         R<T> r = new R<T>();
         r.data = object;
-        r.code = 1;
+        r.code = 0;
         return r;
     }
 
-    public static <T> R<T> error(String msg) {
+    public static <T> R<T> login_error() {
         R r = new R();
-        r.msg = msg;
-        r.code = 0;
+        r.msg = "登录失败";
+        r.code = -1;
         return r;
     }
 
@@ -46,4 +46,45 @@ public class R<T> {
         return this;
     }
 
+    public static <T> R<T> argument_error() {
+        R r = new R();
+        r.msg = "参数格式出现错误";
+        r.code = -2;
+        return r;
+    }
+
+    public static <T> R<T> url_error() {
+        R r = new R();
+        r.msg = "请求url不存在";
+        r.code = -3;
+        return r;
+    }
+
+    public static <T> R<T> auth_error() {
+        R r = new R();
+        r.msg = "没有权限";
+        r.code = -4;
+        return r;
+    }
+
+    public static <T> R<T> call_exceed_error() {
+        R r = new R();
+        r.msg = "接口调用次数超出限制";
+        r.code = -5;
+        return r;
+    }
+
+    public static <T> R<T> resource_error() {
+        R r = new R();
+        r.msg = "未发现所请求的某项资源";
+        r.code = -6;
+        return r;
+    }
+
+    public static <T> R<T> file_format_error() {
+        R r = new R();
+        r.msg = "上传的文件格式错误";
+        r.code = -7;
+        return r;
+    }
 }
