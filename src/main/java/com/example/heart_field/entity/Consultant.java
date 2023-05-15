@@ -3,6 +3,7 @@ package com.example.heart_field.entity;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class Consultant {
@@ -30,4 +31,10 @@ public class Consultant {
     private String email;
     private String title;
     private String field;
+    private List<ExpertiseTag> expertiseTag;
+
+    private static class ExpertiseTag {
+        private String id;
+        private String expertiseName;
+    }
 }
