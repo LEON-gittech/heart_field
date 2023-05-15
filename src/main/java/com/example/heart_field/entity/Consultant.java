@@ -1,11 +1,8 @@
 package com.example.heart_field.entity;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-
-import jdk.vm.ci.meta.Local;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 @Data
 public class Consultant {
