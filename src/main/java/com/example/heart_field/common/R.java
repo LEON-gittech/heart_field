@@ -87,4 +87,17 @@ public class R<T> {
         r.code = -7;
         return r;
     }
+
+    /**
+     * 自定义error
+     * @param msg
+     * @return
+     * @param <T>
+     */
+    public static <T> R<T> error(String msg) {
+        R r = new R();
+        r.msg = msg;
+        r.code = -8;
+        return r;
+    }
 }
