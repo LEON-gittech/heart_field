@@ -7,7 +7,6 @@ public class StaffStat {
     /**
      * 主键，用于唯一标识每个督导
      */
-    @TableId(type = IdType.AUTO)
     private Integer id;
 
     /**

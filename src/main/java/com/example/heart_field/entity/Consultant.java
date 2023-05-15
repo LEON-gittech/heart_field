@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 public class Consultant {
-    private int id;
+    private Integer id;
     private boolean online;
     private boolean disabled;
     private boolean valid;

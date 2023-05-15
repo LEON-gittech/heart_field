@@ -5,19 +5,19 @@ import lombok.Data;
 
 @Data
 public class Supervisor {
-    private int id;
+    private Integer id;
     private boolean online;
     private boolean disabled;
     private boolean valid;
     private Timestamp createTime;
     private Timestamp updateTime;
     private String name;
-    private int age;
+    private Integer age;
     private byte gender;
     private String password;
     private String avatar;
-    private int maxConcurrent;
-    private int maxNum;
+    private Integer maxConcurrent;
+    private Integer maxNum;
     private String phone;
     private String cardId;
     private String email;

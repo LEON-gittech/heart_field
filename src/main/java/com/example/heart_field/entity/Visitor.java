@@ -7,7 +7,7 @@ import java.sql.Timestamp;
 
 @Data
 public class Visitor {
-    private int id;
+    private Integer id;
     private boolean disabled;
     private Timestamp createTime;
     private Timestamp updateTime;

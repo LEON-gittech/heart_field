@@ -1,7 +1,7 @@
 package com.example.heart_field.entity;
 
 import lombok.Data;
-import java.util.Timestamp;
+import java.sql.Timestamp;
 
 @Data
 public class Waiting {
