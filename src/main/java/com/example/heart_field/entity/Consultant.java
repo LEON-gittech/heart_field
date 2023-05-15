@@ -1,6 +1,10 @@
 package com.example.heart_field.entity;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import jdk.vm.ci.meta.Local;
 import lombok.Data;
 
 @Data
@@ -9,8 +13,8 @@ public class Consultant {
     private boolean online;
     private boolean disabled;
     private boolean valid;
-    private Timestamp createTime;
-    private Timestamp updateTime;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
     private String name;
     private int age;
     private byte gender;

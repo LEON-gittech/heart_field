@@ -1,6 +1,8 @@
 package com.example.heart_field.entity;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
 import lombok.Data;
 
 @Data
@@ -10,7 +12,7 @@ public class Admin {
     private String phone;
     private String password;
     private String avatar;
-    private Timestamp createTime;
-    private Timestamp updateTime;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
     private boolean disabled;
 }

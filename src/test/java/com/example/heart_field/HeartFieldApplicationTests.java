@@ -4,15 +4,26 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Locale;
 
 @SpringBootTest
 class HeartFieldApplicationTests {
 
     @Test
     void contextLoads() {
-        long currMillis = System.currentTimeMillis();
-        Timestamp timestamp = new Timestamp(currMillis);
-        System.out.println(timestamp);
+
+    }
+
+    @Test
+    void testTime(){
+        LocalDateTime time = LocalDateTime.now();
+        System.out.println(time.getYear());
+        System.out.println(time.getMonth());
+        System.out.println(time.getDayOfMonth());
+        System.out.println(time.getDayOfYear());
+        System.out.println(time.getDayOfWeek());
     }
 
 }

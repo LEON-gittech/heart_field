@@ -3,14 +3,15 @@ package com.example.heart_field.entity;
 import lombok.Data;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 
 @Data
 public class Visitor {
     private Integer id;
     private boolean disabled;
-    private Timestamp createTime;
-    private Timestamp updateTime;
+    private LocalDateTime createTime;
+    private LocalDateTime updateTime;
     private String username;
     private String name;
     private String phone;
