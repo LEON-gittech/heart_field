@@ -26,7 +26,7 @@ public class UserApi {
     public Object login(@RequestBody User user, HttpServletResponse response) {
         JSONObject jsonObject = new JSONObject();
         User userForBase = new User();
-        userForBase.setId(Integer.valueOf("1"));
+        userForBase.setId(Integer.valueOf("2"));
         userForBase.setPassword("Aaa@1234");
         userForBase.setType(0);
 

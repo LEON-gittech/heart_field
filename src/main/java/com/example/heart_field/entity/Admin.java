@@ -16,5 +16,5 @@ public class Admin {
     private String avatar;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
-    private boolean disabled;
+    private boolean isDisabled;
 }

@@ -96,16 +96,4 @@ public class Record {
      * 该咨询记录对应的求助会话id
      */
     private Integer helpId;
-
-
-
-
-
-
-
-
-
-
-
-
 }

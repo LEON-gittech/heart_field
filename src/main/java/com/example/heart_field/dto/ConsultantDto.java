@@ -1,15 +1,19 @@
-package com.example.heart_field.entity;
+package com.example.heart_field.dto;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.example.heart_field.entity.ExpertiseTag;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
-public class Consultant {
+public class ConsultantDto{
+    private List<ExpertiseTag> expertiseTag;
+
     @TableId(value="id",type = IdType.AUTO)
     private Integer id;
     private boolean isOnline = false; // 默认值为false
@@ -37,5 +41,4 @@ public class Consultant {
     private String email;
     private String title;
     private String field;
-    private String expertiseTag;
 }

@@ -1,7 +1,9 @@
 package com.example.heart_field.filter;
 
 import com.example.heart_field.entity.User;
+import com.example.heart_field.service.AdminService;
 import com.example.heart_field.service.UserService;
+import com.example.heart_field.tokens.AdminToken;
 import com.example.heart_field.tokens.PassToken;
 import com.example.heart_field.tokens.UserLoginToken;
 import com.example.heart_field.utils.TokenUtil;
@@ -17,6 +19,8 @@ import java.lang.reflect.Method;
 public class AuthenticationInterceptor implements HandlerInterceptor {
     @Autowired
     UserService userService;
+    @Autowired
+    AdminService adminService;
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object object) throws Exception {
         String token = httpServletRequest.getHeader("token");// 从 http 请求头中取出 token
@@ -56,6 +60,22 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                     throw new RuntimeException("用户不存在，请重新登录");
                 }
                 return true;
+            }
+        }
+
+        //检查有没有需要管理员权限的注解
+        if(method.isAnnotationPresent(AdminToken.class)){
+            AdminToken adminToken = method.getAnnotation(AdminToken.class);
+            if(adminToken.required()) {
+                // 执行认证
+                if (token == null) {
+                    throw new RuntimeException("无token，请重新登录");
+                }
+                // 获取 token 中的 user id
+                String userId = TokenUtil.getTokenUserId();
+                if(adminService.getById(userId) == null){
+                    throw new RuntimeException("非管理员，权限限制");
+                }
             }
         }
         return true;
