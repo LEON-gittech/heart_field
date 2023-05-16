@@ -2,21 +2,17 @@ package com.example.heart_field.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.example.heart_field.common.R;
 import com.example.heart_field.entity.Consultant;
 import com.example.heart_field.service.ConsultantService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import com.example.heart_field.common.R;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @RestController
-@RequestMapping("/consultant")
+@RequestMapping("/consultants")
 public class ConsultantController {
     @Autowired
     private ConsultantService consultantService;
@@ -43,9 +39,7 @@ public class ConsultantController {
         queryWrapper.like(StringUtils.hasText(searchValue),Consultant::getName,searchValue)
                 .or().like(Consultant::getBriefIntro,searchValue)
                 .or().like(Consultant::getDetailedIntro,searchValue)
-                .or().nested(i -> i.apply
-                        ("JSON_CONTAINS(expertiseTag->'$[*].expertiseName'," +
-                                "concat('%',?,'%'))",searchValue))
+                .or().like(Consultant::getExpertiseTag,searchValue)
         //JSON_CONTAINS函数用于判断json数组中是否包含某个元素
         ;
 
@@ -93,16 +87,19 @@ public class ConsultantController {
     @PostMapping
     public R<String> save(@RequestBody Consultant consultant){
         log.info("consultant:{}",consultant);
+//        consultant.setId(Integer.valueOf(consultant.getPhone()));
         consultantService.save(consultant);
         return R.success("新增咨询师成功");
     }
+
     /**
-     *
+     * 修改咨询师
      */
-    @GetMapping("/preview")
-    public R<Consultant> preview(Long id){
-        log.info("咨询师信息查询，id={}",id);
-        Consultant consultant = consultantService.getById(id);
+    @PutMapping("/{consultantId}/profile")
+    public R<Consultant> update(@PathVariable("consultantId") Integer consultantId, @RequestBody Consultant consultant){
+        log.info("consultantId:{},consultant:{}",consultantId,consultant);
+        consultantService.updateById(consultant);
         return R.success(consultant);
     }
+
 }

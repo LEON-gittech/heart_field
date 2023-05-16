@@ -1,5 +1,6 @@
 package com.example.heart_field.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 @Data
@@ -7,6 +8,7 @@ public class StaffStat {
     /**
      * 主键，用于唯一标识每个督导
      */
+    @TableId(value="id",type = IdType.AUTO)
     private Integer id;
 
     /**
