@@ -27,7 +27,7 @@ CREATE TABLE admin (
 );
 
 CREATE TABLE supervisor (
-  id int PRIMARY KEY COMMENT '主键，用于唯一标识每个督导',
+  id int PRIMARY KEY AUTO_INCREMENT COMMENT '主键，用于唯一标识每个督导',
   is_online tinyint DEFAULT 0 COMMENT '标记督导是否在线，0表示不在线，1表示在线。根据排班信息得到',
   is_disabled tinyint DEFAULT 0 COMMENT '标记督导是否被封禁，0表示未封禁（有效），1表示已封禁（无效）',
   is_valid tinyint DEFAULT 0 COMMENT '标记督导个人信息是否为有效信息，0表示无效，1表示有效',
