@@ -69,4 +69,12 @@ public class UserUtils {
         userService.save(user);
         return user;
     }
+    //根据传入的User信息匹配数据库中的User
+    public User getUser(User user){
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getId, user.getId());
+        queryWrapper.eq(User::getType,user.getType());
+        User user_r = userService.getOne(queryWrapper);
+        return user_r;
+    }
 }

@@ -6,6 +6,7 @@ import com.example.heart_field.service.UserService;
 import com.example.heart_field.tokens.TokenService;
 import com.example.heart_field.tokens.UserLoginToken;
 import com.example.heart_field.utils.TokenUtil;
+import com.example.heart_field.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -20,21 +21,20 @@ public class UserApi {
     UserService userService;
     @Autowired
     TokenService tokenService;
+    @Autowired
+    UserUtils userUtils;
 
     // 登录
     @GetMapping("/login")
     public Object login(@RequestBody User user, HttpServletResponse response) {
         JSONObject jsonObject = new JSONObject();
-        User userForBase = new User();
-        userForBase.setId(Integer.valueOf("2"));
-        userForBase.setPassword("Aaa@1234");
-        userForBase.setType(0);
+        User user_r = userUtils.getUser(user);
 
-        if (!userForBase.getPassword().equals(user.getPassword())) {
+        if (!user_r.getPassword().equals(user.getPassword())) {
             jsonObject.put("message", "登录失败,密码错误");
             return jsonObject;
         } else {
-            String token = tokenService.getToken(userForBase);
+            String token = tokenService.getToken(user_r);
             jsonObject.put("token", token);
 
             Cookie cookie = new Cookie("token", token);
@@ -42,7 +42,6 @@ public class UserApi {
             response.addCookie(cookie);
 
             return jsonObject;
-
         }
     }
 
@@ -58,7 +57,7 @@ public class UserApi {
     public String getMessage() {
 
         // 取出token中带的用户id 进行操作
-        System.out.println(TokenUtil.getTokenUserId());
+        System.out.println(TokenUtil.getTokenUser());
 
         return "你已通过验证";
     }

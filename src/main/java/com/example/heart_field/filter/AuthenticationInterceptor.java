@@ -7,6 +7,7 @@ import com.example.heart_field.tokens.AdminToken;
 import com.example.heart_field.tokens.PassToken;
 import com.example.heart_field.tokens.UserLoginToken;
 import com.example.heart_field.utils.TokenUtil;
+import com.example.heart_field.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -21,6 +22,8 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     UserService userService;
     @Autowired
     AdminService adminService;
+    @Autowired
+    UserUtils userUtils;
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object object) throws Exception {
         String token = httpServletRequest.getHeader("token");// 从 http 请求头中取出 token
@@ -46,17 +49,8 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                     throw new RuntimeException("无token，请重新登录");
                 }
                 // 获取 token 中的 user id
-                String userId = TokenUtil.getTokenUserId();
-//                User user = userService.getById(userId);
-                User user = new User();
-                user.setId(Integer.valueOf("1"));
-                user.setPassword("Aaa@1234");
-                user.setType(0);
-                if (user == null) {
-                    throw new RuntimeException("用户不存在，请重新登录");
-                }
-                // 验证 token
-                if(!userId.equals(user.getId().toString())){
+                User user_r = userUtils.getUser(TokenUtil.getTokenUser());
+                if (user_r == null) {
                     throw new RuntimeException("用户不存在，请重新登录");
                 }
                 return true;
@@ -72,8 +66,8 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                     throw new RuntimeException("无token，请重新登录");
                 }
                 // 获取 token 中的 user id
-                String userId = TokenUtil.getTokenUserId();
-                if(adminService.getById(userId) == null){
+                User user_r = userUtils.getUser(TokenUtil.getTokenUser());
+                if(adminService.getById(user_r.getId()) == null || user_r.getType()!=2){
                     throw new RuntimeException("非管理员，权限限制");
                 }
             }
