@@ -1,18 +1,14 @@
 package com.example.heart_field;
 
 //import org.junit.jupiter.api.Test;
-import com.example.heart_field.util.RedisUtils;
+import com.example.heart_field.utils.RedisUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 import javax.annotation.Resource;
 
@@ -43,19 +39,19 @@ public class RedisTest {
     }
 
     @Resource
-    private RedisUtils redisUtils;
+    private RedisUtil redisUtil;
 
     /**
      * 插入缓存数据
      */
     @Test
     public void set(){
-        redisUtils.set("redis_key","redis_value");
+        redisUtil.set("redis_key","redis_value");
     }
 
     @Test
     public void get() {
-        String value = redisUtils.get("redis_key");
+        String value = redisUtil.get("redis_key");
         System.out.println(value);
         if (value.equals("redis_value")) {
             Assert.assertTrue(true);

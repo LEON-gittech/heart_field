@@ -31,12 +31,19 @@ public class R<T> {
         R<T> r = new R<T>();
         r.data = object;
         r.code = 0;
+        r.msg = "操作成功";
         return r;
     }
 
     public static <T> R<T> login_error() {
         R r = new R();
         r.msg = "登录失败";
+        r.code = -1;
+        return r;
+    }
+    public static <T> R<T> login_error(String msg) {
+        R r = new R();
+        r.msg = msg;
         r.code = -1;
         return r;
     }
@@ -98,6 +105,13 @@ public class R<T> {
         R r = new R();
         r.msg = msg;
         r.code = -8;
+        return r;
+    }
+
+    public static <T> R<T> error(Integer code,String msg) {
+        R r = new R();
+        r.msg = msg;
+        r.code = code;
         return r;
     }
 }
