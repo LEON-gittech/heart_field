@@ -26,5 +26,4 @@ public class Admin {
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private Byte isDisabled=0;
-
 }

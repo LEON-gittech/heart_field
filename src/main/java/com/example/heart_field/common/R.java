@@ -2,9 +2,6 @@ package com.example.heart_field.common;
 
 import lombok.Data;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * 通用返回类
  * @param <T>
@@ -25,11 +22,12 @@ public class R<T> {
 
     private T data; //数据
 
-    private Map map = new HashMap(); //动态数据
+//    private Map map = new HashMap(); //动态数据
 
     public static <T> R<T> success(T object) {
         R<T> r = new R<T>();
         r.data = object;
+        r.msg = "调用成功";
         r.code = 0;
         r.msg = "操作成功";
         return r;
@@ -48,10 +46,10 @@ public class R<T> {
         return r;
     }
 
-    public R<T> add(String key, Object value) {
-        this.map.put(key, value);
-        return this;
-    }
+//    public R<T> add(String key, Object value) {
+//        this.map.put(key, value);
+//        return this;
+//    }
 
     public static <T> R<T> argument_error() {
         R r = new R();
