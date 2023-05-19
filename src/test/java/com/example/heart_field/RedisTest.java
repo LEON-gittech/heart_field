@@ -1,7 +1,7 @@
 package com.example.heart_field;
 
 //import org.junit.jupiter.api.Test;
-import com.example.heart_field.utils.RedisUtils;
+import com.example.heart_field.utils.RedisUtil;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,19 +39,19 @@ public class RedisTest {
     }
 
     @Resource
-    private RedisUtils redisUtils;
+    private RedisUtil redisUtil;
 
     /**
      * 插入缓存数据
      */
     @Test
     public void set(){
-        redisUtils.set("redis_key","redis_value");
+        redisUtil.set("redis_key","redis_value");
     }
 
     @Test
     public void get() {
-        String value = redisUtils.get("redis_key");
+        String value = redisUtil.get("redis_key");
         System.out.println(value);
         if (value.equals("redis_value")) {
             Assert.assertTrue(true);
