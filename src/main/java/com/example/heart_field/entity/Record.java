@@ -4,9 +4,11 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.example.heart_field.dto.RecordListDTO;
 import lombok.Data;
 
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 /**
  * @author albac0020@gmail.com
@@ -24,7 +26,7 @@ public class Record {
     /**
      * 该记录是否被删除
      */
-    private Boolean isDeleted;
+    private Byte isDeleted;//0有效1无效
 
     /**
      * 该记录创建时间，时间戳类型
@@ -58,17 +60,17 @@ public class Record {
     /**
      * 该咨询的开始时间
      */
-    private Timestamp startTime;
+    private LocalDateTime startTime;
 
     /**
      * 该咨询的结束时间
      */
-    private Timestamp endTime;
+    private LocalDateTime endTime;
 
     /**
      * 该咨询的督导介入时间
      */
-    private Timestamp involveTime;
+    private LocalDateTime involveTime;
 
     /**
      * 访客给咨询师评分，1-5的整数
@@ -94,10 +96,30 @@ public class Record {
     /**
      * 该咨询记录对应的咨询会话id
      */
-    private Integer consultId;
+    private Integer chatId;
 
     /**
      * 该咨询记录对应的求助会话id
      */
     private Integer helpId;
+
+    private Byte isCompleted;//0未完成1已完成
+
+
+    public RecordListDTO convert2ListDTO(){
+        return RecordListDTO.builder()
+                .consultantId(this.consultantId)
+                .visitorId(this.visitorId)
+                .supervisorId(this.supervisorId)
+                .id(this.id)
+                .isCompleted((byte) (this.endTime==null?0:1))
+                .startTime(this.startTime)
+                .endTime(this.endTime)
+                .visitorComment(this.visitorComment)
+                .visitorScore(this.visitorScore)
+                .chatId(this.chatId)
+                .helpId(this.helpId)
+                .build();
+
+    }
 }

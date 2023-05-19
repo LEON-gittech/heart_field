@@ -1,9 +1,9 @@
 package com.example.heart_field.filter;
 
 import com.example.heart_field.entity.User;
-import com.example.heart_field.service.AdminService;
-import com.example.heart_field.service.UserService;
+import com.example.heart_field.service.*;
 import com.example.heart_field.tokens.AdminToken;
+import com.example.heart_field.tokens.ExceptVisitorToken;
 import com.example.heart_field.tokens.PassToken;
 import com.example.heart_field.tokens.UserLoginToken;
 import com.example.heart_field.utils.TokenUtil;
@@ -23,7 +23,10 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     @Autowired
     AdminService adminService;
     @Autowired
+    VisitorService visitorService;
+    @Autowired
     UserUtils userUtils;
+
     @Override
     public boolean preHandle(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse, Object object) throws Exception {
         String token = httpServletRequest.getHeader("token");// 从 http 请求头中取出 token
@@ -72,6 +75,24 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                 }
             }
         }
+
+        //检查有没有需要[管理端登录]权限的注解
+        if(method.isAnnotationPresent(ExceptVisitorToken.class)){
+            ExceptVisitorToken exceptVisitorToken = method.getAnnotation(ExceptVisitorToken.class);
+            if(exceptVisitorToken.required()) {
+                // 执行认证
+                if (token == null) {
+                    throw new RuntimeException("无token，请重新登录");
+                }
+                // 获取 token 中的 user id
+                User user_r = userUtils.getUser(TokenUtil.getTokenUser());
+                if(visitorService.getById(user_r.getId()) != null){
+                    throw new RuntimeException("非管理员端（咨询师、督导、管理员），权限限制");
+                }
+            }
+        }
+
+
         return true;
     }
 

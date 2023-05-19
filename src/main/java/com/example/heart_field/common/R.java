@@ -58,6 +58,13 @@ public class R<T> {
         return r;
     }
 
+    public static <T> R<T> argument_error(String msg) {
+        R r = new R();
+        r.msg = msg;
+        r.code = -2;
+        return r;
+    }
+
     public static <T> R<T> url_error() {
         R r = new R();
         r.msg = "请求url不存在";

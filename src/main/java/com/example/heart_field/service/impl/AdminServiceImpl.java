@@ -15,6 +15,8 @@ import com.example.heart_field.param.UserLoginParam;
 import com.example.heart_field.service.AdminService;
 import com.example.heart_field.tokens.TokenService;
 import com.example.heart_field.utils.Md5Util;
+import com.example.heart_field.utils.TokenUtil;
+import com.example.heart_field.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,9 @@ import java.util.List;
 public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements AdminService {
     @Autowired
     private TokenService tokenService;
+
+
+
 
     @Override
     public ResultInfo<UserLoginDTO> login(UserLoginParam loginParam) {
@@ -68,6 +73,8 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
                 .username("admin")
                 .build();
         this.save(admin);
+        UserUtils userUtils = new UserUtils();
+        userUtils.saveUser(admin);
         return ResultInfo.success(admin.getId());
     }
 

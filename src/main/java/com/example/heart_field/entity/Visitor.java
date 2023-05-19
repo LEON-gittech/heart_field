@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class Visitor {
     @TableId(value="id",type = IdType.AUTO)
     private Integer id;
-    private boolean isDisabled;
+    private Byte isDisabled;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private String username;
@@ -24,4 +24,6 @@ public class Visitor {
     private String puzzle;
     private String history;
     private String question;
+    private Byte gender;//0女1男2未知
+    private String openId;
 }
