@@ -1,10 +1,15 @@
 package com.example.heart_field.utils;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.example.heart_field.common.result.BaseResult;
+import com.example.heart_field.constant.RegexPattern;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.service.*;
+import org.apache.el.parser.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+
+import java.util.regex.Pattern;
 
 @Component
 public class UserUtils {
@@ -18,6 +23,34 @@ public class UserUtils {
     private AdminService adminService;
     @Autowired
     private VisitorService visitorService;
+
+    /**
+     *用于检查用户是否具备访客端本人或管理[员]的权限
+     */
+    public static boolean checkSelfOrAdmin(Integer visitorId) {
+        Integer type=TokenUtil.getTokenUser().getType();
+        //type为0是Visitor，1是Consultant，2是Admin，3是Supervisor
+        if(type==2){
+            return true;
+        }
+        else{
+            return TokenUtil.getTokenUser().getId().equals(visitorId);
+        }
+    }
+
+    /**
+     *用于检查用户是否具备访客端本人或管理[端]的权限
+     */
+    public static boolean checkSelfOrBack(Integer visitorId) {
+        Integer type=TokenUtil.getTokenUser().getType();
+        //type为0是Visitor，1是Consultant，2是Admin，3是Supervisor
+        if(type!=0){
+            return true;
+        }
+        else{
+            return TokenUtil.getTokenUser().getId().equals(visitorId);
+        }
+    }
 
     /**
      * 保存用户信息
@@ -76,5 +109,54 @@ public class UserUtils {
         queryWrapper.eq(User::getType,user.getType());
         User user_r = userService.getOne(queryWrapper);
         return user_r;
+    }
+
+    /**
+     * 用于修改电话号码时校验电话号码是否合法
+     * @param phone
+     * @return
+     */
+    public boolean checkPhone(String phone) {
+        //手机号码格式校验
+        Pattern phonePattern = Pattern.compile(RegexPattern.MOBILE_PHONE_NUMBER_PATTERN);
+        if(!phonePattern.matcher(phone).matches()){
+            return false;
+        }
+        //手机号码是否已经被注册
+        LambdaQueryWrapper<Consultant> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(Consultant::getPhone, phone);
+        if(consultantService!=null){
+            Consultant consultant = consultantService.getOne(lambdaQueryWrapper);
+            if (consultant != null) {
+                return false;
+            }
+        }
+
+        LambdaQueryWrapper<Supervisor> lambdaQueryWrapper1 = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper1.eq(Supervisor::getPhone, phone);
+        if(supervisorService!=null)
+        {
+            Supervisor supervisor = supervisorService.getOne(lambdaQueryWrapper1);
+            if (supervisor != null) {
+                return false;
+            }
+        }
+        LambdaQueryWrapper<Admin> lambdaQueryWrapper2 = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper2.eq(Admin::getPhone, phone);
+        if(adminService!=null){
+            Admin admin = adminService.getOne(lambdaQueryWrapper2);
+            if (admin != null) {
+                return false;
+            }
+        }
+        LambdaQueryWrapper<Visitor> lambdaQueryWrapper3 = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper3.eq(Visitor::getPhone, phone);
+        if(visitorService!=null){
+            Visitor visitor = visitorService.getOne(lambdaQueryWrapper3);
+            if (visitor != null) {
+                return false;
+            }
+        }
+        return true;
     }
 }
