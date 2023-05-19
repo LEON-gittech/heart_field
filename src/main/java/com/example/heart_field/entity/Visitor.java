@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 public class Visitor {
     @TableId(value="id",type = IdType.AUTO)
     private Integer id;
-    private boolean disabled;
+    private boolean isDisabled;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private String username;

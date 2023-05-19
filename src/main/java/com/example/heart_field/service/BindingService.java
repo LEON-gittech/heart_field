@@ -10,6 +10,5 @@ import com.example.heart_field.entity.Binding;
  * @since 2023-05-15 16:47:21
  */
 public interface BindingService extends IService<Binding> {
-
 }
 

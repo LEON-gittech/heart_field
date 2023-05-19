@@ -1,6 +1,8 @@
 package com.example.heart_field.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
@@ -27,11 +29,13 @@ public class Record {
     /**
      * 该记录创建时间，时间戳类型
      */
+    @TableField(fill = FieldFill.INSERT)
     private Timestamp createTime;
 
     /**
      * 该记录更新时间，时间戳类型
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Timestamp updateTime;
 
     /**
