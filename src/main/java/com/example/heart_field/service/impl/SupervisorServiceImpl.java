@@ -6,7 +6,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.dto.UserLoginDTO;
-import com.example.heart_field.entity.Admin;
 import com.example.heart_field.entity.Supervisor;
 import com.example.heart_field.entity.User;
 import com.example.heart_field.mapper.SupervisorMapper;
