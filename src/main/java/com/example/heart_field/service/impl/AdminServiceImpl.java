@@ -1,6 +1,5 @@
 package com.example.heart_field.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -9,7 +8,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.dto.UserLoginDTO;
 import com.example.heart_field.entity.Admin;
-import com.example.heart_field.entity.Consultant;
 import com.example.heart_field.entity.User;
 import com.example.heart_field.mapper.AdminMapper;
 import com.example.heart_field.param.AdminRegisterParam;

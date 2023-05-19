@@ -1,7 +1,10 @@
 package com.example.heart_field.entity;
 
-import java.time.LocalDateTime;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
+
+import java.time.LocalDateTime;
 
 /**
  * 咨询师督导关系表(Binding)表实体类
@@ -12,6 +15,7 @@ import lombok.Data;
 @Data
 public class Binding {
     //主键，用于唯一标识每个记录
+    @TableId(value="id",type = IdType.AUTO)
     private Integer id;
     //咨询师id，是一个外键，引用自咨询师表的id列
     private Integer consultantId;
@@ -23,6 +27,5 @@ public class Binding {
     private LocalDateTime updateTime;
     //是否删除，0表示未删除，1表示已删除
     private Integer isDeleted;
-
-    }
+}
 

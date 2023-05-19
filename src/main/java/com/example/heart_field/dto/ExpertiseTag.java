@@ -1,9 +1,9 @@
-package com.example.heart_field.entity;
+package com.example.heart_field.dto;
 
 import lombok.Data;
 
 @Data
 public class ExpertiseTag {
     private String id;
-    private String expertiseName;
+    private String tagName;
 }

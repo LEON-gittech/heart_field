@@ -26,8 +26,13 @@ public class Consultant {
     private String avatar;
     private Integer maxConcurrent = 2; // 默认值为2
     private Integer maxNum = 20; // 默认值为20
+    private Integer currentSessionCount;
     private Integer curStatus = 0; // 默认值为0
     private Integer helpNum = 0; // 默认值为0
+    private Integer helpTotalNum = 0;
+    private Integer totalHelpTime;
+    private Integer todayTotalHelpTime;
+    private Integer todayTotalHelpCount;
     private Double rating = 0.0; // 默认值为0.0
     private String phone;
     private String cardId; //身份证号码
