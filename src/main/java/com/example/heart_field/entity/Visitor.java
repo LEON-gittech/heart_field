@@ -1,15 +1,17 @@
 package com.example.heart_field.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 
 @Data
 public class Visitor {
+    @TableId(value="id",type = IdType.AUTO)
     private Integer id;
-    private boolean disabled;
+    private Byte isDisabled;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private String username;
@@ -22,4 +24,6 @@ public class Visitor {
     private String puzzle;
     private String history;
     private String question;
+    private Byte gender;//0女1男2未知
+    private String openId;
 }

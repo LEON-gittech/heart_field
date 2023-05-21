@@ -1,12 +1,23 @@
 package com.example.heart_field.entity;
 
-import java.sql.Timestamp;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.example.heart_field.dto.UserLoginDTO;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
 import java.time.LocalDateTime;
 
-import lombok.Data;
-
 @Data
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Admin {
+    @TableId(value="id",type = IdType.AUTO)
     private Integer id;
     private String username;
     private String phone;
@@ -14,5 +25,5 @@ public class Admin {
     private String avatar;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
-    private boolean disabled;
+    private Byte isDisabled=0;
 }

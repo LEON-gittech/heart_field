@@ -1,12 +1,12 @@
 package com.example.heart_field.utils;
 
+import com.example.heart_field.entity.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import java.text.SimpleDateFormat;
 
 /*
 * @author MRC
@@ -15,19 +15,20 @@ import java.text.SimpleDateFormat;
 */
 public class TokenUtil {
 
-    public static String getTokenUserId() {
+    public static User getTokenUser() {
         String token = getRequest().getHeader("token");
         Claims claims = Jwts.parser()
                 .setSigningKey("my1231231231231231231231312313112312313131312321312331")
                 .parseClaimsJws(token)
                 .getBody();
         String userId = claims.getSubject();
-        System.out.println("用户时间:"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").
-                format(claims.getIssuedAt()));System.out.println("过期时间:"+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").
-                format(claims.getExpiration()));
-        System.out.println("用户角色:"+claims.get("type"));
-        System.out.println("用户密码:"+claims.get("password"));
-        return userId;
+        Integer type = Integer.parseInt((String) claims.get("type"));
+        String password = (String) claims.get("password");
+        User user = new User();
+        user.setPassword(password);
+        user.setType(type);
+        user.setId(Integer.parseInt(userId));
+        return user;
     }
 
     /**
@@ -39,5 +40,13 @@ public class TokenUtil {
         ServletRequestAttributes requestAttributes = (ServletRequestAttributes) RequestContextHolder
                 .getRequestAttributes();
         return requestAttributes == null ? null : requestAttributes.getRequest();
+    }
+
+    /**
+     * to eliminate errors
+     * @return
+     */
+    public static int getTokenUserId() {
+        return 0;
     }
 }

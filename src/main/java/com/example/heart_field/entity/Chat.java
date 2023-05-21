@@ -1,7 +1,8 @@
 package com.example.heart_field.entity;
 
 
-import com.baomidou.mybatisplus.extension.activerecord.Model;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 @Data
 public class Chat {
     //主键，自增长
+    @TableId(value="id",type = IdType.AUTO)
     private Integer id;
     //发起聊天的用户类型，0表示访客，1表示咨询师，2表示督导
     private Integer fromType;
