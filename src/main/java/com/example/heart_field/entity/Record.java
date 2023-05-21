@@ -94,7 +94,7 @@ public class Record {
     /**
      * 该咨询记录对应的咨询会话id
      */
-    private Integer consultId;
+    private Integer chatId;
 
     /**
      * 该咨询记录对应的求助会话id

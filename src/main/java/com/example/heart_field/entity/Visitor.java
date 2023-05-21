@@ -24,4 +24,5 @@ public class Visitor {
     private String puzzle;
     private String history;
     private String question;
+
 }

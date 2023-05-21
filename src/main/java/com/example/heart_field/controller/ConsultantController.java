@@ -228,10 +228,10 @@ public class ConsultantController {
         //返回数据
         AnyConsultantProfileDto anyConsultantProfileDto = new AnyConsultantProfileDto();
         Consultant consultant = consultantService.getById(consultantId);
+        BeanUtils.copyProperties(consultant,anyConsultantProfileDto,"expertiseTag","id");
         anyConsultantProfileDto.setConsultantName(consultant.getName());
         anyConsultantProfileDto.setAvatar(consultant.getAvatar());
-        anyConsultantProfileDto.setBriefIntroduction(consultant.getBriefIntro());
-        anyConsultantProfileDto.setDetailIntroduction(consultant.getDetailedIntro());
+        anyConsultantProfileDto.setDetailIntro(consultant.getDetailedIntro());
         anyConsultantProfileDto.setState(consultant.getCurStatus());
         //workArrangement
         List<Integer> workArrangement = consultantService.getWorkArrangement(consultant);
@@ -258,6 +258,10 @@ public class ConsultantController {
             comments.add(comment);
         }
         anyConsultantProfileDto.setComments(comments);
+        //id
+        anyConsultantProfileDto.setId(consultant.getId().toString());
+        //expertiseTag
+        anyConsultantProfileDto.setExpertiseTag(objectMapper.readValue(consultant.getExpertiseTag(),new TypeReference<List<ExpertiseTag>>() {}));
         return R.success(anyConsultantProfileDto);
     }
 
