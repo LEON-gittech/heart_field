@@ -17,8 +17,8 @@ public class AnyConsultantProfileDto {
     }
     private String consultantName;
     private String avatar;
-    private String briefIntroduction;
-    private String detailIntroduction;
+    private String briefIntro;
+    private String detailIntro;
     private Integer state;
     private List<Integer> workArrangement;
     private List<SupervisorBinding> supervisorBind;
@@ -27,4 +27,13 @@ public class AnyConsultantProfileDto {
     private String consultTotalTime;
     private Double averageRank;
     private List<Comment> comments;
+    private List<ExpertiseTag> expertiseTag;
+    private Integer gender;
+    private String phone;
+    private String cardId;
+    private String email;
+    private String password;
+    private String workplace;
+    private String title;
+    private String id;
 }
