@@ -1,11 +1,9 @@
 package com.example.heart_field.utils;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.example.heart_field.common.result.BaseResult;
 import com.example.heart_field.constant.RegexPattern;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.service.*;
-import org.apache.el.parser.Token;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -68,7 +66,8 @@ public class UserUtils {
             lambdaQueryWrapper.eq(Consultant::getPhone, ((Consultant) object).getPhone());
             Consultant consultant = consultantService.getOne(lambdaQueryWrapper);
             id = consultant.getId();
-            password = consultant.getPassword();
+            String phone = consultant.getPhone();
+            password = Md5Util.encryptPassword(phone,consultant.getPassword()) ;
             user.setType(1);
         }
         //督导
@@ -77,7 +76,8 @@ public class UserUtils {
             lambdaQueryWrapper.eq(Supervisor::getPhone, ((Supervisor) object).getPhone());
             Supervisor supervisor = supervisorService.getOne(lambdaQueryWrapper);
             id = supervisor.getId();
-            password = supervisor.getPassword();
+            String phone = supervisor.getPhone();
+            password = Md5Util.encryptPassword(phone,supervisor.getPassword()) ;
             user.setType(3);
         }
         //管理员
@@ -86,7 +86,8 @@ public class UserUtils {
             lambdaQueryWrapper.eq(Admin::getPhone, ((Admin) object).getPhone());
             Admin admin = adminService.getOne(lambdaQueryWrapper);
             id = admin.getId();
-            password = admin.getPassword();
+            String phone = admin.getPhone();
+            password = Md5Util.encryptPassword(phone,admin.getPassword()) ;
             user.setType(2);
         }
         //访客
@@ -105,7 +106,7 @@ public class UserUtils {
     //根据传入的User信息匹配数据库中的User
     public User getUser(User user){
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getId, user.getId());
+        queryWrapper.eq(User::getUserId, user.getId());
         queryWrapper.eq(User::getType,user.getType());
         User user_r = userService.getOne(queryWrapper);
         return user_r;
