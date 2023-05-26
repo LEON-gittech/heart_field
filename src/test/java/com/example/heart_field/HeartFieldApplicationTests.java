@@ -1,9 +1,13 @@
 package com.example.heart_field;
 
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.heart_field.entity.Admin;
 import com.example.heart_field.entity.Consultant;
+import com.example.heart_field.entity.User;
 import com.example.heart_field.mapper.ConsultantMapper;
 import com.example.heart_field.service.AdminService;
+import com.example.heart_field.utils.TencentCloudImUtil;
 import com.example.heart_field.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -23,6 +27,8 @@ class HeartFieldApplicationTests {
     private AdminService adminService;
     @Autowired
     private UserUtils userUtils;
+    @Autowired
+    private TencentCloudImUtil tencentCloudImUtil;
 
     @Test
     void contextLoads() {
@@ -72,6 +78,21 @@ class HeartFieldApplicationTests {
         admin.setPhone("13391355527");
         admin.setUsername("xiba");
         adminService.save(admin);
-        userUtils.saveUser(admin);
+        User user = userUtils.saveUser(admin);
+        //导入账号到腾讯云IM
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("Identifier",user.getType().toString()+"_"+user.getUserId().toString());
+        jsonObject.put("Nick",admin.getUsername());
+        jsonObject.put("FaceUrl",admin.getAvatar());
+        String identifier = user.getType().toString()+"_"+user.getUserId().toString();
+        boolean isSuccess = tencentCloudImUtil.accountImport(identifier);
+        if(!isSuccess){
+            adminService.remove(new LambdaQueryWrapper<Admin>().eq(Admin::getId,admin.getId()));
+            userUtils.deleteUser(user);
+            log.info("腾讯IM导入账号失败");
+        }
+        log.info("新增咨询师成功");
     }
+
+
 }
