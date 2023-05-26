@@ -142,7 +142,7 @@ public class ConsultantController {
      */
     @AdminToken
     @PostMapping
-    public R<String> save(@RequestBody Consultant consultant,HttpServletRequest httpServletRequest){
+    public R<String> save(@RequestBody Consultant consultant){
         log.info("consultant:{}",consultant);
         consultantService.save(consultant);
         //同步添加到User类,从Consultant表中获取id
@@ -448,5 +448,7 @@ public class ConsultantController {
         recordService.updateById(record);
         return R.success("咨询师填写用户评估成功");
     }
+
+
 
 }
