@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
-import com.example.heart_field.dto.RecordListDTO;
+import com.example.heart_field.dto.consultant.record.RecordListDTO;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.entity.Record;
 import com.example.heart_field.mapper.ConsultantMapper;
@@ -12,7 +12,6 @@ import com.example.heart_field.mapper.RecordMapper;
 import com.example.heart_field.mapper.SupervisorMapper;
 import com.example.heart_field.mapper.VisitorMapper;
 import com.example.heart_field.service.RecordService;
-import com.example.heart_field.service.VisitorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

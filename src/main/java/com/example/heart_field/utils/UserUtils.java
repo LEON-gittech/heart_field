@@ -4,23 +4,35 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.heart_field.constant.RegexPattern;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.service.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.regex.Pattern;
 
 @Component
+@Slf4j
 public class UserUtils {
     @Autowired
+    @Lazy
     private ConsultantService consultantService;
     @Autowired
+    @Lazy
     private SupervisorService supervisorService;
     @Autowired
+    @Lazy
     private UserService userService;
     @Autowired
+    @Lazy
     private AdminService adminService;
     @Autowired
+    @Lazy
     private VisitorService visitorService;
+    @Resource
+    private BCryptPasswordEncoder bCryptPasswordEncoder;  //注入bcryct加密
 
     /**
      *用于检查用户是否具备访客端本人或管理[员]的权限
@@ -67,7 +79,10 @@ public class UserUtils {
             Consultant consultant = consultantService.getOne(lambdaQueryWrapper);
             id = consultant.getId();
             String phone = consultant.getPhone();
-            password = Md5Util.encryptPassword(phone,consultant.getPassword()) ;
+            password = bCryptPasswordEncoder.encode(consultant.getPassword()) ;
+            //更新角色表中password为加密后的密码
+            consultant.setPassword(password);
+            consultantService.updateById(consultant);
             user.setType(1);
         }
         //督导
@@ -77,7 +92,10 @@ public class UserUtils {
             Supervisor supervisor = supervisorService.getOne(lambdaQueryWrapper);
             id = supervisor.getId();
             String phone = supervisor.getPhone();
-            password = Md5Util.encryptPassword(phone,supervisor.getPassword()) ;
+            password = bCryptPasswordEncoder.encode(supervisor.getPassword()) ;
+            //更新角色表中password为加密后的密码
+            supervisor.setPassword(password);
+            supervisorService.updateById(supervisor);
             user.setType(3);
         }
         //管理员
@@ -87,7 +105,10 @@ public class UserUtils {
             Admin admin = adminService.getOne(lambdaQueryWrapper);
             id = admin.getId();
             String phone = admin.getPhone();
-            password = Md5Util.encryptPassword(phone,admin.getPassword()) ;
+            password = bCryptPasswordEncoder.encode(admin.getPassword()) ;
+            //更新角色表中password为加密后的密码
+            admin.setPassword(password);
+            adminService.updateById(admin);
             user.setType(2);
         }
         //访客
@@ -98,7 +119,7 @@ public class UserUtils {
             id = visitor.getId();
             user.setType(0);
         }
-        user.setId(id);
+        user.setUserId(id);
         user.setPassword(password);
         userService.save(user);
         return user;
@@ -106,7 +127,7 @@ public class UserUtils {
     //根据传入的User信息匹配数据库中的User
     public User getUser(User user){
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUserId, user.getId());
+        queryWrapper.eq(User::getUserId, user.getUserId());
         queryWrapper.eq(User::getType,user.getType());
         User user_r = userService.getOne(queryWrapper);
         return user_r;
@@ -159,5 +180,16 @@ public class UserUtils {
             }
         }
         return true;
+    }
+
+    /**
+     * 删除User
+     * @param user
+     */
+    public void deleteUser(User user) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getUserId, user.getUserId());
+        queryWrapper.eq(User::getType,user.getType());
+        userService.remove(queryWrapper);
     }
 }

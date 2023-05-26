@@ -6,8 +6,9 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
-import com.example.heart_field.dto.CommentDto;
-import com.example.heart_field.dto.SupervisorBinding;
+import com.example.heart_field.dto.consultant.comment.CommentDto;
+import com.example.heart_field.dto.consultant.comment.CommentsDto;
+import com.example.heart_field.dto.consultant.binding.SupervisorBinding;
 import com.example.heart_field.dto.UserLoginDTO;
 import com.example.heart_field.entity.Record;
 import com.example.heart_field.entity.*;
@@ -77,11 +78,13 @@ public class ConsultantServiceImpl extends ServiceImpl<ConsultantMapper, Consult
     }
 
     @Override
-    public List<CommentDto> getCommentDto(Integer consultantId, Integer page, Integer pageSize) {
+    public List<CommentDto> getCommentDto(Integer consultantId, Integer page, Integer pageSize, Integer pageNum) {
         Page<Record> pageInfo = new Page<>(page,pageSize);
         LambdaQueryWrapper<Record> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Record::getConsultantId,consultantId);
         recordService.page(pageInfo,queryWrapper);
+        //修改pageNum
+        pageNum = Math.toIntExact(pageInfo.getPages());
         //转为返回给前端的CommentDto
         Page<CommentDto> commentDtoPage = new Page<>();
         BeanUtils.copyProperties(pageInfo,commentDtoPage,"records");
@@ -107,6 +110,15 @@ public class ConsultantServiceImpl extends ServiceImpl<ConsultantMapper, Consult
             return commentDto;
         }).collect(Collectors.toList());
         return list;
+    }
+
+    @Override
+    public CommentsDto getCommentsDto(CommentsDto commentsDto,Integer consultantId, Integer page, Integer pageSize) {
+        Integer pageNum = 1;
+        List<CommentDto> commentDtos = getCommentDto(consultantId,page,pageSize,pageNum);
+        commentsDto.setPageNum(pageNum);
+        commentsDto.setCommentsDto(commentDtos);
+        return commentsDto;
     }
 
     @Override
