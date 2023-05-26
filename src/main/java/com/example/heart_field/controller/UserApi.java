@@ -15,7 +15,6 @@ import com.example.heart_field.tokens.TokenService;
 import com.example.heart_field.tokens.UserLoginToken;
 import com.example.heart_field.utils.TokenUtil;
 import com.example.heart_field.utils.UserUtils;
-import com.fasterxml.jackson.core.Base64Variant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -73,7 +72,6 @@ public class UserApi {
     public Object login(@RequestBody User user, HttpServletResponse response) {
         JSONObject jsonObject = new JSONObject();
         User user_r = userUtils.getUser(user);
-        Base64Variant encoder = null;
         if (!bCryptPasswordEncoder.matches(user.getPassword(),user_r.getPassword())) {
             jsonObject.put("message", "登录失败,密码错误");
             return jsonObject;
