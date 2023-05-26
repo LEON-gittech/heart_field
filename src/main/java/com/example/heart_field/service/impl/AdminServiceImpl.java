@@ -15,7 +15,6 @@ import com.example.heart_field.param.UserLoginParam;
 import com.example.heart_field.service.AdminService;
 import com.example.heart_field.tokens.TokenService;
 import com.example.heart_field.utils.Md5Util;
-import com.example.heart_field.utils.TokenUtil;
 import com.example.heart_field.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +29,6 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     @Autowired
     private UserUtils userUtils;
 
-
     @Override
     public ResultInfo<UserLoginDTO> login(UserLoginParam loginParam) {
         LambdaQueryWrapper<Admin> queryWrapper= Wrappers.lambdaQuery();
@@ -42,6 +40,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         if(count>1){
             log.error("DB中存在多条相同手机号的账号，phone = " + loginParam.getPhone());
         }
+        String password = Md5Util.encryptPassword(loginParam.getPhone(), loginParam.getPassword());
         queryWrapper.eq(Admin::getPassword, Md5Util.encryptPassword(loginParam.getPhone(), loginParam.getPassword()));
         List<Admin> pos=this.baseMapper.selectList(queryWrapper);
         if(CollectionUtils.isEmpty(pos)){
@@ -52,7 +51,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         userLoginDTO.setType(Byte.valueOf((byte) 2));
 
         User userForBase = new User();
-        userForBase.setId(pos.get(0).getId());
+        userForBase.setUserId(pos.get(0).getId());
         userForBase.setPassword(Md5Util.encryptPassword(loginParam.getPhone(), loginParam.getPassword()));
         userForBase.setType(2);
         String token = tokenService.getToken(userForBase);

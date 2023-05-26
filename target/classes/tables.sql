@@ -1,3 +1,4 @@
+
 CREATE TABLE visitor (
   id int PRIMARY KEY auto_increment,
   is_disabled tinyint DEFAULT 0 NOT NULL COMMENT '0未封禁（有效） 1封禁（⽆效）',
@@ -19,7 +20,7 @@ CREATE TABLE admin (
   id int PRIMARY KEY AUTO_INCREMENT,
   username varchar(30) NOT NULL,
   phone varchar(12) NOT NULL,
-  password varchar(36) NOT NULL,
+  password varchar(255) NOT NULL,
   avatar varchar(200) DEFAULT NULL COMMENT '头像url存储，可空',
   create_time timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   update_time timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -36,7 +37,7 @@ CREATE TABLE supervisor (
   name varchar(15) COMMENT '督导的真实姓名，长度不超过15个字符',
   age int COMMENT '督导的年龄',
   gender tinyint DEFAULT 2 COMMENT '督导的性别，0表示女性，1表示男性，2表示未知',
-  password varchar(36) NOT NULL COMMENT '督导的登录密码，长度不超过36个字符，不能为空',
+  password varchar(255) NOT NULL COMMENT '督导的登录密码，长度不超过36个字符，不能为空',
   avatar varchar(200) COMMENT '督导的头像图片链接，可为空',
   max_concurrent int DEFAULT 2 COMMENT '督导最多同时可以咨询的用户数，设置默认值为2',
   max_num int DEFAULT 20 COMMENT '督导最多可以咨询的用户总数，设置默认值为20',
@@ -62,7 +63,7 @@ CREATE TABLE consultant (
   name varchar(15) COMMENT '督导的真实姓名，长度不超过15个字符',
   age int COMMENT '督导的年龄',
   gender tinyint DEFAULT 2 COMMENT '督导的性别，0表示女性，1表示男性，2表示未知',
-  password varchar(36) NOT NULL COMMENT  '督导的登录密码，长度不超过36个字符，不能为空',
+  password varchar(255) NOT NULL COMMENT  '督导的登录密码，长度不超过36个字符，不能为空',
   avatar varchar(200) COMMENT '督导的头像图片链接，可为空',
   max_concurrent int DEFAULT 2 COMMENT '督导最多同时可以咨询的用户数，设置默认值为2',
   current_session_count int DEFAULT 0,
@@ -197,8 +198,8 @@ CREATE TABLE waiting (
 
 CREATE TABLE user (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  username VARCHAR(50) NOT NULL UNIQUE,
-  password VARCHAR(50) NOT NULL,
+  user_id INT NOT NULL,
+  password VARCHAR(255) NOT NULL,
   type TINYINT NOT NULL,
   CONSTRAINT type_check CHECK (type IN (0, 1, 2, 3))
 );

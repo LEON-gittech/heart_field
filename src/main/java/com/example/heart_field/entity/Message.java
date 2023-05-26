@@ -13,7 +13,6 @@ import java.sql.Timestamp;
 
 @Data
 public class Message {
-
     /**
      * 主键，用于唯一标识每条信息
      */
@@ -74,8 +73,4 @@ public class Message {
      * 该消息是否被删除
      */
     private Boolean isDeleted;
-
-
-
-
 }

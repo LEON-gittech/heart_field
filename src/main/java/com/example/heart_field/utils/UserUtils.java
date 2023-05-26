@@ -1,34 +1,43 @@
 package com.example.heart_field.utils;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.example.heart_field.common.result.BaseResult;
 import com.example.heart_field.constant.RegexPattern;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.service.*;
-import org.apache.el.parser.Token;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Resource;
 import java.util.regex.Pattern;
 
 @Component
+@Slf4j
 public class UserUtils {
     @Lazy
     @Autowired
+    @Lazy
     private ConsultantService consultantService;
     @Lazy
     @Autowired
+    @Lazy
     private SupervisorService supervisorService;
     @Lazy
     @Autowired
+    @Lazy
     private UserService userService;
     @Lazy
     @Autowired
+    @Lazy
     private AdminService adminService;
     @Lazy
     @Autowired
+    @Lazy
     private VisitorService visitorService;
+    @Resource
+    private BCryptPasswordEncoder bCryptPasswordEncoder;  //注入bcryct加密
 
     /**
      *用于检查用户是否具备访客端本人或管理[员]的权限
@@ -40,7 +49,7 @@ public class UserUtils {
             return true;
         }
         else{
-            return TokenUtil.getTokenUser().getId().equals(visitorId);
+            return TokenUtil.getTokenUser().getUserId().equals(visitorId);
         }
     }
 
@@ -54,7 +63,7 @@ public class UserUtils {
             return true;
         }
         else{
-            return TokenUtil.getTokenUser().getId().equals(visitorId);
+            return TokenUtil.getTokenUser().getUserId().equals(visitorId);
         }
     }
 
@@ -74,7 +83,11 @@ public class UserUtils {
             lambdaQueryWrapper.eq(Consultant::getPhone, ((Consultant) object).getPhone());
             Consultant consultant = consultantService.getOne(lambdaQueryWrapper);
             id = consultant.getId();
-            password = consultant.getPassword();
+            String phone = consultant.getPhone();
+            password = bCryptPasswordEncoder.encode(consultant.getPassword()) ;
+            //更新角色表中password为加密后的密码
+            consultant.setPassword(password);
+            consultantService.updateById(consultant);
             user.setType(1);
         }
         //督导
@@ -83,7 +96,11 @@ public class UserUtils {
             lambdaQueryWrapper.eq(Supervisor::getPhone, ((Supervisor) object).getPhone());
             Supervisor supervisor = supervisorService.getOne(lambdaQueryWrapper);
             id = supervisor.getId();
-            password = supervisor.getPassword();
+            String phone = supervisor.getPhone();
+            password = bCryptPasswordEncoder.encode(supervisor.getPassword()) ;
+            //更新角色表中password为加密后的密码
+            supervisor.setPassword(password);
+            supervisorService.updateById(supervisor);
             user.setType(3);
         }
         //管理员
@@ -92,7 +109,11 @@ public class UserUtils {
             lambdaQueryWrapper.eq(Admin::getPhone, ((Admin) object).getPhone());
             Admin admin = adminService.getOne(lambdaQueryWrapper);
             id = admin.getId();
-            password = admin.getPassword();
+            String phone = admin.getPhone();
+            password = bCryptPasswordEncoder.encode(admin.getPassword()) ;
+            //更新角色表中password为加密后的密码
+            admin.setPassword(password);
+            adminService.updateById(admin);
             user.setType(2);
         }
         //访客
@@ -103,7 +124,7 @@ public class UserUtils {
             id = visitor.getId();
             user.setType(0);
         }
-        user.setId(id);
+        user.setUserId(id);
         user.setPassword(password);
         userService.save(user);
         return user;
@@ -111,7 +132,7 @@ public class UserUtils {
     //根据传入的User信息匹配数据库中的User
     public User getUser(User user){
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getId, user.getId());
+        queryWrapper.eq(User::getUserId, user.getUserId());
         queryWrapper.eq(User::getType,user.getType());
         User user_r = userService.getOne(queryWrapper);
         return user_r;
@@ -164,5 +185,16 @@ public class UserUtils {
             }
         }
         return true;
+    }
+
+    /**
+     * 删除User
+     * @param user
+     */
+    public void deleteUser(User user) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getUserId, user.getUserId());
+        queryWrapper.eq(User::getType,user.getType());
+        userService.remove(queryWrapper);
     }
 }
