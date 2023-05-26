@@ -5,8 +5,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.RegexPattern;
-import com.example.heart_field.dto.consultant.record.RecordListDTO;
+import com.example.heart_field.dto.RecordListDTO;
+import com.example.heart_field.dto.WxLoginDTO;
+import com.example.heart_field.dto.WxUserInfo;
+import com.example.heart_field.entity.Admin;
+import com.example.heart_field.entity.Record;
 import com.example.heart_field.entity.Visitor;
+import com.example.heart_field.param.WxLoginParam;
 import com.example.heart_field.service.RecordService;
 import com.example.heart_field.service.VisitorService;
 import com.example.heart_field.utils.TokenUtil;
@@ -31,6 +36,21 @@ public class VisitorController {
 
     @Autowired
     private RecordService recordService;
+
+    @PostMapping("/auth/login")
+    public R<WxLoginDTO> login(@RequestBody WxLoginParam loginParam){
+        log.info("loginParam:{}",loginParam);
+        //校验参数
+        if (StringUtils.isEmpty(loginParam.getCode())){
+            return R.login_error("参数不合法");
+        }
+        R result = visitorService.authLogin(loginParam);
+        log.info("{}",result);
+        return result;
+
+
+
+    }
 
 
     /**

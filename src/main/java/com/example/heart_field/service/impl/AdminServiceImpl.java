@@ -25,6 +25,10 @@ import java.util.List;
 public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements AdminService {
     @Autowired
     private TokenService tokenService;
+
+    @Autowired
+    private UserUtils userUtils;
+
     @Override
     public ResultInfo<UserLoginDTO> login(UserLoginParam loginParam) {
         LambdaQueryWrapper<Admin> queryWrapper= Wrappers.lambdaQuery();
@@ -69,7 +73,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
                 .username("admin")
                 .build();
         this.save(admin);
-        UserUtils userUtils = new UserUtils();
+
         userUtils.saveUser(admin);
         return ResultInfo.success(admin.getId());
     }
