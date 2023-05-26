@@ -44,7 +44,7 @@ public class UserUtils {
             return true;
         }
         else{
-            return TokenUtil.getTokenUser().getId().equals(visitorId);
+            return TokenUtil.getTokenUser().getUserId().equals(visitorId);
         }
     }
 
@@ -58,7 +58,7 @@ public class UserUtils {
             return true;
         }
         else{
-            return TokenUtil.getTokenUser().getId().equals(visitorId);
+            return TokenUtil.getTokenUser().getUserId().equals(visitorId);
         }
     }
 
