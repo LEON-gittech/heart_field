@@ -32,6 +32,5 @@ public class Chat {
     public Integer getId() {
         return id;
     }
-
-    }
+}
 

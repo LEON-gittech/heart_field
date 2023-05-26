@@ -1,15 +1,23 @@
 package com.example.heart_field.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
-import com.example.heart_field.dto.*;
-import com.example.heart_field.entity.Binding;
-import com.example.heart_field.entity.Consultant;
-import com.example.heart_field.mapper.AdminMapper;
+import com.example.heart_field.dto.consultant.ConsultantDto;
+import com.example.heart_field.dto.consultant.ConsultantsDto;
+import com.example.heart_field.dto.consultant.ExpertiseTag;
+import com.example.heart_field.dto.consultant.binding.SupervisorBindedDto;
+import com.example.heart_field.dto.consultant.comment.CommentDto;
+import com.example.heart_field.dto.consultant.comment.CommentsDto;
+import com.example.heart_field.dto.consultant.profile.AnyConsultantProfileDto;
+import com.example.heart_field.dto.consultant.profile.ConsultantProfileDto;
+import com.example.heart_field.entity.Record;
+import com.example.heart_field.entity.*;
 import com.example.heart_field.service.*;
 import com.example.heart_field.tokens.AdminToken;
 import com.example.heart_field.tokens.UserLoginToken;
+import com.example.heart_field.utils.TencentCloudImUtil;
 import com.example.heart_field.utils.TokenUtil;
 import com.example.heart_field.utils.UserUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,8 +30,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -50,7 +57,7 @@ public class ConsultantController {
     @Autowired
     private ScheduleService scheduleService;
     @Autowired
-    private AdminMapper adminMapper;
+    private TencentCloudImUtil tencentCloudImUtil;
     // 创建一个ObjectMapper实例
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -58,7 +65,7 @@ public class ConsultantController {
      * 分页查询咨询师列表升序还是降序，0表示降序，1表示升序，默认为0
      */
     @GetMapping
-    public R<List<ConsultantDto>>page(HttpServletRequest httpServletRequest) throws JsonProcessingException {
+    public R<ConsultantsDto>page(HttpServletRequest httpServletRequest) throws JsonProcessingException {
         httpServletRequest.getParameterMap().forEach((k,v)->{
             log.info("key={},value={}",k,v);
         });
@@ -116,42 +123,18 @@ public class ConsultantController {
         }
         //执行查询
         consultantService.page(pageinfo,queryWrapper);
-        ConsultantDto consultantDto = new ConsultantDto();
+        ConsultantsDto consultantsDto = new ConsultantsDto();
         List<Consultant> consultants = pageinfo.getRecords();
         List<ConsultantDto> consultantDtos = new ArrayList<>();
+        Integer pageNum = Math.toIntExact(pageinfo.getCurrent());
+        consultantsDto.setPageNum(pageNum);
+        consultantsDto.setConsultants(consultantDtos);
         //对consultans进行批处理
         for(Consultant consultant:consultants){
-            //将expertiseTag转换为List<ExpertiseTag>
-            List<ExpertiseTag> expertiseTags = objectMapper.readValue(consultant.getExpertiseTag(), new TypeReference<List<ExpertiseTag>>() {});
-            consultantDto.setExpertiseTag(expertiseTags);
-            //id
-            consultantDto.setId(String.valueOf(consultant.getId()));
-            //briefIntroduction
-            consultantDto.setBriefIntroduction(consultant.getBriefIntro());
-            //consultantAvatar
-            consultantDto.setConsultantAvatar(consultant.getAvatar());
-            //consultantName
-            consultantDto.setConsultantName(consultant.getName());
-            //consultantState
-            consultantDto.setConsultState(consultant.getCurStatus());
-            //helpCount
-            consultantDto.setHelpCount(consultant.getHelpNum());
-            //consultantTotalCount，查询每个访客对应的record数量
-            consultantDto.setConsultTotalCount(consultant.getHelpTotalNum());
-            //supervisorBindings,获取该咨询师绑定的所有督导
-            List<SupervisorBinding> supervisorBindings = consultantService.getSupervisorBindings(consultant);
-            consultantDto.setSupervisorBindings(supervisorBindings);
-            //workArrangement，获取咨询师对应的所有排班
-            List<Integer> workArrangement = consultantService.getWorkArrangement(consultant);
-            consultantDto.setWorkArrangement(workArrangement);
-            //consultTotalTime
-            consultantDto.setConsultTotalTime(consultant.getTotalHelpTime());
-            //averageRank
-            consultantDto.setAverageRank((int) Math.floor(consultant.getRating()));
-            consultantDtos.add(consultantDto);
+            consultantDtos.add(consultant.convert2ConsultantDto(consultantService));
         }
 
-        return R.success(consultantDtos);
+        return R.success(consultantsDto);
     }
 
     /**
@@ -159,11 +142,23 @@ public class ConsultantController {
      */
     @AdminToken
     @PostMapping
-    public R<String> save(@RequestBody Consultant consultant,HttpServletRequest httpServletRequest){
+    public R<String> save(@RequestBody Consultant consultant){
         log.info("consultant:{}",consultant);
         consultantService.save(consultant);
         //同步添加到User类,从Consultant表中获取id
-        userUtils.saveUser(consultant);
+        User user = userUtils.saveUser(consultant);
+        //导入账号到腾讯云IM
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("Identifier",user.getType().toString()+"_"+user.getUserId().toString());
+        jsonObject.put("Nick",consultant.getName());
+        jsonObject.put("FaceUrl",consultant.getAvatar());
+        String identifier = user.getType().toString()+"_"+user.getUserId().toString();
+        boolean isSuccess = tencentCloudImUtil.accountImport(identifier);
+        if(!isSuccess){
+            consultantService.remove(new LambdaQueryWrapper<Consultant>().eq(Consultant::getId,consultant.getId()));
+            userUtils.deleteUser(user);
+            return R.error("腾讯IM导入账号失败");
+        }
         return R.success("新增咨询师成功");
     }
 
@@ -175,7 +170,7 @@ public class ConsultantController {
     public R<ConsultantDto> update(@PathVariable("consultantId") Integer consultantId, @RequestBody ConsultantDto consultantDto) throws JsonProcessingException {
         log.info("consultantId:{},consultant:{}",consultantId,consultantDto);
         //权限验证
-        Integer id = TokenUtil.getTokenUser().getId();
+        Integer id = TokenUtil.getTokenUser().getUserId();
         if(!consultantId.equals(id)&&adminService.getById(consultantId)==null){
             return R.auth_error();
         }
@@ -198,7 +193,7 @@ public class ConsultantController {
      */
     @GetMapping("/profile")
     public R<ConsultantProfileDto> getOwnProfile() throws JsonProcessingException {
-        Integer id = TokenUtil.getTokenUser().getId();
+        Integer id = TokenUtil.getTokenUser().getUserId();
         Consultant consultant = consultantService.getById(id);
         ConsultantProfileDto consultantProfileDto = new ConsultantProfileDto();
         BeanUtils.copyProperties(consultant,consultantProfileDto,"expertiseTag");
@@ -221,17 +216,17 @@ public class ConsultantController {
     @GetMapping("/{consultantId}/profile")
     public R<AnyConsultantProfileDto> getProfile(@PathVariable("consultantId") Integer consultantId) throws JsonProcessingException {
         //权限验证
-        Integer id = TokenUtil.getTokenUser().getId();
+        Integer id = TokenUtil.getTokenUser().getUserId();
         if(!consultantId.equals(id)&&adminService.getById(id)==null){
             return R.auth_error();
         }
         //返回数据
         AnyConsultantProfileDto anyConsultantProfileDto = new AnyConsultantProfileDto();
         Consultant consultant = consultantService.getById(consultantId);
+        BeanUtils.copyProperties(consultant,anyConsultantProfileDto,"expertiseTag","id");
         anyConsultantProfileDto.setConsultantName(consultant.getName());
         anyConsultantProfileDto.setAvatar(consultant.getAvatar());
-        anyConsultantProfileDto.setBriefIntroduction(consultant.getBriefIntro());
-        anyConsultantProfileDto.setDetailIntroduction(consultant.getDetailedIntro());
+        anyConsultantProfileDto.setDetailIntro(consultant.getDetailedIntro());
         anyConsultantProfileDto.setState(consultant.getCurStatus());
         //workArrangement
         List<Integer> workArrangement = consultantService.getWorkArrangement(consultant);
@@ -247,7 +242,7 @@ public class ConsultantController {
         //averageRank
         anyConsultantProfileDto.setAverageRank(consultant.getRating());
         //comments
-        List<CommentDto> list = consultantService.getCommentDto(consultantId,1,10);
+        List<CommentDto> list = consultantService.getCommentDto(consultantId,1,10,null);
             //将comments转为Comment格式
         List<AnyConsultantProfileDto.Comment> comments = new ArrayList<>();
         for(CommentDto commentDto:list){
@@ -258,6 +253,10 @@ public class ConsultantController {
             comments.add(comment);
         }
         anyConsultantProfileDto.setComments(comments);
+        //id
+        anyConsultantProfileDto.setId(consultant.getId().toString());
+        //expertiseTag
+        anyConsultantProfileDto.setExpertiseTag(objectMapper.readValue(consultant.getExpertiseTag(),new TypeReference<List<ExpertiseTag>>() {}));
         return R.success(anyConsultantProfileDto);
     }
 
@@ -268,19 +267,18 @@ public class ConsultantController {
      * @return
      */
     @GetMapping("/{consultantId}/comments")
-    public R<Page> getComments(@PathVariable("consultantId") Integer consultantId, HttpServletRequest httpServletRequest){
+    public R<CommentsDto> getComments(@PathVariable("consultantId") Integer consultantId, HttpServletRequest httpServletRequest){
         //权限验证
-        Integer id = TokenUtil.getTokenUser().getId();
+        Integer id = TokenUtil.getTokenUser().getUserId();
         if(!consultantId.equals(id)&&adminService.getById(consultantId)==null){
             return R.auth_error();
         }
         //分页查询
         int page = Integer.parseInt(httpServletRequest.getParameter("page"));
         int pageSize = Integer.parseInt(httpServletRequest.getParameter("pageSize"));
-        List<CommentDto> list = consultantService.getCommentDto(consultantId,page,pageSize);
-        Page<CommentDto> commentDtoPage = new Page<>();
-        commentDtoPage.setRecords(list);
-        return R.success(commentDtoPage);
+        CommentsDto commentsDto = new CommentsDto();
+        consultantService.getCommentsDto(commentsDto,consultantId,page,pageSize);
+        return R.success(commentsDto);
     }
 
     /**
@@ -289,7 +287,7 @@ public class ConsultantController {
      */
     @AdminToken
     @PutMapping("/{consultantId}/bindings")
-    public R<SupervisorBindedDto> updateBindings(@PathVariable("consultantId") Integer consultantId,@RequestBody SupervisorBindedDto supervisorBindedDto){
+    public R<SupervisorBindedDto> updateBindings(@PathVariable("consultantId") Integer consultantId, @RequestBody SupervisorBindedDto supervisorBindedDto){
         //获取指定咨询师的所有绑定记录
         List<Integer> supervisorBinded = supervisorBindedDto.getSupervisorBinded();
         LambdaQueryWrapper<Binding> queryWrapper = new LambdaQueryWrapper<>();
@@ -328,4 +326,129 @@ public class ConsultantController {
         consultantService.updateById(consultant);
         return R.success("更新咨询师权限成功");
     }
+
+    /**
+     * 更新咨询师的最大咨询数
+     * @param consultantId
+     * @param body
+     * @return
+     */
+    @PutMapping("/{consultantId}/max-consult-count")
+    public R<String> updateMaxConsultCount(@PathVariable("consultantId") String consultantId,@RequestBody Map body){
+        //权限验证
+        Integer id = TokenUtil.getTokenUser().getUserId();
+        if(!consultantId.equals(id.toString())&&adminService.getById(consultantId)==null){
+            return R.auth_error();
+        }
+        //更新最大咨询数
+        Consultant consultant = consultantService.getById(Integer.parseInt(consultantId));
+        consultant.setMaxNum((Integer) body.get("consultMaxCount"));
+        consultantService.updateById(consultant);
+        return R.success("更新最大咨询数成功");
+    }
+
+    /**
+     * 更新咨询师的最大同时咨询人数
+     */
+    @PutMapping("/{consultantId}/max-concurrent-count")
+    public R<String> updateMaxConcurrentCount(@PathVariable("consultantId") String consultantId,@RequestBody Map body){
+        //权限验证
+        Integer id = TokenUtil.getTokenUser().getUserId();
+        if(!consultantId.equals(id.toString())&&adminService.getById(consultantId)==null){
+            return R.auth_error();
+        }
+        //更新最大同时咨询人数
+        Consultant consultant = consultantService.getById(Integer.parseInt(consultantId));
+        consultant.setMaxConcurrent((Integer) body.get("consultMaxConcurrentCount"));
+        consultantService.updateById(consultant);
+        return R.success("更新最大同时咨询人数成功");
+    }
+
+    /**
+     * 更新咨询师的排班
+     * @param date
+     * @param consultants
+     * @return
+     */
+    @PostMapping("/schedule/{date}")
+    public R<String> addConsultantToSchedule(@PathVariable("date") String date,@RequestBody HashMap<String, List<LinkedHashMap<String, Object>>> consultants){
+        //权限判断,只有督导员和管理员可以更新
+        User user = TokenUtil.getTokenUser();
+        if(user.getType().equals(1)){
+            return R.auth_error();
+        }
+        List<LinkedHashMap<String, Object>> consultantSchedules = consultants.get("consultants");
+        //添加咨询师
+        for(LinkedHashMap<String, Object> consultant:consultantSchedules){
+            //判断该咨询师当天是否已经有排班
+            LambdaQueryWrapper<Schedule> queryWrapper = new LambdaQueryWrapper<>();
+            queryWrapper.eq(Schedule::getStaffId,consultant.get("consultantId"));
+            queryWrapper.eq(Schedule::getWorkday,Integer.valueOf(date));
+            if(scheduleService.list(queryWrapper).size()>0){
+                return R.error("该咨询师"+consultant.get("consultantName")+"当天已经有排班");
+            }
+            Schedule schedule = new Schedule();
+            schedule.setStaffType(1);
+            schedule.setStaffId((Integer) consultant.get("consultantId"));
+            schedule.setWorkday(Integer.valueOf(date));
+            scheduleService.save(schedule);
+        }
+        return R.success("添加咨询师排班成功");
+    }
+
+    /**
+     * 删除咨询师的排班
+     * @param date
+     * @param consultants
+     * @return
+     */
+    @DeleteMapping("/schedule/{date}")
+    public R<String> deleteConsultantFromSchedule(@PathVariable("date") Integer date,@RequestBody HashMap<String,Integer> consultants){
+        //权限判断,只有督导员和管理员可以更新
+        User user = TokenUtil.getTokenUser();
+        if(user.getType().equals(1)){
+            return R.auth_error();
+        }
+        Integer consultantId = consultants.get("consultantId");
+        //删除咨询师
+        LambdaQueryWrapper<Schedule> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Schedule::getStaffId,consultantId);
+        queryWrapper.eq(Schedule::getWorkday,date);
+        scheduleService.remove(queryWrapper);
+        return R.success("删除咨询师排班成功");
+    }
+
+    /**
+     * 咨询师获取本人的排班信息
+     */
+    @GetMapping("/schedule")
+    public R<List<Integer>> getConsultantSchedule(){
+        Integer consultantId = TokenUtil.getTokenUser().getUserId();
+        LambdaQueryWrapper<Schedule> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Schedule::getStaffId,consultantId);
+        queryWrapper.eq(Schedule::getStaffType,1);
+        List<Schedule> schedules = scheduleService.list(queryWrapper);
+        List<Integer> workdays = new ArrayList<>();
+        for(Schedule schedule:schedules){
+            workdays.add(schedule.getWorkday());
+        }
+        return R.success(workdays);
+    }
+
+    /**
+     * 咨询师填写用户评估，修改Record表
+     */
+    @PostMapping("/evaluations/{recordId}")
+    public R<String> addEvaluation(@PathVariable("recordId") Integer recordId,@RequestBody HashMap<String,String> evaluation){
+        //获取对应的record
+        Record record = recordService.getById(recordId);
+        record.setEvaluation(String.valueOf(evaluation.get("evaluation")));
+        record.setConsultType(String.valueOf(evaluation.get("consultType")));
+        //更新record
+        recordService.updateById(record);
+        return R.success("咨询师填写用户评估成功");
+    }
+
+
+
 }
