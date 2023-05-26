@@ -1,5 +1,7 @@
-package com.example.heart_field.dto;
+package com.example.heart_field.dto.consultant.profile;
 
+import com.example.heart_field.dto.consultant.ExpertiseTag;
+import com.example.heart_field.dto.consultant.binding.SupervisorBinding;
 import lombok.Data;
 
 import java.util.List;

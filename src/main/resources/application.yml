@@ -1,5 +1,10 @@
 server:
-  port: 8080
+  port: 443
+  ssl:
+    enabled: true
+    key-store: src/main/resources/ssl/cert.p12
+    key-store-password: leon
+
 spring:
   redis:
     host: localhost
@@ -21,7 +26,9 @@ spring:
       username: root
       password: Aaaa@1234
 
-
+weixin:
+  appid: wxb9f9c2c27af57638
+  secret: 590c67ac1ae76ecebf7728d511b5fcb3
 
 mybatis-plus:
   configuration:
@@ -31,3 +38,10 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: ASSIGN_ID
+
+silence:
+  tencent:
+    cloud:
+      im:
+        sdkAppId: 1400810558
+        key: 0e0f240d8a421fe5593f5b505883598e6ef4d5bce487a1aa082af72e2f18ed81

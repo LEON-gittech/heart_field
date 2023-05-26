@@ -4,9 +4,16 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.example.heart_field.dto.consultant.ConsultantDto;
+import com.example.heart_field.dto.consultant.ExpertiseTag;
+import com.example.heart_field.service.ConsultantService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class Consultant {
@@ -43,4 +50,22 @@ public class Consultant {
     private String title;
     private String field;
     private String expertiseTag;
+
+    public ConsultantDto convert2ConsultantDto(ConsultantService consultantService) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return ConsultantDto.builder()
+                .expertiseTag(objectMapper.readValue(this.expertiseTag, new TypeReference<List<ExpertiseTag>>() {}))
+                .id(String.valueOf(this.id))
+                .briefIntroduction(this.briefIntro)
+                .consultantAvatar(this.avatar)
+                .consultantName(this.name)
+                .consultState(this.curStatus)
+                .helpCount(this.helpNum)
+                .consultTotalCount(this.helpTotalNum)
+                .supervisorBindings(consultantService.getSupervisorBindings(this))
+                .workArrangement(consultantService.getWorkArrangement(this))
+                .consultTotalTime(this.totalHelpTime)
+                .averageRank(this.rating.intValue())
+                .build();
+    }
 }

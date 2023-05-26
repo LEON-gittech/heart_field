@@ -1,16 +1,18 @@
-package com.example.heart_field.dto;
+package com.example.heart_field.dto.consultant;
 
+import com.example.heart_field.dto.consultant.binding.SupervisorBinding;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
-/**
- * /consultants接口返回的数据
- */
+@Builder
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class ConsultantDto{
-    //定义结构
-    //属性
     private List<ExpertiseTag> expertiseTag;
     private String consultantAvatar;
     private String id;
@@ -20,7 +22,7 @@ public class ConsultantDto{
     private Integer helpCount;
     private Integer consultTotalCount;
     private List<SupervisorBinding> supervisorBindings;
-    List<Integer> workArrangement;
-    Integer consultTotalTime;
-    Integer averageRank;
+    private List<Integer> workArrangement;
+    private Integer consultTotalTime;
+    private Integer averageRank;
 }

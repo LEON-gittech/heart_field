@@ -1,4 +1,4 @@
-package com.example.heart_field.dto;
+package com.example.heart_field.dto.consultant.record;
 
 import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.TableField;

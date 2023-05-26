@@ -70,7 +70,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                 }
                 // 获取 token 中的 user id
                 User user_r = userUtils.getUser(TokenUtil.getTokenUser());
-                if(adminService.getById(user_r.getId()) == null || user_r.getType()!=2){
+                if(adminService.getById(user_r.getUserId()) == null || user_r.getType()!=2){
                     throw new RuntimeException("非管理员，权限限制");
                 }
             }
@@ -86,7 +86,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                 }
                 // 获取 token 中的 user id
                 User user_r = userUtils.getUser(TokenUtil.getTokenUser());
-                if(visitorService.getById(user_r.getId()) != null){
+                if(visitorService.getById(user_r.getUserId()) != null){
                     throw new RuntimeException("非管理员端（咨询师、督导、管理员），权限限制");
                 }
             }

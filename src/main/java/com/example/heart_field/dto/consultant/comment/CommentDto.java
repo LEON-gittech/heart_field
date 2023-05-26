@@ -1,4 +1,4 @@
-package com.example.heart_field.dto;
+package com.example.heart_field.dto.consultant.comment;
 
 import lombok.Data;
 
