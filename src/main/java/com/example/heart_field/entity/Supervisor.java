@@ -29,4 +29,6 @@ public class Supervisor {
     private String title;
     private String qualification;
     private String qualificationId;
+
+    public Integer concurrentNum;
 }

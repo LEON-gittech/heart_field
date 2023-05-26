@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 /**
  * @author albac0020@gmail.com
@@ -27,12 +27,12 @@ public class Help {
     /**
      * 该记录创建时间，时间戳类型
      */
-    private Timestamp createTime;
+    private LocalDateTime createTime;
 
     /**
      * 该记录更新时间，时间戳类型
      */
-    private Timestamp updateTime;
+    private LocalDateTime updateTime;
 
     /**
      * 该记录对应的咨询师id
@@ -47,11 +47,11 @@ public class Help {
     /**
      * 求助开始时间
      */
-    private Timestamp startTime;
+    private LocalDateTime startTime;
 
     /**
      * 求助结束时间
      */
-    private Timestamp endTime;
+    private LocalDateTime endTime;
 
 }
