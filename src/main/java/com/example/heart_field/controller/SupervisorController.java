@@ -127,7 +127,7 @@ public class SupervisorController {
      * 分页
      * 权限：管理员
      */
-   // @AdminToken
+    @AdminToken
     @GetMapping
     public R<SupervisorPageSearchDto> getSupervisorList(HttpServletRequest httpServletRequest){
         //try{
@@ -192,7 +192,7 @@ public class SupervisorController {
                 List<ConsultantEasyDto> consultantList = new ArrayList<>();
                 LambdaQueryWrapper<Binding> bindingWrapper = new LambdaQueryWrapper<>();
                 //LambdaQueryWrapper<Consultant> consultantWrapper = new LambdaQueryWrapper<>();
-                bindingWrapper.eq(Binding::getSupervisorId,one.getId());
+                bindingWrapper.eq(Binding::getSupervisorId,one.getId()).eq(Binding::getIsDeleted,0);
                 List<Binding> binds = bindingService.list(bindingWrapper);
                 for(int j=0;j<binds.size();j++){
                     Binding oneBind = binds.get(j);
@@ -203,9 +203,11 @@ public class SupervisorController {
 
                     //consultantWrapper.eq(Consultant::getId,conId);
                     Consultant consultant1 = consultantService.getById(conId);
+
                     consultant.consultantName =consultant1.getName();
                     consultantList.add(consultant);
                 }
+                supervisorCom.supervisorBind=consultantList;
                 //统计帮助次数和时长
                 LambdaQueryWrapper<Help> helpLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 helpLambdaQueryWrapper.eq(Help::getSupervisorId,supervisorId);
