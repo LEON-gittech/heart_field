@@ -27,7 +27,8 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
     @Autowired
     private TokenService tokenService;
 
-
+    @Autowired
+    private UserUtils userUtils;
 
 
     @Override
@@ -73,7 +74,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
                 .username("admin")
                 .build();
         this.save(admin);
-        UserUtils userUtils = new UserUtils();
+
         userUtils.saveUser(admin);
         return ResultInfo.success(admin.getId());
     }
