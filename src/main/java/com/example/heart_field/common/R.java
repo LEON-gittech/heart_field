@@ -24,12 +24,18 @@ public class R<T> {
 
 //    private Map map = new HashMap(); //动态数据
 
+    public static <T> R<T> success(T object, String msg) {
+        R<T> r = new R<T>();
+        r.data = object;
+        r.code = 0;
+        r.msg = msg == null ? "操作成功" : msg;
+        return r;
+    }
+
     public static <T> R<T> success(T object) {
         R<T> r = new R<T>();
         r.data = object;
-        r.msg = "调用成功";
         r.code = 0;
-        r.msg = "操作成功";
         return r;
     }
 

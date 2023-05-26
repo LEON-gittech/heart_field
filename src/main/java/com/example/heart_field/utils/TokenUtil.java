@@ -27,7 +27,7 @@ public class TokenUtil {
         User user = new User();
         user.setPassword(password);
         user.setType(type);
-        user.setId(Integer.parseInt(userId));
+        user.setUserId(Integer.parseInt(userId));
         return user;
     }
 
@@ -47,6 +47,7 @@ public class TokenUtil {
      * @return
      */
     public static int getTokenUserId() {
-        return 0;
+        User user=getTokenUser();
+        return user.getUserId();
     }
 }

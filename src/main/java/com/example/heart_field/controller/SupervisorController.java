@@ -125,12 +125,13 @@ public class SupervisorController {
     /**
      * 获取督导列表(可搜索)
      * 分页
-     * 问题：queryWrapper可以自定义吗！
+     * 权限：管理员
      */
-    @AdminToken
+   // @AdminToken
     @GetMapping
-    public R<Page> getSupervisorList(HttpServletRequest httpServletRequest){
+    public R<SupervisorPageSearchDto> getSupervisorList(HttpServletRequest httpServletRequest){
         //try{
+
             httpServletRequest.getParameterMap().forEach((k,v)->{
                 log.info("key={},value={}",k,v);
             });
@@ -229,7 +230,15 @@ public class SupervisorController {
             //onePage.addOrder((OrderItem) list);
             onePage.setTotal(list.size());
             onePage.setRecords(list);
-            return R.success(onePage);
+            SupervisorPageSearchDto supervisorPageSearchDto = new SupervisorPageSearchDto();
+            supervisorPageSearchDto.setSupervisors(onePage.getRecords());
+            Integer pageTotals = 0;
+            if(list.size()%pageSize!=0)
+                pageTotals = list.size()/pageSize+1;
+            else
+                pageTotals = list.size()/pageSize;
+            supervisorPageSearchDto.setPageNum(pageTotals);
+            return R.success(supervisorPageSearchDto,"成功");
             //return R.error("系统错误");
       /*  }catch (Exception e){
             return R.error("系统错误");
@@ -397,17 +406,27 @@ public class SupervisorController {
     public R<String> updateSupervisorMaxCount(@PathVariable("supervisor-id") String supervisorId,@RequestBody SupervisorMaxCountDto supervisorMaxCount){
         //通过token判断是否满足权限
         Integer superId = Integer.valueOf(supervisorId);
-        Integer id = Integer.valueOf(TokenUtil.getTokenUserId());
-        Admin admin = adminService.getById(id);
-        if(id.equals(superId) || admin != null){
-            log.info("--------");
-            Integer num = supervisorMaxCount.getNum();
-            log.info("num:{}",num);
-            Supervisor supervisor = supervisorService.getById(superId);
-            supervisor.setMaxConcurrent(num);
-            supervisorService.updateById(supervisor);
-            return R.success("修改成功");
+        User user = TokenUtil.getTokenUser();
+        Integer id = user.getUserId();
+        Integer type = user.getType();
+        boolean authFlag = false;
+        if(type==2) {
+            Admin admin = adminService.getById(id);
+            if (admin == null)
+                authFlag = false;
+            else authFlag = true;
         }
+        else if (id.equals(superId) && type == 3) {
+            authFlag = true;}
+        if(authFlag){
+                log.info("--------");
+                Integer num = supervisorMaxCount.getNum();
+                log.info("num:{}", num);
+                Supervisor supervisor = supervisorService.getById(superId);
+                supervisor.setMaxConcurrent(num);
+                supervisorService.updateById(supervisor);
+                return R.success("修改成功");
+            }
         else
             return R.auth_error();
     }
@@ -417,10 +436,10 @@ public class SupervisorController {
      * 权限：督导本人
      */
     @PutMapping("/{supervisor-id}/max-consult-count")
-    public R<String> updateConsulantBindedMaxCount(@PathVariable("supervisor-id") String supervisorId,@RequestBody SupervisorConsultMaxCountDto supervisorConsultMaxCount){
+    public R<String> updateConsulantBindedMaxCount(@PathVariable("supervisor-id") String supervisorId, @RequestBody SupervisorConsultMaxCountDto supervisorConsultMaxCount){
         Supervisor supervisor = supervisorService.getById(supervisorId);
-        Integer superId = Integer.valueOf(TokenUtil.getTokenUserId());
-        if(!superId.equals(Integer.valueOf(supervisorId)))
+        User user = TokenUtil.getTokenUser();
+        if(user.getType()!=3 && user.getUserId()!= Integer.valueOf(supervisorId))
             return R.auth_error();
         supervisor.setMaxNum(supervisorConsultMaxCount.getNum());
         supervisorService.updateById(supervisor);
@@ -428,7 +447,7 @@ public class SupervisorController {
     }
 
     /**
-     * 移去督导某天的排版
+     * 移去督导某天的排班
      * 权限：管理员
      */
     @AdminToken
@@ -479,9 +498,17 @@ public class SupervisorController {
     @GetMapping("/{supervisor-id}/schedules")
     public R<List<Integer>> getSupervisorSchedule(@PathVariable("supervisor-id") String supervisorId){
         //验证权限
-        Integer id = Integer.valueOf(TokenUtil.getTokenUserId());
+        //Integer id = TokenUtil.getTokenUserId();
+        User user = TokenUtil.getTokenUser();
+        Integer id = user.getUserId();
+        Integer type = user.getType();
+        log.info("1===id:{}",user.getUserId());
+        log.info("id:{}",id);
         Integer superId = Integer.valueOf(supervisorId);
-        if(!id.equals(superId)){
+        if(type ==3 && !id.equals(superId)) {
+            return R.auth_error();
+        }
+        else if(type==2){
             Admin admin = adminService.getById(id);
             if(admin==null)
                 return R.auth_error();
@@ -495,7 +522,7 @@ public class SupervisorController {
             Schedule one = schedules.get(i);
             workdayList.add(one.getWorkday());
         }
-        return R.success(workdayList);
+        return R.success(workdayList,"获取排班信息成功");
 
     }
 }

@@ -106,7 +106,7 @@ public class UserUtils {
     //根据传入的User信息匹配数据库中的User
     public User getUser(User user){
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUserId, user.getId());
+        queryWrapper.eq(User::getUserId, user.getUserId());
         queryWrapper.eq(User::getType,user.getType());
         User user_r = userService.getOne(queryWrapper);
         return user_r;
