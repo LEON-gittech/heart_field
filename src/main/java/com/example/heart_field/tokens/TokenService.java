@@ -24,7 +24,7 @@ public class TokenService {
                 .claim("type", user.getType().toString())
                 .claim("password",user.getPassword())
                 // 添加默认数据
-                .setSubject(user.getId().toString())
+                .setSubject(user.getUserId().toString())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 ))//一小时有效时间
                 .signWith(SignatureAlgorithm.HS256,secret)

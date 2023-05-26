@@ -4,10 +4,9 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.example.heart_field.dto.RecordListDTO;
+import com.example.heart_field.dto.consultant.record.RecordListDTO;
 import lombok.Data;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 /**
@@ -32,13 +31,13 @@ public class Record {
      * 该记录创建时间，时间戳类型
      */
     @TableField(fill = FieldFill.INSERT)
-    private Timestamp createTime;
+    private LocalDateTime createTime;
 
     /**
      * 该记录更新时间，时间戳类型
      */
     @TableField(fill = FieldFill.INSERT_UPDATE)
-    private Timestamp updateTime;
+    private LocalDateTime updateTime;
 
     /**
      * 该记录对应的咨询师id
