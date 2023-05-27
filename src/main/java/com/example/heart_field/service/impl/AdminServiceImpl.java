@@ -6,77 +6,62 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
+import com.example.heart_field.constant.TypeConstant;
 import com.example.heart_field.dto.UserLoginDTO;
-import com.example.heart_field.entity.Admin;
-import com.example.heart_field.entity.User;
+import com.example.heart_field.entity.*;
 import com.example.heart_field.mapper.AdminMapper;
+import com.example.heart_field.mapper.ConsultantMapper;
+import com.example.heart_field.mapper.SupervisorMapper;
+import com.example.heart_field.mapper.VisitorMapper;
 import com.example.heart_field.param.AdminRegisterParam;
 import com.example.heart_field.param.UserLoginParam;
 import com.example.heart_field.service.AdminService;
 import com.example.heart_field.tokens.TokenService;
 import com.example.heart_field.utils.Md5Util;
+import com.example.heart_field.utils.RandomUtil;
+import com.example.heart_field.utils.TokenUtil;
 import com.example.heart_field.utils.UserUtils;
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
+
+import static com.alibaba.druid.util.FnvHash.Constants.MAX_SIZE;
 
 @Service
 public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements AdminService {
+
     @Autowired
     private TokenService tokenService;
 
     @Autowired
     private UserUtils userUtils;
 
-    @Override
-    public ResultInfo<UserLoginDTO> login(UserLoginParam loginParam) {
-        LambdaQueryWrapper<Admin> queryWrapper= Wrappers.lambdaQuery();
-        queryWrapper.eq(Admin::getPhone,loginParam.getPhone());
-        Integer count=this.baseMapper.selectCount(queryWrapper);
-        if(count==0){
-            return ResultInfo.error("用户不存在");
-        }
-        if(count>1){
-            log.error("DB中存在多条相同手机号的账号，phone = " + loginParam.getPhone());
-        }
-        String password = Md5Util.encryptPassword(loginParam.getPhone(), loginParam.getPassword());
-        queryWrapper.eq(Admin::getPassword, Md5Util.encryptPassword(loginParam.getPhone(), loginParam.getPassword()));
-        List<Admin> pos=this.baseMapper.selectList(queryWrapper);
-        if(CollectionUtils.isEmpty(pos)){
-            return ResultInfo.error("密码错误，请重试！");
-        }
-        UserLoginDTO userLoginDTO=new UserLoginDTO();
-        userLoginDTO.setId(pos.get(0).getId());
-        userLoginDTO.setType(Byte.valueOf((byte) 2));
 
-        User userForBase = new User();
-        userForBase.setUserId(pos.get(0).getId());
-        userForBase.setPassword(Md5Util.encryptPassword(loginParam.getPhone(), loginParam.getPassword()));
-        userForBase.setType(2);
-        String token = tokenService.getToken(userForBase);
-        userLoginDTO.setToken(token);
-        return ResultInfo.success(userLoginDTO);
-    }
 
-    @Override
-    public ResultInfo<Integer> register(AdminRegisterParam registerParam) {
-        int count = new LambdaQueryChainWrapper<>(this.baseMapper)
-                .eq(Admin::getPhone,registerParam.getPhone())
-                .count();
-        if(count!=0){
-            return ResultInfo.error("该手机号已被注册");
-        }
-        Admin admin = Admin.builder()
-                .phone(registerParam.getPhone())
-                .password(Md5Util.encryptPassword(registerParam.getPhone(), registerParam.getPassword()))
-                .username("admin")
-                .build();
-        this.save(admin);
 
-        userUtils.saveUser(admin);
-        return ResultInfo.success(admin.getId());
-    }
+//    @Override
+//    public ResultInfo<Integer> register(AdminRegisterParam registerParam) {
+//        int count = new LambdaQueryChainWrapper<>(this.baseMapper)
+//                .eq(Admin::getPhone,registerParam.getPhone())
+//                .count();
+//        if(count!=0){
+//            return ResultInfo.error("该手机号已被注册");
+//        }
+//        Admin admin = Admin.builder()
+//                .phone(registerParam.getPhone())
+//                .password(Md5Util.encryptPassword(registerParam.getPhone(), registerParam.getPassword()))
+//                .username("admin")
+//                .build();
+//        this.save(admin);
+//
+//        userUtils.saveUser(admin);
+//        return ResultInfo.success(admin.getId());
+//    }
 
     @Override
     public ResultInfo<Admin> disable(Integer id) {
@@ -108,4 +93,7 @@ public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements
         this.update(admin,queryWrapper);
         return ResultInfo.success(admin);
     }
+
+
+
 }

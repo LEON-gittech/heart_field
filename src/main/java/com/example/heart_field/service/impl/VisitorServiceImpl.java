@@ -3,16 +3,23 @@ package com.example.heart_field.service.impl;
 import cn.hutool.core.codec.Base64;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.R;
+import com.example.heart_field.constant.TypeConstant;
 import com.example.heart_field.dto.WxLoginDTO;
 import com.example.heart_field.dto.WxUserInfo;
+import com.example.heart_field.entity.Admin;
+import com.example.heart_field.entity.Consultant;
 import com.example.heart_field.entity.User;
 import com.example.heart_field.entity.Visitor;
+import com.example.heart_field.mapper.UserMapper;
 import com.example.heart_field.mapper.VisitorMapper;
 import com.example.heart_field.param.WxLoginParam;
 import com.example.heart_field.service.VisitorService;
 import com.example.heart_field.tokens.TokenService;
+import com.example.heart_field.utils.TencentCloudImUtil;
 import com.example.heart_field.utils.TokenUtil;
 import com.example.heart_field.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -47,6 +54,12 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
     @Autowired
     TokenService tokenService;
 
+    @Autowired
+    UserMapper userMapper;
+
+    @Autowired
+    private TencentCloudImUtil tencentCloudImUtil;
+
     private String REDIS_KEY = "wx_session_id";
 
     public String getSessionId(String code) {
@@ -58,6 +71,7 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
         redisTemplate.opsForValue().set(REDIS_KEY + s, res);
         return s;
     }
+
     public String wxDecrypt(String encryptedData, String sessionId, String vi) throws Exception {
         // 开始解密
         String json =  redisTemplate.opsForValue().get(REDIS_KEY + sessionId);
@@ -72,6 +86,17 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
         SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
         cipher.init(Cipher.DECRYPT_MODE, keySpec, ivSpec);
         return new String(cipher.doFinal(encData), "UTF-8");
+    }
+
+    public String getOpenId(String sessionId) throws Exception {
+        /*
+        信息：{"session_key":"MgP6m7jVGCL97ImUJ1ZiPw==",
+        "openid":"obG6z5Dos51CvHxZXHiqi4YZx4l8"}
+        */
+        String json = redisTemplate.opsForValue().get(REDIS_KEY + sessionId);
+        JSONObject object= JSONObject.parseObject(json);
+        return (String) object.get("openid");
+
     }
 
     //生成随机用户名，数字和字母组成,
@@ -100,49 +125,74 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
     public R authLogin(WxLoginParam loginParam) {
         try{
             String sessionId = getSessionId(loginParam.getCode());
+            String openId = getOpenId(sessionId);
+            //获取用户信息
             String wxRes = wxDecrypt(loginParam.getEncryptData(), sessionId, loginParam.getIv());
             log.info("登录信息："+wxRes);
             WxUserInfo wxUserInfo = JSON.parseObject(wxRes,WxUserInfo.class);
+            //根据openId查用户是否存在
+            Visitor visitor = baseMapper.selectById(openId);
+            if(visitor != null){//用户已经存在
+                //更新用户信息
+                visitor.setOpenId(openId);
+                visitor.setUsername(wxUserInfo.getNickName());
+                visitor.setAvatar(wxUserInfo.getAvatarUrl());
+                visitor.setGender((byte) (wxUserInfo.getGender()==0?1:0));
 
-            //根据Id查询用户是否存在
-            Visitor visitor = baseMapper.selectById(wxUserInfo.getOpenId());
-            if (visitor == null){
+                //获取token
+                LambdaQueryWrapper<User> queryWrapper= Wrappers.lambdaQuery();
+                queryWrapper.eq(User::getType, TypeConstant.VISITOR).eq(User::getId,visitor.getId());
+                User user=userMapper.selectOne(queryWrapper);
+                String token = tokenService.getToken(user);
+
+                //获取im相关信息
+                String identifier = user.getType().toString()+"_"+user.getUserId().toString();
+
+                WxLoginDTO res=WxLoginDTO.builder()
+                        .accessToken(token)
+                        .fstLogin(false)
+                        .chatUserId(identifier)
+                        .chatUserSig(tencentCloudImUtil.getTxCloudUserSig())
+                        .userId(visitor.getId())
+                        .userInfo(visitor)
+                        .build();
+                return R.success(res);
+            }else{
                 //用户不存在，创建用户
                 visitor = new Visitor();
-                visitor.setOpenId(wxUserInfo.getOpenId());
-                visitor.setUsername(wxUserInfo.getUsername());
-                visitor.setAvatar(wxUserInfo.getAvatar());
-                visitor.setGender(wxUserInfo.getGender());
+                visitor.setOpenId(openId);
+                visitor.setUsername(wxUserInfo.getNickName());
+                visitor.setAvatar(wxUserInfo.getAvatarUrl());
+                visitor.setGender((byte) (wxUserInfo.getGender()==0?1:0));
                 baseMapper.insert(visitor);
+
+                //同步user，获取token
                 User user=userUtils.saveUser(visitor);
                 String token = tokenService.getToken(user);
-                WxLoginDTO.builder()
+
+                //创建im账号
+                JSONObject jsonObject = new JSONObject();
+                jsonObject.put("Identifier",user.getType().toString()+"_"+user.getUserId().toString());
+                jsonObject.put("Nick",visitor.getName());
+                jsonObject.put("FaceUrl",visitor.getAvatar());
+                String identifier = user.getType().toString()+"_"+user.getUserId().toString();
+                boolean isSuccess = tencentCloudImUtil.accountImport(identifier);
+                if(!isSuccess){
+                    this.baseMapper.delete(new LambdaQueryWrapper<Visitor>().eq(Visitor::getId,visitor.getId()));
+                    userUtils.deleteUser(user);
+                    return R.error("腾讯IM导入账号失败");
+                }
+                WxLoginDTO res=WxLoginDTO.builder()
                         .accessToken(token)
                         .fstLogin(false)
-                        .chatUserId(null)
-                        .chatUserSig(null)
+                        .chatUserId(identifier)
+                        .chatUserSig(tencentCloudImUtil.getTxCloudUserSig())
                         .userId(visitor.getId())
-                        .userInfo(wxUserInfo)
+                        .userInfo(visitor)
                         .build();
-                return R.success(wxUserInfo);
-            }else{
-                //用户存在，更新用户信息
-                visitor.setUsername(wxUserInfo.getUsername());
-                visitor.setAvatar(wxUserInfo.getAvatar());
-                visitor.setGender(wxUserInfo.getGender());
-                baseMapper.updateById(visitor);
-                User user=userUtils.saveUser(visitor);
-                String token = tokenService.getToken(user);
-                WxLoginDTO.builder()
-                        .accessToken(token)
-                        .fstLogin(false)
-                        .chatUserId(null)
-                        .chatUserSig(null)
-                        .userId(visitor.getId())
-                        .userInfo(wxUserInfo)
-                        .build();
-                return R.success(wxUserInfo);
+                return R.success(res);
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }

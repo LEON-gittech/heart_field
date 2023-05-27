@@ -23,23 +23,23 @@ public class AdminController {
     @Autowired
     private AdminService adminService;
 
-    /**
-     * 新增超管
-     * 返回超管id
-     * 仅用作后端测试
-     */
-    @PostMapping("/register")
-    public R<Integer> register(@RequestBody AdminRegisterParam registerParam){
-        BaseResult checkResult = registerParam.checkRegisterParam();
-        if(!checkResult.isRight()){
-            return R.argument_error();
-        }
-        ResultInfo<Integer> registerInfo = adminService.register(registerParam);
-        if(registerInfo.isRight()){
-            return R.success(registerInfo.getData());
-        }
-        return R.error(registerInfo.getMessage());
-    }
+//    /**
+//     * 新增超管
+//     * 返回超管id
+//     * 仅用作后端测试
+//     */
+//    @PostMapping("/register")
+//    public R<Integer> register(@RequestBody AdminRegisterParam registerParam){
+//        BaseResult checkResult = registerParam.checkRegisterParam();
+//        if(!checkResult.isRight()){
+//            return R.argument_error();
+//        }
+//        ResultInfo<Integer> registerInfo = adminService.register(registerParam);
+//        if(registerInfo.isRight()){
+//            return R.success(registerInfo.getData());
+//        }
+//        return R.error(registerInfo.getMessage());
+//    }
 
     /**
      * 管理员禁用，后台测试

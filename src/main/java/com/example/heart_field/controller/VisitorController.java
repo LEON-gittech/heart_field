@@ -5,9 +5,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.RegexPattern;
-import com.example.heart_field.dto.RecordListDTO;
 import com.example.heart_field.dto.WxLoginDTO;
 import com.example.heart_field.dto.WxUserInfo;
+import com.example.heart_field.dto.consultant.record.RecordListDTO;
 import com.example.heart_field.entity.Admin;
 import com.example.heart_field.entity.Record;
 import com.example.heart_field.entity.Visitor;
@@ -47,9 +47,6 @@ public class VisitorController {
         R result = visitorService.authLogin(loginParam);
         log.info("{}",result);
         return result;
-
-
-
     }
 
 
@@ -209,7 +206,7 @@ public class VisitorController {
     @GetMapping("/{visitor-id}/records")
     //@UserLoginToken
     public R<List<RecordListDTO>> getRecords(@PathVariable(value = "visitor-id") String visitorId,
-                                       @RequestParam(value = "recordState", required = false) String state){
+                                             @RequestParam(value = "recordState", required = false) String state){
         //if(!UserUtils.checkSelfOrBack(visitorId)) return R.auth_error();
         log.info("visitorId:{}", visitorId);
         ResultInfo<List<RecordListDTO>> resultInfo = recordService.getRecords(visitorId, state);

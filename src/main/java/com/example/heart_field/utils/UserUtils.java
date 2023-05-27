@@ -16,25 +16,21 @@ import java.util.regex.Pattern;
 @Component
 @Slf4j
 public class UserUtils {
+
     @Lazy
     @Autowired
-    @Lazy
     private ConsultantService consultantService;
-    @Lazy
     @Autowired
     @Lazy
     private SupervisorService supervisorService;
-    @Lazy
     @Autowired
     @Lazy
     private UserService userService;
     @Lazy
     @Autowired
-    @Lazy
     private AdminService adminService;
     @Lazy
     @Autowired
-    @Lazy
     private VisitorService visitorService;
     @Resource
     private BCryptPasswordEncoder bCryptPasswordEncoder;  //注入bcryct加密

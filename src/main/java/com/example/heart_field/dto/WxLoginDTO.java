@@ -1,5 +1,6 @@
 package com.example.heart_field.dto;
 
+import com.example.heart_field.entity.Visitor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -20,7 +21,7 @@ public class WxLoginDTO {
 
     private String chatUserSig;
 
-    private WxUserInfo userInfo;
+    private Visitor userInfo;
 
 
 }
