@@ -6,6 +6,7 @@ import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.dto.ScheduleDTO;
 import com.example.heart_field.entity.Schedule;
 import com.example.heart_field.service.ScheduleService;
+import com.example.heart_field.tokens.AdminOrSupervisorToken;
 import com.example.heart_field.tokens.AdminToken;
 import com.example.heart_field.tokens.UserLoginToken;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.List;
 
 /**
  * @author albac0020@gmail.com
@@ -26,9 +29,9 @@ public class ScheduleController {
     private ScheduleService scheduleService;
 
     @GetMapping("/all-schedules")
-    //@AdminToken
-    public R<ScheduleDTO> getAllSchedules(){
-        ResultInfo<ScheduleDTO> scheduleResult = scheduleService.getAllSchedules();
+    //@AdminOrSupervisorToken
+    public R<List<ScheduleDTO>> getAllSchedules(){
+        ResultInfo<List<ScheduleDTO>> scheduleResult = scheduleService.getAllSchedules();
         return scheduleResult.isRight()
                 ? R.success(scheduleResult.getData())
                 : R.error(scheduleResult.getMessage());
