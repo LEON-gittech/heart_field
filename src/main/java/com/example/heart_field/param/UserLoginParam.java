@@ -32,7 +32,7 @@ public class UserLoginParam {
         }
         Pattern passwordPattern = Pattern.compile(RegexPattern.PASSWORD_PATTERN);
         if(!passwordPattern.matcher(password).matches()){
-            return BaseResult.error("请输入正确的密码");
+            return BaseResult.error("密码格式不正确");
         }
         return BaseResult.SUCCESS;
     }

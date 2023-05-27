@@ -8,5 +8,5 @@ import com.example.heart_field.param.UserLoginParam;
 import org.springframework.stereotype.Service;
 
 public interface SupervisorService extends IService<Supervisor> {
-    ResultInfo<UserLoginDTO> login(UserLoginParam loginParam);
+   // ResultInfo<UserLoginDTO> login(UserLoginParam loginParam);
 }

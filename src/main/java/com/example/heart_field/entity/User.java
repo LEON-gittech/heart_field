@@ -11,4 +11,6 @@ public class User {
     private Integer userId; //id为id
     private String password;
     private Integer type; //type为0是Visitor，1是Consultant，2是Admin，3是Supervisor
+    private String phone;
+
 }
