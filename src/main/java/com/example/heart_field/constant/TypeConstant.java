@@ -11,4 +11,7 @@ public class TypeConstant {
     public static final Integer CONSULTANT = 1;
     public static final Integer ADMIN = 2;
     public static final Integer SUPERVISOR = 3;
+
+    public static final Integer COUNSEL_CHAT = 0;
+    public static final Integer HELP_CHAT = 1;
 }
