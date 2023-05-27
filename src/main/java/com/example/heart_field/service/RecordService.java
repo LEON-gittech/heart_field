@@ -13,4 +13,6 @@ import java.util.List;
  */
 public interface RecordService extends IService<Record> {
     ResultInfo<List<RecordListDTO>> getRecords(String visitorId, String state);
+
+
 }

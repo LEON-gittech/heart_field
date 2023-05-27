@@ -38,7 +38,10 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
     @Autowired
     private SupervisorMapper supervisorMapper;
 
-    //todo:clm - 对于信息不完善、被封禁的用户是否展示？
+    /**todo:clm - 对于信息不完善、被封禁的用户是否展示？
+     *          - 默认表中已去重
+     */
+
     //todo:clm - 修改时避免重复添加
     @Override
     public ResultInfo<List<ScheduleDTO>> getAllSchedules() {
