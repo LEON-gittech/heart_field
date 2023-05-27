@@ -6,6 +6,11 @@ server:
     key-store-password: leon
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 1000MB
+
   redis:
     host: localhost
     port: 6379
@@ -45,3 +50,6 @@ silence:
       im:
         sdkAppId: 1400810558
         key: 0e0f240d8a421fe5593f5b505883598e6ef4d5bce487a1aa082af72e2f18ed81
+
+
+

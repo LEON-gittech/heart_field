@@ -132,9 +132,6 @@ public class VisitorController {
         log.info("visitor:{}", visitor);
         visitor.setId(visitorId);
         String newPhone = visitor.getPhone();
-        if(newPhone!=null){
-            return R.argument_error("不能修改电话号码");
-        }
         String emergencyPhone = visitor.getEmergencyPhone();
         //手机号码格式校验
         Pattern phonePattern = Pattern.compile(RegexPattern.MOBILE_PHONE_NUMBER_PATTERN);

@@ -373,10 +373,10 @@ public class ConsultantController {
     @PostMapping("/schedule/{date}")
     public R<String> addConsultantToSchedule(@PathVariable("date") String date,@RequestBody HashMap<String, List<LinkedHashMap<String, Object>>> consultants){
         //权限判断,只有督导员和管理员可以更新
-        User user = TokenUtil.getTokenUser();
-        if(user.getType().equals(1)){
-            return R.auth_error();
-        }
+//        User user = TokenUtil.getTokenUser();
+//        if(user.getType().equals(1)){
+//            return R.auth_error();
+//        }
         List<LinkedHashMap<String, Object>> consultantSchedules = consultants.get("consultants");
         //添加咨询师
         for(LinkedHashMap<String, Object> consultant:consultantSchedules){
