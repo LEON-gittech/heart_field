@@ -1,5 +1,7 @@
 package com.example.heart_field.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.AbstractLambdaWrapper;
+import com.baomidou.mybatisplus.core.conditions.AbstractWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -37,6 +39,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
     private SupervisorMapper supervisorMapper;
 
     //todo:clm - 对于信息不完善、被封禁的用户是否展示？
+    //todo:clm - 修改时避免重复添加
     @Override
     public ResultInfo<List<ScheduleDTO>> getAllSchedules() {
         List<ScheduleDTO> schedules = new ArrayList<>();
@@ -44,7 +47,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             //咨询师
             LambdaQueryWrapper<Schedule> queryWrapper_consultant= Wrappers.lambdaQuery();
             queryWrapper_consultant.eq(Schedule::getStaffType, TypeConstant.CONSULTANT).eq(Schedule::getWorkday,today);
-            Integer count_consultant=this.baseMapper.selectCount(queryWrapper_consultant);
+            //Integer count_consultant=this.baseMapper.selectCount(queryWrapper_consultant);
             //根据schedule表中的consultant id ，去consultant表中查询consultant的信息
             List<ConsultantDTO> consultantDTOList = this.baseMapper.selectList(queryWrapper_consultant).stream().map(schedule -> {
                 Integer consultantId = schedule.getStaffId();
@@ -64,7 +67,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             //督导
             LambdaQueryWrapper<Schedule> queryWrapper_supervisor= Wrappers.lambdaQuery();
             queryWrapper_supervisor.eq(Schedule::getStaffType, TypeConstant.SUPERVISOR).eq(Schedule::getWorkday,today);
-            Integer count_supervisor=this.baseMapper.selectCount(queryWrapper_supervisor);
+            //Integer count_supervisor=this.baseMapper.selectCount(queryWrapper_supervisor);
             //根据schedule表中的supervisor id ，去supervisor表中查询supervisor的信息
             List<SupervisorDTO> supervisorDTOList = this.baseMapper.selectList(queryWrapper_supervisor).stream().map(schedule -> {
                 Integer supervisorId = schedule.getStaffId();
@@ -83,8 +86,8 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             }).toList();
 
             ScheduleDTO scheduleDTO = ScheduleDTO.builder()
-                    .consultantCount(count_consultant)
-                    .supervisorCount(count_supervisor)
+                    .consultantCount(consultantDTOList.size())
+                    .supervisorCount(supervisorDTOList.size())
                     .consultantList(consultantDTOList)
                     .supervisorList(supervisorDTOList)
                     .date(today)

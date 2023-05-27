@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
+import com.example.heart_field.constant.TypeConstant;
 import com.example.heart_field.dto.consultant.comment.CommentDto;
 import com.example.heart_field.dto.consultant.comment.CommentsDto;
 import com.example.heart_field.dto.consultant.binding.SupervisorBinding;
@@ -53,7 +54,7 @@ public class ConsultantServiceImpl extends ServiceImpl<ConsultantMapper, Consult
     public List<Integer> getWorkArrangement(Consultant consultant) {
         LambdaQueryWrapper<Schedule> queryWrapper1 = new LambdaQueryWrapper<>();
         queryWrapper1.eq(Schedule::getStaffId,consultant.getId());
-        queryWrapper1.eq(Schedule::getStaffType,1);
+        queryWrapper1.eq(Schedule::getStaffType, TypeConstant.CONSULTANT);
         List<Schedule> schedules = scheduleService.list(queryWrapper1);
         List<Integer> workArrangement = new ArrayList<>();
         for(Schedule schedule : schedules){
