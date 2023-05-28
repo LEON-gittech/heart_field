@@ -33,8 +33,10 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
     @Autowired
     private SupervisorMapper SupervisorMapper;
 
+
+
     @Override
-    public ResultInfo<List<RecordListDTO>> getRecords(String visitorId, String state) {
+    public List<RecordListDTO> getRecords(String visitorId, String state,Integer pageSize, Integer pageNum) {
         LambdaQueryWrapper<Record> queryWrapper= Wrappers.lambdaQuery();
         queryWrapper.eq(Record::getVisitorId,visitorId);
         //Integer count=this.baseMapper.selectCount(queryWrapper);
@@ -44,11 +46,11 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
         if(state!=null&&state.equals("ing")){
             queryWrapper.eq(Record::getIsCompleted,0);
         }
-
+        queryWrapper.orderByDesc(Record::getCreateTime);
         List<Record> records=this.baseMapper.selectList(queryWrapper);
         List<RecordListDTO> recordListDTOS=new ArrayList<>();
         if(records==null){
-            return ResultInfo.success(recordListDTOS);
+            return recordListDTOS;
         }
         for(Record r:records){
             RecordListDTO rlDTO=r.convert2ListDTO();
@@ -79,6 +81,6 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
             }
             recordListDTOS.add(rlDTO);
         }
-        return ResultInfo.success(recordListDTOS);
+        return recordListDTOS;
     }
 }

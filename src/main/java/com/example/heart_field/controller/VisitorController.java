@@ -1,5 +1,6 @@
 package com.example.heart_field.controller;
 
+import cn.hutool.core.util.PageUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
@@ -8,6 +9,7 @@ import com.example.heart_field.constant.RegexPattern;
 import com.example.heart_field.dto.WxLoginDTO;
 import com.example.heart_field.dto.WxUserInfo;
 import com.example.heart_field.dto.consultant.record.RecordListDTO;
+import com.example.heart_field.dto.consultant.record.RecordPage;
 import com.example.heart_field.entity.Admin;
 import com.example.heart_field.entity.Record;
 import com.example.heart_field.entity.Visitor;
@@ -192,6 +194,7 @@ public class VisitorController {
     }
 
     /**
+     * todo:分页待测试
      * 查看访客的咨询记录
      * 用于：
      *  -访客本人
@@ -202,15 +205,23 @@ public class VisitorController {
      */
     @GetMapping("/{visitor-id}/records")
     //@UserLoginToken
-    public R<List<RecordListDTO>> getRecords(@PathVariable(value = "visitor-id") String visitorId,
-                                             @RequestParam(value = "recordState", required = false) String state){
+    public R getRecords(@PathVariable(value = "visitor-id") String visitorId,
+                                             @RequestParam(value = "recordState", required = false) String state,
+                                             @RequestParam(value = "pageNum", required = false, defaultValue = "1") Integer pageNum,
+                                             @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize){
         //if(!UserUtils.checkSelfOrBack(visitorId)) return R.auth_error();
         log.info("visitorId:{}", visitorId);
-        ResultInfo<List<RecordListDTO>> resultInfo = recordService.getRecords(visitorId, state);
-        if(resultInfo.isRight()){
-            return R.success(resultInfo.getData());
+        if(state!=null&&!state.equals("0")&&!state.equals("1")&&!state.equals("2")){
+            return R.argument_error("recordState参数错误");
         }
-        return R.error(resultInfo.getMessage());
+        if(visitorService.getById(visitorId)==null||visitorService.getById(visitorId).getIsDisabled()==1){
+            return R.resource_error();
+        }
+        List<RecordListDTO> resultInfo = recordService.getRecords(visitorId,state,pageSize,pageNum);
+        int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
+        Page<RecordListDTO> resPage = new Page<RecordListDTO>(pageNum, pageSize, pages).setRecords(resultInfo);
+        RecordPage res = RecordPage.builder().records(resPage).pages(pages).build();
+        return R.success(res);
     }
 
     /**
