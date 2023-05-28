@@ -14,8 +14,11 @@ import java.util.List;
 @Data
 @Builder
 @AllArgsConstructor
-public class RecordPage {
+public class RecordPage<T> {
     private Integer pages;
 
-    private Page<RecordListDTO> records;
+    private Page<T> records;
+
+    public RecordPage(Page<T> resPage, int pages) {
+    }
 }

@@ -220,7 +220,7 @@ public class VisitorController {
         List<RecordListDTO> resultInfo = recordService.getRecords(visitorId,state,pageSize,pageNum);
         int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
         Page<RecordListDTO> resPage = new Page<RecordListDTO>(pageNum, pageSize, pages).setRecords(resultInfo);
-        RecordPage res = RecordPage.builder().records(resPage).pages(pages).build();
+        RecordPage<RecordListDTO> res =new RecordPage(resPage,pages);
         return R.success(res);
     }
 
