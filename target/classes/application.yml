@@ -34,6 +34,11 @@ spring:
 weixin:
   appid: wxb9f9c2c27af57638
   secret: 590c67ac1ae76ecebf7728d511b5fcb3
+##pageHelper分页插件配置
+pagehelper:
+  ##方言配置为mysql数据库
+  helper-dialect: mysql
+
 
 mybatis-plus:
   configuration:

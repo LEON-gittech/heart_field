@@ -75,9 +75,9 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
         }
 
         //检查有没有需要[管理端登录]权限的注解
-        if(method.isAnnotationPresent(ExceptVisitorToken.class)){
-            ExceptVisitorToken exceptVisitorToken = method.getAnnotation(ExceptVisitorToken.class);
-            if(exceptVisitorToken.required()) {
+        if(method.isAnnotationPresent(StaffToken.class)){
+            StaffToken staffToken = method.getAnnotation(StaffToken.class);
+            if(staffToken.required()) {
                 // 执行认证
                 if (token == null) {
                     throw new RuntimeException("无token，请重新登录");
