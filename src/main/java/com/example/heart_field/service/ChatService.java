@@ -3,6 +3,8 @@ package com.example.heart_field.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.heart_field.entity.Chat;
 
+import java.util.List;
+
 /**
  * 聊天记录表(Chat)表服务接口
  *
@@ -11,5 +13,16 @@ import com.example.heart_field.entity.Chat;
  */
 public interface ChatService extends IService<Chat> {
 
+    Integer getTotalCounselToday();
+
+    Integer getTotalDurationToday();
+
+    Integer getActiveCounselCount();
+
+    Integer getActiveAssistanceCount();
+
+    List<Integer> getWeekCounsels();
+
+    List<Integer> getTodayCounsels();
 }
 

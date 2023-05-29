@@ -17,10 +17,8 @@ import com.example.heart_field.utils.TokenUtil;
 import com.example.heart_field.utils.UserUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
@@ -46,25 +44,17 @@ public class UserApi {
     @Resource
     private BCryptPasswordEncoder bCryptPasswordEncoder;  //注入bcryct加密
 
+    //todo:暂时关闭验证
     @PostMapping("/backend/login")
     public R<UserLoginDTO> userLogin(@RequestBody UserLoginParam loginParam){
         BaseResult checkResult = loginParam.checkLoginParam();
-        if(!checkResult.isRight()){
-            return R.login_error();
-        }
-        ResultInfo<UserLoginDTO> adminLoginResult = adminService.login(loginParam);
-        if(adminLoginResult.isRight()){
-            return R.success(adminLoginResult.getData());
-        }
-        ResultInfo<UserLoginDTO> supervisorLoginResult = supervisorService.login(loginParam);
-        if(supervisorLoginResult.isRight()){
-            return R.success(supervisorLoginResult.getData());
-        }
-        ResultInfo<UserLoginDTO> consultantLoginResult = consultantService.login(loginParam);
-        if(consultantLoginResult.isRight()){
-            return R.success(consultantLoginResult.getData());
-        }
-        return R.login_error("用户不存在或密码错误");
+//        if(!checkResult.isRight()){
+//            return R.login_error("手机号或密码格式错误");
+//        }
+        ResultInfo<UserLoginDTO> loginInfo = userService.login(loginParam);
+        return loginInfo.isRight()
+                ? R.success(loginInfo.getData())
+                : R.login_error("用户不存在或密码错误");
     }
 
     // 登录
@@ -103,4 +93,22 @@ public class UserApi {
 
         return "你已通过验证";
     }
+
+    @UserLoginToken
+    @PostMapping("/avatar")
+    public R<String> uploadAvatar(@RequestParam("avatar") MultipartFile avatar){
+        try{
+            ResultInfo<String> uploadInfo = userService.uploadAvatar(avatar);
+            if(uploadInfo.isRight()){
+                return R.success(uploadInfo.getData());
+            }
+            return R.error(uploadInfo.getMessage());
+        }catch (Exception e){
+            return R.error("上传失败，请重试");
+        }
+
+    }
+
+
+
 }

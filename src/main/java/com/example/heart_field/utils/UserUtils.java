@@ -16,8 +16,9 @@ import java.util.regex.Pattern;
 @Component
 @Slf4j
 public class UserUtils {
-    @Autowired
+
     @Lazy
+    @Autowired
     private ConsultantService consultantService;
     @Autowired
     @Lazy
@@ -25,11 +26,11 @@ public class UserUtils {
     @Autowired
     @Lazy
     private UserService userService;
-    @Autowired
     @Lazy
+    @Autowired
     private AdminService adminService;
-    @Autowired
     @Lazy
+    @Autowired
     private VisitorService visitorService;
     @Resource
     private BCryptPasswordEncoder bCryptPasswordEncoder;  //注入bcryct加密

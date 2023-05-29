@@ -17,20 +17,23 @@ public class Chat {
     //主键，自增长
     @TableId(value="id",type = IdType.AUTO)
     private Integer id;
-    //发起聊天的用户类型，0表示访客，1表示咨询师，2表示督导
-    private Integer fromType;
-    //发起聊天的用户id，是一个外键，引用自对应的访客、咨询师或督导表的id列
-    private Integer fromId;
-    //接收聊天的用户类型，0表示访客，1表示咨询师，2表示督导
-    private Integer toType;
-    //接收聊天的用户id，是一个外键，引用自对应的访客、咨询师或督导表的id列
-    private Integer toId;
+
+    //0咨询会话；1求助会话
+    private Integer type;
+
+    //聊天的发起者
+    // 咨询会话-访客；求助会话-咨询师
+    private Integer userA;
+
+    //聊天的接受者
+    //咨询会话-咨询师，求助会话-督导
+    private Integer userB;
+
     //聊天开始时间
     private LocalDateTime startTime;
+
     //聊天结束时间
     private LocalDateTime endTime;
-    public Integer getId() {
-        return id;
-    }
+
 }
 
