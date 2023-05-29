@@ -24,7 +24,6 @@ import java.util.List;
 @Slf4j
 @RestController
 //@UserLoginToken
-@RequestMapping("/records")
 public class RecordController {
     @Autowired
     private RecordService recordService;
@@ -38,7 +37,7 @@ public class RecordController {
      * @return
      */
     //@StaffToken
-    @GetMapping("/consult")
+    @GetMapping("/records/consult")
     public R getConsultRecords(@RequestParam(value = "searchValue", required = false) String searchValue,
                                @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize,
                                @RequestParam(value = "pageNum", required = false,defaultValue = "1") int pageNum,
@@ -51,11 +50,21 @@ public class RecordController {
         return R.success(res);
     }
 
-    @PostMapping("/consult")
+    @PostMapping("/records/consult")
     public R addConsultRecord(@RequestParam(value = "chatId", required = true) Integer chatId){
         ResultInfo<String> resultInfo = recordService.addRecordByChatId(chatId);
         return resultInfo.isRight()
                  ?R.success(resultInfo.getData())
                  :R.error(resultInfo.getMessage());
+    }
+
+    @PostMapping("/visitors/{record-id}/comment")
+    public R addComment(@PathVariable(value = "record_id", required=true)Integer recordId,
+                        @RequestParam(value = "comment", required = true) String comment,
+                        @RequestParam(value = "rank", required = true) Integer score){
+        ResultInfo<String> resultInfo = recordService.addComment(recordId, comment, score);
+        return resultInfo.isRight()
+                ?R.success(resultInfo.getData())
+                :R.error(resultInfo.getMessage());
     }
 }

@@ -225,4 +225,20 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
         return ResultInfo.success(record.getId());
 
     }
+
+    @Override
+    public ResultInfo addComment(Integer recordId, String comment, Integer score) {
+        Record record = this.baseMapper.selectById(recordId);
+        if(record==null){
+            return ResultInfo.error("该record不存在,id:"+recordId);
+        }
+        if(record.getIsCompleted()==1){
+            return ResultInfo.error("该record已经完成评价，请勿重复评价，id:"+recordId);
+        }
+        record.setVisitorComment(comment);
+        record.setVisitorScore(score);
+        record.setIsCompleted(1);
+        this.baseMapper.updateById(record);
+        return ResultInfo.success();
+    }
 }
