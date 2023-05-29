@@ -66,6 +66,7 @@ public class Consultant {
                 .workArrangement(consultantService.getWorkArrangement(this))
                 .consultTotalTime(this.totalHelpTime)
                 .averageRank(this.rating.intValue())
+                .phone(this.getPhone())
                 .build();
     }
 }

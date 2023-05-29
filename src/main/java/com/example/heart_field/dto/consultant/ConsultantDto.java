@@ -25,4 +25,5 @@ public class ConsultantDto{
     private List<Integer> workArrangement;
     private Integer consultTotalTime;
     private Integer averageRank;
+    private String phone;
 }

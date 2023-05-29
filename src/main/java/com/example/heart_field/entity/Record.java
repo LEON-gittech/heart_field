@@ -135,7 +135,6 @@ public class Record {
                 .chatId(this.chatId)
                 .helpId(this.helpId)
                 .build();
-
     }
 
 

@@ -179,9 +179,7 @@ CREATE TABLE schedule (
   staff_type tinyint(1) not null COMMENT '职员类型，0:咨询师，1:督导',
   staff_id int not null COMMENT '职员ID',
   workday int not null COMMENT '值班情况，0-31的数字，用二进制位表示每天的情况，第1位表示1号，第2位表示2号，依此类推，0表示不值班，1表示值班',
-  create_time timestamp DEFAULT current_timestamp COMMENT '创建时间',
-  FOREIGN KEY (staff_id) REFERENCES supervisor(id),
-  FOREIGN KEY (staff_id) REFERENCES consultant(id)
+  create_time timestamp DEFAULT current_timestamp COMMENT '创建时间'
 ) COMMENT='排班表';
 
 CREATE TABLE waiting (

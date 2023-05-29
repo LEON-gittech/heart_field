@@ -159,7 +159,7 @@ public class ConsultantController {
             userUtils.deleteUser(user);
             return R.error("腾讯IM导入账号失败");
         }
-        return R.success("新增咨询师成功");
+        return R.success(consultant.getPhone(),"新增咨询师成功");
     }
 
     /**
@@ -448,7 +448,4 @@ public class ConsultantController {
         recordService.updateById(record);
         return R.success("咨询师填写用户评估成功");
     }
-
-
-
 }

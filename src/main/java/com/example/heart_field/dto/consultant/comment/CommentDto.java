@@ -11,4 +11,5 @@ public class CommentDto {
     //需要查Visitor表
     private String userName;
     private String userAvatar;
+    private String commentTime;
 }
