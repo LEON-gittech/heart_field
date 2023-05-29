@@ -19,4 +19,6 @@ public interface RecordService extends IService<Record> {
     List<RecordDTO> queryRecords(String searchValue, int pageSize, int pageNum, LocalDateTime fromDate, LocalDateTime toDate);
 
     ResultInfo addRecordByChatId(Integer chatId);
+
+    ResultInfo addComment(Integer recordId, String comment, Integer score);
 }
