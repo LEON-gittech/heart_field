@@ -107,6 +107,8 @@ public class ConsultantServiceImpl extends ServiceImpl<ConsultantMapper, Consult
                 commentDto.setUserName(userName);
                 commentDto.setUserAvatar(userAvator);
             }
+            //commentTime
+            commentDto.setCommentTime(item.getEndTime().toString());
             return commentDto;
         }).collect(Collectors.toList());
         return list;
