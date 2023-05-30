@@ -1,16 +1,12 @@
 package com.example.heart_field.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.AbstractLambdaWrapper;
-import com.baomidou.mybatisplus.core.conditions.AbstractWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.TypeConstant;
-import com.example.heart_field.dto.ConsultantDTO;
 import com.example.heart_field.dto.ScheduleDTO;
 import com.example.heart_field.dto.SupervisorDTO;
-import com.example.heart_field.entity.Admin;
 import com.example.heart_field.entity.Consultant;
 import com.example.heart_field.entity.Schedule;
 import com.example.heart_field.entity.Supervisor;
@@ -20,11 +16,11 @@ import com.example.heart_field.mapper.SupervisorMapper;
 import com.example.heart_field.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import com.example.heart_field.dto.consultant.ConsultantDto;
 
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author albac0020@gmail.com
@@ -52,21 +48,21 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             queryWrapper_consultant.eq(Schedule::getStaffType, TypeConstant.CONSULTANT).eq(Schedule::getWorkday,today);
             //Integer count_consultant=this.baseMapper.selectCount(queryWrapper_consultant);
             //根据schedule表中的consultant id ，去consultant表中查询consultant的信息
-            List<ConsultantDTO> consultantDTOList = this.baseMapper.selectList(queryWrapper_consultant).stream().map(schedule -> {
+            List<ConsultantDto> consultantDTOList = this.baseMapper.selectList(queryWrapper_consultant).stream().map(schedule -> {
                 Integer consultantId = schedule.getStaffId();
                 LambdaQueryWrapper<Consultant> queryWrapper_consultantDTO = Wrappers.lambdaQuery();
                 Consultant consultant=consultantMapper.selectOne(queryWrapper_consultantDTO.eq(Consultant::getId,consultantId));
                 if(consultant.isDisabled()==true||consultant.isValid()==false){
                     return null;
                 }else{
-                    ConsultantDTO consultantDTO = ConsultantDTO.builder()
-                            .id(consultant.getId())
+                    ConsultantDto consultantDTO = ConsultantDto.builder()
+                            .id(String.valueOf(consultant.getId()))
                             .consultantName(consultant.getName())
-                            .avatar(consultant.getAvatar())
+                            .consultantAvatar(consultant.getAvatar())
                             .build();
                     return consultantDTO;
                 }
-            }).toList();
+            }).collect(Collectors.toList());
             //督导
             LambdaQueryWrapper<Schedule> queryWrapper_supervisor= Wrappers.lambdaQuery();
             queryWrapper_supervisor.eq(Schedule::getStaffType, TypeConstant.SUPERVISOR).eq(Schedule::getWorkday,today);
@@ -86,7 +82,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                             .build();
                     return supervisorDTO;
                 }
-            }).toList();
+            }).collect(Collectors.toList());
 
             ScheduleDTO scheduleDTO = ScheduleDTO.builder()
                     .consultantCount(consultantDTOList.size())

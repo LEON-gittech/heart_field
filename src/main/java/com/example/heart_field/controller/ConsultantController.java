@@ -12,6 +12,7 @@ import com.example.heart_field.dto.consultant.comment.CommentDto;
 import com.example.heart_field.dto.consultant.comment.CommentsDto;
 import com.example.heart_field.dto.consultant.profile.AnyConsultantProfileDto;
 import com.example.heart_field.dto.consultant.profile.ConsultantProfileDto;
+import com.example.heart_field.dto.consultant.profile.UpdateConsultantProfileDto;
 import com.example.heart_field.entity.Record;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.service.*;
@@ -167,24 +168,36 @@ public class ConsultantController {
      * 使用ConsultantDto作为中转实体类，因为Consultant中的expertiseTag是json数组，需要转换
      */
     @PutMapping("/{consultantId}/profile")
-    public R<ConsultantDto> update(@PathVariable("consultantId") Integer consultantId, @RequestBody ConsultantDto consultantDto) throws JsonProcessingException {
-        log.info("consultantId:{},consultant:{}",consultantId,consultantDto);
+    public R<String> update(@PathVariable("consultantId") Integer consultantId, @RequestBody UpdateConsultantProfileDto updateConsultantProfileDto) throws JsonProcessingException {
+        log.info("consultantId:{},consultant:{}",consultantId,updateConsultantProfileDto);
         //权限验证
         Integer id = TokenUtil.getTokenUser().getUserId();
-        if(!consultantId.equals(id)&&adminService.getById(consultantId)==null){
+        if(!consultantId.equals(id)&&adminService.getById(id)==null){
             return R.auth_error();
         }
         //将consultantDto的值复制给consultant
-        Consultant consultant = consultantService.getById(consultantDto.getId());
-        BeanUtils.copyProperties(consultantDto,consultant,"expertiseTag");
-
-        consultant.setExpertiseTag(objectMapper.writeValueAsString(consultantDto.getExpertiseTag()));
-
+        Consultant consultant = consultantService.getById(updateConsultantProfileDto.getId());
+        BeanUtils.copyProperties(updateConsultantProfileDto,consultant,"expertiseTag");
+        consultant.setExpertiseTag(objectMapper.writeValueAsString(updateConsultantProfileDto.getExpertiseTag()));
         consultantService.updateById(consultant);
-        //回返
-        BeanUtils.copyProperties(consultant,consultantDto,"expertiseTag");
-        consultantDto.setExpertiseTag(objectMapper.readValue(consultant.getExpertiseTag(),new TypeReference<List<ExpertiseTag>>() {}));
-        return R.success(consultantDto);
+        //同步更新腾讯云IM
+        String identifier = "1"+"_"+consultantId.toString();
+        String gender = "Gender_Type_Unknown";
+        switch (consultant.getGender()){
+            case 0:
+                gender = "Gender_Type_Female";
+                break;
+            case 1:
+                gender = "Gender_Type_Male";
+                break;
+            default:
+                break;
+        }
+        boolean isSuccess = tencentCloudImUtil.updateAccount(identifier,consultant.getName(),consultant.getAvatar(),gender);
+        if(!isSuccess){
+            return R.error("腾讯IM更新账号失败");
+        }
+        return R.success("修改咨询师详情成功");
     }
 
     /**

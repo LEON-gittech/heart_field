@@ -17,6 +17,8 @@ public class TencentCloudImApiConstant {
         public static final String ACCOUNT_KICK = "v4/im_open_login_svc/kick";
         /**查询账号在线状态*/
         public static final String ACCOUNT_QUERY_STATE = "v4/openim/querystate";
+        /**更新账号资料*/
+        public static final String ACCOUNT_UPDATE = "v4/profile/portrait_set";
     }
  
     /**

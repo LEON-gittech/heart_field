@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.example.heart_field.constant.TencentCloudImApiConstant;
 import com.example.heart_field.constant.TencentCloudImConstant;
 import com.tencentyun.TLSSigAPIv2;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,10 +37,15 @@ public class TencentCloudImUtil {
     public String getTxCloudUserSig() {
         String userSig = redisServiceUtil.get(REDIS_IM_USER_SIG + APP_MANAGER);
         if (StringUtils.isEmpty(userSig)) {
-            TLSSigAPIv2 tlsSigApi = new TLSSigAPIv2(sdkAppId, key);
-            userSig = tlsSigApi.genUserSig(APP_MANAGER, 86400);
-            redisServiceUtil.set(REDIS_IM_USER_SIG + APP_MANAGER, userSig);
+            userSig = genUsersig();
         }
+        return userSig;
+    }
+
+    public String genUsersig(){
+        TLSSigAPIv2 tlsSigApi = new TLSSigAPIv2(sdkAppId, key);
+        String userSig = tlsSigApi.genUserSig(APP_MANAGER, 86400);
+        redisServiceUtil.set(REDIS_IM_USER_SIG + APP_MANAGER, userSig);
         return userSig;
     }
  
@@ -78,6 +84,50 @@ public class TencentCloudImUtil {
         String result = HttpUtil.doPost2(httpsUrl, jsonObject);
         log.info("腾讯云im导入单个账号，返回结果：{}", result);
         Integer ErrorCode = JSONObject.parseObject(result).getInteger("ErrorCode");
+        //超时处理
+        if (ErrorCode == 70001) {
+            this.genUsersig();
+            return accountImport(userId, userName, faceUrl);
+        }
+        return ErrorCode == 0 ? true:false;
+    }
+
+    public boolean updateAccount(String userId, String userName, String faceUrl,String gender) {
+        Integer random = RandomUtils.nextInt(0, 999999999);
+        String httpsUrl = getHttpsUrl(TencentCloudImApiConstant.AccountManage.ACCOUNT_UPDATE, random);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("From_Account", userId);
+        @Data
+        class ProfileItem{
+            private String Tag;
+            private String Value;
+        }
+        List list = new ArrayList<ProfileItem>();
+        //昵称
+        ProfileItem profileItem_nick = new ProfileItem();
+        profileItem_nick.setTag("Tag_Profile_IM_Nick");
+        profileItem_nick.setValue(userName);
+        //头像
+        ProfileItem profileItem_faceUrl = new ProfileItem();
+        profileItem_faceUrl.setTag("Tag_Profile_IM_Image");
+        profileItem_faceUrl.setValue(faceUrl);
+        //性别
+        ProfileItem profileItem_gender = new ProfileItem();
+        profileItem_gender.setTag("Tag_Profile_IM_Gender");
+        profileItem_gender.setValue(gender);
+        list.add(profileItem_nick);
+        list.add(profileItem_faceUrl);
+        jsonObject.put("ProfileItem", list);
+
+        log.info("腾讯云im更新账户资料，请求参数：{}", jsonObject.toString());
+        String result = HttpUtil.doPost2(httpsUrl, jsonObject);
+        log.info("腾讯云im更新账户资料，返回结果：{}", result);
+        Integer ErrorCode = JSONObject.parseObject(result).getInteger("ErrorCode");
+        //超时处理
+        if (ErrorCode == 70001) {
+            this.genUsersig();
+            return updateAccount(userId, userName, faceUrl,gender);
+        }
         return ErrorCode == 0 ? true:false;
     }
  

@@ -1,7 +1,6 @@
 package com.example.heart_field.dto;
 
-import com.example.heart_field.entity.Consultant;
-import com.example.heart_field.entity.Supervisor;
+import com.example.heart_field.dto.consultant.ConsultantDto;
 import lombok.Builder;
 import lombok.Data;
 
@@ -20,7 +19,7 @@ public class ScheduleDTO {
 
     private Integer supervisorCount;
 
-    private List<ConsultantDTO> consultantList;
+    private List<ConsultantDto> consultantList;
 
     private List<SupervisorDTO> supervisorList;
 }
