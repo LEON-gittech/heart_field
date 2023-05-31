@@ -104,66 +104,61 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
      */
     @Override
     public List<RecordDTO> queryRecords(String searchValue, int pageSize, int pageNum, LocalDateTime fromDate, LocalDateTime toDate) {
-        LambdaQueryWrapper<Record> queryWrapper= Wrappers.lambdaQuery();
+        LambdaQueryWrapper<Record> queryWrapper = Wrappers.lambdaQuery();
         User user = TokenUtil.getTokenUser();
         //if (user == null) { return new ArrayList<>();}
-        switch (user.getType()){
+        switch (user.getType()) {
             ////type为0是Visitor，1是Consultant，2是Admin，3是Supervisor
             case 0:
                 return new ArrayList<>();
             case 1:
                 //咨询师-自己负责的咨询会话
-                queryWrapper.eq(Record::getConsultantId,user.getId());
+                queryWrapper.eq(Record::getConsultantId, user.getId());
                 break;
             default:
                 //督导/管理员-全平台会话（即所有的咨询记录列表）
                 break;
         }
-        log.info("searchValue:{}",searchValue);
-        if(fromDate!=null){
-            queryWrapper.ge(Record::getCreateTime,fromDate);
+        log.info("searchValue:{}", searchValue);
+        if (fromDate != null) {
+            queryWrapper.ge(Record::getCreateTime, fromDate);
         }
-        if(toDate!=null){
-            queryWrapper.le(Record::getCreateTime,toDate);
+        if (toDate != null) {
+            queryWrapper.le(Record::getCreateTime, toDate);
         }
-        if(searchValue!=null){
-            queryWrapper
-                    .or(wrapper->{
-                        wrapper.like(Record::getVisitorName,searchValue);
-                    })
-                    .or(wrapper->{
-                        wrapper.like(Record::getVisitorUsername,searchValue);
-                    })
-                    .or(wrapper->{
-                        wrapper.like(Record::getConsultantName,searchValue);
-                    })
-                    .or(wrapper->{
-                        wrapper.like(Record::getSupervisorName,searchValue);
-                    });
-        }
+
         queryWrapper.orderByDesc(Record::getCreateTime);
-        List<Record> records=this.baseMapper.selectList(queryWrapper);
-        List<RecordDTO> recordDTOS=new ArrayList<>();
-        for(Record r:records){
-            RecordDTO recordDTO=RecordDTO.builder()
-                    .id(r.getId())
-                    .visitorId(r.getVisitorId())
-                    .visitorName(r.getVisitorName())
-                    .visitorAvatar(r.getVisitorAvatar())
+        List<Record> records = this.baseMapper.selectList(queryWrapper);
+        List<RecordDTO> recordDTOS = new ArrayList<>();
+        for (Record r : records) {
+            Visitor visitor = visitorMapper.selectById(r.getVisitorId());
+            Consultant consultant = consultantMapper.selectById(r.getConsultantId());
+            if(consultant==null||visitor==null){
+                continue;
+            }
+            if (searchValue == null
+                    || (searchValue != null && (visitor.getName().contains(searchValue) || visitor.getUsername().contains(searchValue)
+                             || consultant.getName().contains(searchValue)))) {
+                RecordDTO recordDTO = RecordDTO.builder()
+                        .id(r.getId())
+                        .visitorId(visitor.getId())
+                        .visitorName(visitor.getName())
+                        .visitorAvatar(visitor.getAvatar())
 
-                    .consultantId(r.getConsultantId())
-                    .consultantName(r.getConsultantName())
-                    .consultantAvatar(r.getConsultantAvatar())
+                        .consultantId(consultant.getId())
+                        .consultantName(consultant.getName())
+                        .consultantAvatar(consultant.getAvatar())
 
-                    .consultRank(r.getVisitorScore())
-                    .consultComment(r.getVisitorComment())
+                        .consultRank(r.getVisitorScore())
+                        .consultComment(r.getVisitorComment())
 
-                    .startTime(r.getCreateTime())
-                    .continueTime(r.getEndTime().getSecond()-r.getCreateTime().getSecond())
+                        .startTime(r.getCreateTime())
+                        .continueTime(r.getEndTime().getSecond() - r.getCreateTime().getSecond())
 
-                    .chatId(r.getChatId())
-                    .build();
-           recordDTOS.add(recordDTO);
+                        .chatId(r.getChatId())
+                        .build();
+                recordDTOS.add(recordDTO);
+            }
         }
         return recordDTOS;
     }
