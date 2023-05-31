@@ -180,6 +180,8 @@ public class ConsultantController {
         BeanUtils.copyProperties(updateConsultantProfileDto,consultant,"expertiseTag");
         consultant.setExpertiseTag(objectMapper.writeValueAsString(updateConsultantProfileDto.getExpertiseTag()));
         consultantService.updateById(consultant);
+        //同步更新User表
+        userUtils.updateUser(consultant);
         //同步更新腾讯云IM
         String identifier = "1"+"_"+consultantId.toString();
         String gender = "Gender_Type_Unknown";

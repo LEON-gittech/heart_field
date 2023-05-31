@@ -69,7 +69,7 @@ public class UserUtils {
      * @return
      * @param <T>
      */
-    public <T> User saveUser(T object){
+    public <T> User newUser(T object){
         User user = new User();
         Integer id = null;
         String password = null;
@@ -125,7 +125,18 @@ public class UserUtils {
         user.setUserId(id);
         user.setPhone(phone);
         user.setPassword(password);
+        return user;
+    }
+
+    public <T> User saveUser(T object){
+        User user = newUser(object);
         userService.save(user);
+        return user;
+    }
+
+    public <T> User updateUser(T object){
+        User user = newUser(object);
+        userService.updateById(user);
         return user;
     }
     //根据传入的User信息匹配数据库中的User

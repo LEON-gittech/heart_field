@@ -106,15 +106,15 @@ public class TencentCloudImUtil {
         //昵称
         ProfileItem profileItem_nick = new ProfileItem();
         profileItem_nick.setTag("Tag_Profile_IM_Nick");
-        profileItem_nick.setValue(userName);
+        profileItem_nick.setValue(userName == null ? "" : userName);
         //头像
         ProfileItem profileItem_faceUrl = new ProfileItem();
         profileItem_faceUrl.setTag("Tag_Profile_IM_Image");
-        profileItem_faceUrl.setValue(faceUrl);
+        profileItem_faceUrl.setValue(faceUrl == null ? "":faceUrl);
         //性别
         ProfileItem profileItem_gender = new ProfileItem();
         profileItem_gender.setTag("Tag_Profile_IM_Gender");
-        profileItem_gender.setValue(gender);
+        profileItem_gender.setValue(gender == null ? "":gender);
         list.add(profileItem_nick);
         list.add(profileItem_faceUrl);
         jsonObject.put("ProfileItem", list);
