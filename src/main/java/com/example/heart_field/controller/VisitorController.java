@@ -64,6 +64,9 @@ public class VisitorController {
                         @RequestParam(value = "pageNum", required = false,defaultValue = "1") int pageNum) {
         log.info("searchValue:{}", searchValue);
         log.info("pageSize:{},pageNum:{}", pageSize, pageNum);
+        if(pageNum<1||pageSize<1){
+            return R.argument_error("分页参数不合法");
+        }
 
         //构造分页构造器
         Page<Visitor> pageInfo = new Page<>(pageNum,pageSize);
