@@ -18,11 +18,6 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class Help {
-    @Autowired
-    private ConsultantMapper consultantMapper;
-
-    @Autowired
-    private SupervisorMapper supervisorMapper;
 
 
     /**
@@ -72,19 +67,19 @@ public class Help {
 
     private Integer recordId;
 
-    public String getConsultantName() {
-        return consultantMapper.selectById(this.consultantId).getName();
-    }
-
-    public  String getConsultantAvatar() {
-        return consultantMapper.selectById(this.consultantId).getAvatar();
-    }
-
-    public String getSupervisorAvatar() {
-        return supervisorMapper.selectById(this.supervisorId).getAvatar();
-    }
-
-    public String getSupervisorName(){return supervisorMapper.selectById(this.supervisorId).getName();}
+//    public String getConsultantName() {
+//        return consultantMapper.selectById(this.consultantId).getName();
+//    }
+//
+//    public  String getConsultantAvatar() {
+//        return consultantMapper.selectById(this.consultantId).getAvatar();
+//    }
+//
+//    public String getSupervisorAvatar() {
+//        return supervisorMapper.selectById(this.supervisorId).getAvatar();
+//    }
+//
+//    public String getSupervisorName(){return supervisorMapper.selectById(this.supervisorId).getName();}
 
 
 

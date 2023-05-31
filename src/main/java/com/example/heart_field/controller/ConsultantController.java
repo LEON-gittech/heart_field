@@ -269,7 +269,7 @@ public class ConsultantController {
         //id
         anyConsultantProfileDto.setId(consultant.getId().toString());
         //expertiseTag
-        anyConsultantProfileDto.setExpertiseTag(objectMapper.readValue(consultant.getExpertiseTag(),new TypeReference<List<ExpertiseTag>>() {}));
+        if(consultant.getExpertiseTag()!=null) anyConsultantProfileDto.setExpertiseTag(objectMapper.readValue(consultant.getExpertiseTag(),new TypeReference<List<ExpertiseTag>>() {}));
         return R.success(anyConsultantProfileDto);
     }
 

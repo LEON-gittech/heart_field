@@ -73,13 +73,14 @@ public class UserUtils {
         User user = new User();
         Integer id = null;
         String password = null;
+        String phone =null;
         //咨询师
         if (object.getClass().equals(Consultant.class)) {
             LambdaQueryWrapper<Consultant> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(Consultant::getPhone, ((Consultant) object).getPhone());
             Consultant consultant = consultantService.getOne(lambdaQueryWrapper);
             id = consultant.getId();
-            String phone = consultant.getPhone();
+            phone = consultant.getPhone();
             password = bCryptPasswordEncoder.encode(consultant.getPassword()) ;
             //更新角色表中password为加密后的密码
             consultant.setPassword(password);
@@ -92,7 +93,7 @@ public class UserUtils {
             lambdaQueryWrapper.eq(Supervisor::getPhone, ((Supervisor) object).getPhone());
             Supervisor supervisor = supervisorService.getOne(lambdaQueryWrapper);
             id = supervisor.getId();
-            String phone = supervisor.getPhone();
+            phone = supervisor.getPhone();
             password = bCryptPasswordEncoder.encode(supervisor.getPassword()) ;
             //更新角色表中password为加密后的密码
             supervisor.setPassword(password);
@@ -105,7 +106,7 @@ public class UserUtils {
             lambdaQueryWrapper.eq(Admin::getPhone, ((Admin) object).getPhone());
             Admin admin = adminService.getOne(lambdaQueryWrapper);
             id = admin.getId();
-            String phone = admin.getPhone();
+            phone = admin.getPhone();
             password = bCryptPasswordEncoder.encode(admin.getPassword()) ;
             //更新角色表中password为加密后的密码
             admin.setPassword(password);
@@ -118,9 +119,11 @@ public class UserUtils {
             lambdaQueryWrapper.eq(Visitor::getPhone, ((Visitor) object).getPhone());
             Visitor visitor = visitorService.getOne(lambdaQueryWrapper);
             id = visitor.getId();
+            phone = visitor.getPhone();
             user.setType(0);
         }
         user.setUserId(id);
+        user.setPhone(phone);
         user.setPassword(password);
         userService.save(user);
         return user;

@@ -48,6 +48,7 @@ CREATE TABLE supervisor (
   title varchar(50) COMMENT '督导的职称',
   qualification varchar(50) COMMENT '督导的督导资质',
   qualification_id varchar(20) COMMENT '督导资质的编号，长度不超过20个字符',
+  concurrent_num int COMMENT '督导当前进行的会话数量',
   CHECK (is_valid IN (0,1)) ,
   CHECK (gender IN (0,1,2)) ,
   CONSTRAINT password_nn CHECK (password IS NOT NULL)

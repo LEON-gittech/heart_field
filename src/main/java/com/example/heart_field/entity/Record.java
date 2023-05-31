@@ -22,14 +22,7 @@ import java.time.LocalDateTime;
 @Data
 @Builder
 public class Record {
-    @Autowired
-    private VisitorMapper visitorMapper;
 
-    @Autowired
-    private ConsultantMapper consultantMapper;
-
-    @Autowired
-    private SupervisorMapper supervisorMapper;
     /**
      * 主键，用于唯一标识每个咨询记录
      */
@@ -139,29 +132,29 @@ public class Record {
 
 
 
-
-    public String getVisitorName() {
-        return visitorMapper.selectById(this.visitorId).getName();
-    }
-
-    public String getVisitorUsername() {
-        return visitorMapper.selectById(this.visitorId).getUsername();
-    }
-
-    public String getConsultantName() {
-        return consultantMapper.selectById(this.consultantId).getName();
-    }
-
-    public String getSupervisorName() {
-        return supervisorMapper.selectById(this.supervisorId).getName();
-    }
-
-
-    public String getConsultantAvatar() {
-        return consultantMapper.selectById(this.consultantId).getAvatar();
-    }
-
-    public String getVisitorAvatar() {
-        return visitorMapper.selectById(this.visitorId).getAvatar();
-    }
+//
+//    public String getVisitorName() {
+//        return visitorMapper.selectById(this.visitorId).getName();
+//    }
+//
+//    public String getVisitorUsername() {
+//        return visitorMapper.selectById(this.visitorId).getUsername();
+//    }
+//
+//    public String getConsultantName() {
+//        return consultantMapper.selectById(this.consultantId).getName();
+//    }
+//
+//    public String getSupervisorName() {
+//        return supervisorMapper.selectById(this.supervisorId).getName();
+//    }
+//
+//
+//    public String getConsultantAvatar() {
+//        return consultantMapper.selectById(this.consultantId).getAvatar();
+//    }
+//
+//    public String getVisitorAvatar() {
+//        return visitorMapper.selectById(this.visitorId).getAvatar();
+//    }
 }
