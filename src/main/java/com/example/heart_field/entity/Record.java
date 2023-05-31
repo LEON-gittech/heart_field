@@ -129,32 +129,4 @@ public class Record {
                 .helpId(this.helpId)
                 .build();
     }
-
-
-
-//
-//    public String getVisitorName() {
-//        return visitorMapper.selectById(this.visitorId).getName();
-//    }
-//
-//    public String getVisitorUsername() {
-//        return visitorMapper.selectById(this.visitorId).getUsername();
-//    }
-//
-//    public String getConsultantName() {
-//        return consultantMapper.selectById(this.consultantId).getName();
-//    }
-//
-//    public String getSupervisorName() {
-//        return supervisorMapper.selectById(this.supervisorId).getName();
-//    }
-//
-//
-//    public String getConsultantAvatar() {
-//        return consultantMapper.selectById(this.consultantId).getAvatar();
-//    }
-//
-//    public String getVisitorAvatar() {
-//        return visitorMapper.selectById(this.visitorId).getAvatar();
-//    }
 }
