@@ -49,7 +49,6 @@ public class RecordListDTO {
 
     //对应的聊天id和求助会话id
     private Integer chatId;
-    private Integer helpId;
 
 
 
