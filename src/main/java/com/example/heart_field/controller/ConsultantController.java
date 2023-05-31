@@ -7,7 +7,7 @@ import com.example.heart_field.common.R;
 import com.example.heart_field.dto.consultant.ConsultantDto;
 import com.example.heart_field.dto.consultant.ConsultantsDto;
 import com.example.heart_field.dto.consultant.ExpertiseTag;
-import com.example.heart_field.dto.consultant.binding.SupervisorBindedDto;
+//import com.example.heart_field.dto.consultant.binding.SupervisorBindedDto;
 import com.example.heart_field.dto.consultant.comment.CommentDto;
 import com.example.heart_field.dto.consultant.comment.CommentsDto;
 import com.example.heart_field.dto.consultant.profile.AnyConsultantProfileDto;

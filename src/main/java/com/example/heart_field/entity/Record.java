@@ -104,6 +104,10 @@ public class Record {
      */
     private Integer chatId;
 
+    /**
+     * 该咨询记录对应的求助会话id
+     */
+    private Integer helpId;
 
     private Integer isCompleted;//0未完成1已完成
 
@@ -122,6 +126,7 @@ public class Record {
                 .visitorComment(this.visitorComment)
                 .visitorScore(this.visitorScore)
                 .chatId(this.chatId)
+                .helpId(this.helpId)
                 .build();
     }
 }
