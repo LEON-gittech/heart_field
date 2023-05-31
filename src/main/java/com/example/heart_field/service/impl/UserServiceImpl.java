@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.heart_field.common.R;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.dto.UserLoginDTO;
 import com.example.heart_field.entity.*;
@@ -13,6 +14,7 @@ import com.example.heart_field.service.UserService;
 import com.example.heart_field.tokens.TokenService;
 import com.example.heart_field.utils.Md5Util;
 import com.example.heart_field.utils.RandomUtil;
+import com.example.heart_field.utils.TencentCloudImUtil;
 import com.example.heart_field.utils.TokenUtil;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +36,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public Long MAX_SIZE=1024*1024*10L;
     @Autowired
     private VisitorMapper visitorMapper;
+
+    @Autowired
+    private TencentCloudImUtil tencentCloudImUtil;
 
     @Autowired
     private AdminMapper adminMapper;
@@ -86,6 +91,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new IOException("文件上传失败，请检查文件格式");
         }
     }
+
     @Override
     public ResultInfo<String> uploadAvatar(MultipartFile avatar) throws Exception {
         try {
@@ -99,21 +105,85 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                         Visitor visitor = visitorMapper.selectById(id);
                         visitor.setAvatar(url);
                         visitorMapper.updateById(visitor);
+                        String identifier = "visitor_"+visitor.getId().toString();
+                        String name = visitor.getUsername();
+                        String avatar_url = url;
+                        String sex = null;
+                        switch (visitor.getGender()){
+                            case 0:
+                                sex = "女";
+                                break;
+                            case 1:
+                                sex = "男";
+                                break;
+                            default:
+                                sex = "未知";
+                                break;
+                        }
+                        Boolean isSuccess=tencentCloudImUtil.updateAccount(identifier,name,avatar_url,sex);
+                        if(!isSuccess){
+                            return ResultInfo.error("腾讯IM更新账号失败");
+                        }
                         break;
                     case 2:
                         Admin admin = adminMapper.selectById(id);
                         admin.setAvatar(url);
                         adminMapper.updateById(admin);
+                        identifier = "admin_"+admin.getId().toString();
+                        name = admin.getUsername();
+                        avatar_url = url;
+                        sex = "未知";
+                        isSuccess=tencentCloudImUtil.updateAccount(identifier,name,avatar_url,sex);
+                        if(!isSuccess){
+                            return ResultInfo.error("腾讯IM更新账号失败");
+                        }
                         break;
                     case 1:
                         Consultant consultant = consultantMapper.selectById(id);
                         consultant.setAvatar(url);
                         consultantMapper.updateById(consultant);
+
+                        identifier = "consultant_"+consultant.getId().toString();
+                        name = consultant.getName();
+                        avatar_url = url;
+                        switch (consultant.getGender()){
+                            case 0:
+                                sex = "女";
+                                break;
+                            case 1:
+                                sex = "男";
+                                break;
+                            default:
+                                sex = "未知";
+                                break;
+                        }
+                        isSuccess=tencentCloudImUtil.updateAccount(identifier,name,avatar_url,sex);
+                        if(!isSuccess){
+                            return ResultInfo.error("腾讯IM更新账号失败");
+                        }
                         break;
                     case 3:
                         Supervisor supervisor = supervisorMapper.selectById(id);
                         supervisor.setAvatar(url);
                         supervisorMapper.updateById(supervisor);
+                        identifier = "supervisor_"+supervisor.getId().toString();
+                        name = supervisor.getName();
+                        avatar_url = url;
+                        switch (supervisor.getGender()){
+                            case 0:
+                                sex = "女";
+                                break;
+                            case 1:
+                                sex = "男";
+                                break;
+                            default:
+                                sex = "未知";
+                                break;
+                        }
+                        isSuccess=tencentCloudImUtil.updateAccount(identifier,name,avatar_url,sex);
+                        if(!isSuccess){
+                            return ResultInfo.error("腾讯IM更新账号失败");
+                        }
                         break;
                     default:
                         break;

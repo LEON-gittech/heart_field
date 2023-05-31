@@ -145,8 +145,20 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
                 User user=userMapper.selectOne(queryWrapper);
                 String token = tokenService.getToken(user);
 
-                //获取im相关信息
+                //获取im相关信息，更新im信息
                 String identifier = user.getType().toString()+"_"+user.getUserId().toString();
+                String sex = null;
+                switch (visitor.getGender()){
+                    case 0:
+                        sex = "女";
+                        break;
+                    case 1:
+                        sex = "男";
+                        break;
+                    default:
+                        break;
+                }
+                tencentCloudImUtil.updateAccount(identifier, visitor.getUsername(), visitor.getAvatar(),sex);
 
                 WxLoginDTO res=WxLoginDTO.builder()
                         .accessToken(token)
