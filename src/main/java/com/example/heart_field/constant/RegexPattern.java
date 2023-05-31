@@ -17,15 +17,16 @@ public class RegexPattern {
     public static final char[] LIMIT_CHARS = "\\;!@#$%^&**()".toCharArray();
 
     /**
-     * 密码限制字符: 只能为字母数字
+     * 密码限制字符: 由数字、大小写字母组成
      */
-    public static final String PASSWORD_PATTERN = "^[0-9A-Za-z]{0,110}$";
+    public static final String PASSWORD_PATTERN = "^(?=.[a-z])(?=.[A-Z])(?=.*\\d)[\\s\\S]{8,20}$";
+
 
     /**
      * 密码长度限制
      */
-//    public static final int PASSWORD_MIN_LENGTH = 5;
-//    public static final int PASSWORD_MAX_LENGTH = 20;
+//    public static final int PASSWORD_MIN_LENGTH = 8;
+//    public static final int PASSWORD_MAX_LENGTH = 30;
 
     /**
      * 手机号码格式限制

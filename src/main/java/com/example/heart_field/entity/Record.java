@@ -5,7 +5,12 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.example.heart_field.dto.consultant.record.RecordListDTO;
+import com.example.heart_field.mapper.ConsultantMapper;
+import com.example.heart_field.mapper.SupervisorMapper;
+import com.example.heart_field.mapper.VisitorMapper;
+import lombok.Builder;
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 
@@ -15,7 +20,16 @@ import java.time.LocalDateTime;
  */
 
 @Data
+@Builder
 public class Record {
+    @Autowired
+    private VisitorMapper visitorMapper;
+
+    @Autowired
+    private ConsultantMapper consultantMapper;
+
+    @Autowired
+    private SupervisorMapper supervisorMapper;
     /**
      * 主键，用于唯一标识每个咨询记录
      */
@@ -25,7 +39,7 @@ public class Record {
     /**
      * 该记录是否被删除
      */
-    private Byte isDeleted;//0有效1无效
+    private Integer isDeleted;//0有效1无效
 
     /**
      * 该记录创建时间，时间戳类型
@@ -74,7 +88,7 @@ public class Record {
     /**
      * 访客给咨询师评分，1-5的整数
      */
-    private Byte visitorScore;
+    private Integer visitorScore;
 
     /**
      * 访客对咨询师的评价
@@ -102,7 +116,9 @@ public class Record {
      */
     private Integer helpId;
 
-    private Byte isCompleted;//0未完成1已完成
+    private Integer isCompleted;//0未完成1已完成
+
+
 
 
     public RecordListDTO convert2ListDTO(){
@@ -111,7 +127,7 @@ public class Record {
                 .visitorId(this.visitorId)
                 .supervisorId(this.supervisorId)
                 .id(this.id)
-                .isCompleted((byte) (this.endTime==null?0:1))
+                .isCompleted((this.endTime==null?0:1))
                 .startTime(this.startTime)
                 .endTime(this.endTime)
                 .visitorComment(this.visitorComment)
@@ -119,6 +135,33 @@ public class Record {
                 .chatId(this.chatId)
                 .helpId(this.helpId)
                 .build();
+    }
 
+
+
+
+    public String getVisitorName() {
+        return visitorMapper.selectById(this.visitorId).getName();
+    }
+
+    public String getVisitorUsername() {
+        return visitorMapper.selectById(this.visitorId).getUsername();
+    }
+
+    public String getConsultantName() {
+        return consultantMapper.selectById(this.consultantId).getName();
+    }
+
+    public String getSupervisorName() {
+        return supervisorMapper.selectById(this.supervisorId).getName();
+    }
+
+
+    public String getConsultantAvatar() {
+        return consultantMapper.selectById(this.consultantId).getAvatar();
+    }
+
+    public String getVisitorAvatar() {
+        return visitorMapper.selectById(this.visitorId).getAvatar();
     }
 }

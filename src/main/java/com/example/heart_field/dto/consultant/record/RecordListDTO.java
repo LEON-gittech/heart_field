@@ -41,10 +41,10 @@ public class RecordListDTO {
     private LocalDateTime endTime;
 
     //咨询是否完成，0表示未完成，1表示已完成
-    private Byte isCompleted;
+    private Integer isCompleted;
 
     //访客对咨询师的评价
-    private Byte visitorScore;
+    private Integer visitorScore;
     private String visitorComment;
 
     //对应的聊天id和求助会话id

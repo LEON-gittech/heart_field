@@ -12,6 +12,7 @@ import com.example.heart_field.dto.consultant.comment.CommentDto;
 import com.example.heart_field.dto.consultant.comment.CommentsDto;
 import com.example.heart_field.dto.consultant.profile.AnyConsultantProfileDto;
 import com.example.heart_field.dto.consultant.profile.ConsultantProfileDto;
+import com.example.heart_field.dto.consultant.profile.UpdateConsultantProfileDto;
 import com.example.heart_field.entity.Record;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.service.*;
@@ -159,7 +160,7 @@ public class ConsultantController {
             userUtils.deleteUser(user);
             return R.error("腾讯IM导入账号失败");
         }
-        return R.success("新增咨询师成功");
+        return R.success(consultant.getPhone(),"新增咨询师成功");
     }
 
     /**
@@ -167,24 +168,36 @@ public class ConsultantController {
      * 使用ConsultantDto作为中转实体类，因为Consultant中的expertiseTag是json数组，需要转换
      */
     @PutMapping("/{consultantId}/profile")
-    public R<ConsultantDto> update(@PathVariable("consultantId") Integer consultantId, @RequestBody ConsultantDto consultantDto) throws JsonProcessingException {
-        log.info("consultantId:{},consultant:{}",consultantId,consultantDto);
+    public R<String> update(@PathVariable("consultantId") Integer consultantId, @RequestBody UpdateConsultantProfileDto updateConsultantProfileDto) throws JsonProcessingException {
+        log.info("consultantId:{},consultant:{}",consultantId,updateConsultantProfileDto);
         //权限验证
         Integer id = TokenUtil.getTokenUser().getUserId();
-        if(!consultantId.equals(id)&&adminService.getById(consultantId)==null){
+        if(!consultantId.equals(id)&&adminService.getById(id)==null){
             return R.auth_error();
         }
         //将consultantDto的值复制给consultant
-        Consultant consultant = consultantService.getById(consultantDto.getId());
-        BeanUtils.copyProperties(consultantDto,consultant,"expertiseTag");
-
-        consultant.setExpertiseTag(objectMapper.writeValueAsString(consultantDto.getExpertiseTag()));
-
+        Consultant consultant = consultantService.getById(updateConsultantProfileDto.getId());
+        BeanUtils.copyProperties(updateConsultantProfileDto,consultant,"expertiseTag");
+        consultant.setExpertiseTag(objectMapper.writeValueAsString(updateConsultantProfileDto.getExpertiseTag()));
         consultantService.updateById(consultant);
-        //回返
-        BeanUtils.copyProperties(consultant,consultantDto,"expertiseTag");
-        consultantDto.setExpertiseTag(objectMapper.readValue(consultant.getExpertiseTag(),new TypeReference<List<ExpertiseTag>>() {}));
-        return R.success(consultantDto);
+        //同步更新腾讯云IM
+        String identifier = "1"+"_"+consultantId.toString();
+        String gender = "Gender_Type_Unknown";
+        switch (consultant.getGender()){
+            case 0:
+                gender = "Gender_Type_Female";
+                break;
+            case 1:
+                gender = "Gender_Type_Male";
+                break;
+            default:
+                break;
+        }
+        boolean isSuccess = tencentCloudImUtil.updateAccount(identifier,consultant.getName(),consultant.getAvatar(),gender);
+        if(!isSuccess){
+            return R.error("腾讯IM更新账号失败");
+        }
+        return R.success("修改咨询师详情成功");
     }
 
     /**
@@ -373,10 +386,10 @@ public class ConsultantController {
     @PostMapping("/schedule/{date}")
     public R<String> addConsultantToSchedule(@PathVariable("date") String date,@RequestBody HashMap<String, List<LinkedHashMap<String, Object>>> consultants){
         //权限判断,只有督导员和管理员可以更新
-        User user = TokenUtil.getTokenUser();
-        if(user.getType().equals(1)){
-            return R.auth_error();
-        }
+//        User user = TokenUtil.getTokenUser();
+//        if(user.getType().equals(1)){
+//            return R.auth_error();
+//        }
         List<LinkedHashMap<String, Object>> consultantSchedules = consultants.get("consultants");
         //添加咨询师
         for(LinkedHashMap<String, Object> consultant:consultantSchedules){
@@ -448,7 +461,4 @@ public class ConsultantController {
         recordService.updateById(record);
         return R.success("咨询师填写用户评估成功");
     }
-
-
-
 }

@@ -10,22 +10,26 @@ import lombok.Data;
 @Data
 @Builder
 public class WxUserInfo {
-    private String openId;
+    private String nickName;
 
-    private String username;
+    private Integer gender;//0男1女
 
-    private String realName;
-
-    private Integer age;
-
-    private Byte gender;//0:女 1:男 2:未知
-
-    private String avatar;
-
-    private String phone;
-
-    private String emergencyName;
-
-    private String emergencyPhone;
+    private String avatarUrl;
+    /**
+     * {
+     * "nickName":"樱",
+     * "gender":0,
+     * "language":"zh_CN",
+     * "city":"",
+     * "province":"",
+     * "country":"",
+     * "avatarUrl":"https://thirdwx.qlogo.cn/mmopen/vi_32/DYAIOgq83eq0icXlPdicwa6YHTQH9nQdnBuPbRdUpwayceD3nw6oBxCWIeMQF7yA9NPhk0rbmPK0CwEicHMIfHOXA/132",
+     * "watermark":
+     *          {
+     *          "timestamp":1685069890,
+     *          "appid":"wxb9f9c2c27af57638"
+     *          }
+     * }
+     */
 
 }

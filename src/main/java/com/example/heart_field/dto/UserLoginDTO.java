@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserLoginDTO {
-    private Byte type;
+    private Integer type;
     //type为0是Visitor，1是Consultant，2是Admin，3是Supervisor
 
     private String token;

@@ -21,5 +21,6 @@ public class Schedule {
     private Integer staffType;
     private Integer staffId;
     private Integer workday;
+    //1-31的数字，代表每个月的哪一天
     private LocalDateTime createTime;
 }
