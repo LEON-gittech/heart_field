@@ -65,38 +65,36 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
         if(toDate!=null){
             queryWrapper.le(Help::getEndTime,toDate);
         }
-        if(searchValue!=null){
-            queryWrapper
-
-                    .or(wrapper->{
-                        wrapper.like(Help::getConsultantName,searchValue);
-                    })
-                    .or(wrapper->{
-                        wrapper.like(Help::getSupervisorName,searchValue);
-                    });
-        }
         queryWrapper.orderByDesc(Help::getCreateTime);
         List<Help> helps=this.baseMapper.selectList(queryWrapper);
         List<HelpDTO> helpDTOS=new ArrayList<>();
         for(Help h:helps){
-            HelpDTO helpDTO=HelpDTO.builder()
-                    .id(h.getId())
+            Consultant consultant = consultantMapper.selectById(h.getConsultantId());
+            Supervisor supervisor = supervisorMapper.selectById(h.getSupervisorId());
+            if(consultant==null||supervisor==null){
+                continue;
+            }
+            if(searchValue==null ||
+                    (searchValue!=null&&(consultant.getName().contains(searchValue)||supervisor.getName().contains(searchValue)))) {
+                HelpDTO helpDTO = HelpDTO.builder()
+                        .id(h.getId())
 
-                    .consultantId(h.getConsultantId())
-                    .consultantName(h.getConsultantName())
-                    .consultantAvatar(h.getConsultantAvatar())
+                        .consultantId(consultant.getId())
+                        .consultantName(consultant.getName())
+                        .consultantAvatar(consultant.getAvatar())
 
-                    .supervisorId(h.getSupervisorId())
-                    .supervisorName(h.getSupervisorName())
-                    .supervisorAvatar(h.getSupervisorAvatar())
+                        .supervisorId(supervisor.getId())
+                        .supervisorName(supervisor.getName())
+                        .supervisorAvatar(supervisor.getAvatar())
 
-                    .startTime(h.getStartTime())
-                    .continueTime(h.getEndTime().getSecond()-h.getStartTime().getSecond())
+                        .startTime(h.getStartTime())
+                        .continueTime(h.getEndTime().getSecond() - h.getStartTime().getSecond())
 
-                    .chatId(h.getChatId())
-                    .recordId(h.getRecordId())
-                    .build();
-            helpDTOS.add(helpDTO);
+                        .chatId(h.getChatId())
+                        .recordId(h.getRecordId())
+                        .build();
+                helpDTOS.add(helpDTO);
+            }
         }
         return helpDTOS;
     }
@@ -116,7 +114,7 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
          * 查chat是否存在,是否是求助类型
          */
         Chat chat = chatMapper.selectById(chatId);
-        if(chat==null||chat.getType()!= TypeConstant.HELP_CHAT){
+        if(chat==null||!chat.getType().equals( TypeConstant.HELP_CHAT)){
             return ResultInfo.error("该chat不存在,id:"+chatId);
         }
         /**
