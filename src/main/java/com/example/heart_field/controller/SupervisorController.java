@@ -52,10 +52,10 @@ public class SupervisorController {
     @AdminToken
 
     @PostMapping
-    public R<String> addSupervisor(@RequestBody SupervisorDto supervisorDto) {
-        try {
-            String phone = supervisorDto.phone;
-            String password = supervisorDto.password;
+    public R<String> addSupervisor(@RequestBody AddSupervisorDto supervisorDto) {
+
+            String phone = supervisorDto.getPhone();
+            String password = supervisorDto.getPassword();
             log.info("new新增督导电话:{},密码:{}", phone, password);
             if (phone.length() != 11) {
                 return R.error("电话号码不合格");
@@ -74,17 +74,18 @@ public class SupervisorController {
                 if(i<2)
                     return R.error("密码强度不符合");
             }
-
+            LambdaQueryWrapper<Supervisor> supervisorLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            supervisorLambdaQueryWrapper.eq(Supervisor::getPhone,phone);
+            Supervisor supervisorSearch = supervisorService.getOne(supervisorLambdaQueryWrapper);
+            if(supervisorSearch!=null)
+                return R.error("该手机号已存在");
             Supervisor supervisor = new Supervisor();
             supervisor.setPhone(phone);
             supervisor.setPassword(password);
             supervisorService.save(supervisor);
             User user = userUtils.saveUser(supervisor);
-            log.info("新增成功,新增id:{}", user.getId());
+            log.info("新增成功,新增id:{}", supervisor.getId());
             return R.success("添加成功");
-        } catch (Exception e) {
-            return R.error("系统错误");
-        }
 
     }
     /**
@@ -222,6 +223,15 @@ public class SupervisorController {
                 }
                 supervisorCom.consultTotalCount= total;
                 supervisorCom.consultTotalTime = time;
+                supervisorCom.phoneNum = one.getPhone();
+                // 统计督导排班
+                LambdaQueryWrapper<Schedule> scheduleLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                scheduleLambdaQueryWrapper.eq(Schedule::getStaffType,3).eq(Schedule::getStaffId,supervisorId).orderByAsc(Schedule::getWorkday);
+                List<Schedule> workList = scheduleService.list(scheduleLambdaQueryWrapper);
+                for(int t = 0;t<workList.size();t++){
+                 Schedule day = workList.get(t);
+                 supervisorCom.workArrange.add(day.getWorkday());
+                }
                 list.add(supervisorCom);
             }
 
@@ -276,6 +286,8 @@ public class SupervisorController {
             supervisor.setGender(Byte.parseByte(updateConsultantDto.getGender()));
             supervisor.setName(updateConsultantDto.getSupervisorName());
             supervisorService.updateById(supervisor);
+        // 更新user
+
             log.info("supervisor:{}",supervisor);
             return R.success("更新成功");
 

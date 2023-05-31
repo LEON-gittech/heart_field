@@ -11,6 +11,9 @@ public class SupervisorComDto {
     public String supervisorName;
     public List<ConsultantEasyDto> supervisorBind;
 
+    public String phoneNum;
     public Integer consultTotalCount;
     public Long consultTotalTime;
+    public List<Integer> workArrange;
+
 }
