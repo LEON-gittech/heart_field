@@ -89,6 +89,7 @@ public class UserUtils {
         }
         //督导
         else if (object.getClass().equals(Supervisor.class)) {
+            log.info("----进入判断-----");
             LambdaQueryWrapper<Supervisor> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(Supervisor::getPhone, ((Supervisor) object).getPhone());
             Supervisor supervisor = supervisorService.getOne(lambdaQueryWrapper);
@@ -136,7 +137,9 @@ public class UserUtils {
 
     public <T> User updateUser(T object){
         User user = newUser(object);
-        userService.updateById(user);
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getPhone, user.getPhone());
+        userService.update(user,queryWrapper);
         return user;
     }
     //根据传入的User信息匹配数据库中的User
