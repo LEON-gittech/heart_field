@@ -136,7 +136,9 @@ public class UserUtils {
 
     public <T> User updateUser(T object){
         User user = newUser(object);
-        userService.updateById(user);
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getPhone, user.getPhone());
+        userService.update(user,queryWrapper);
         return user;
     }
     //根据传入的User信息匹配数据库中的User
