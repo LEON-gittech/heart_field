@@ -19,7 +19,7 @@ public class ScheduleDTO {
 
     private Integer supervisorCount;
 
-    private List<ConsultantDto> consultantList;
+    private List<ConsultantScheDTO> consultantList;
 
     private List<SupervisorDTO> supervisorList;
 }

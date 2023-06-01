@@ -5,8 +5,11 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.TypeConstant;
+import com.example.heart_field.dto.ConsultantEasyDto;
+import com.example.heart_field.dto.ConsultantScheDTO;
 import com.example.heart_field.dto.ScheduleDTO;
 import com.example.heart_field.dto.SupervisorDTO;
+import com.example.heart_field.dto.consultant.schedule.ConsultantScheduleDto;
 import com.example.heart_field.entity.Consultant;
 import com.example.heart_field.entity.Schedule;
 import com.example.heart_field.entity.Supervisor;
@@ -48,40 +51,60 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             queryWrapper_consultant.eq(Schedule::getStaffType, TypeConstant.CONSULTANT).eq(Schedule::getWorkday,today);
             //Integer count_consultant=this.baseMapper.selectCount(queryWrapper_consultant);
             //根据schedule表中的consultant id ，去consultant表中查询consultant的信息
-            List<ConsultantDto> consultantDTOList = this.baseMapper.selectList(queryWrapper_consultant).stream().map(schedule -> {
+            List<ConsultantScheDTO> consultantDTOList = this.baseMapper.selectList(queryWrapper_consultant).stream()
+                    .filter(
+                            schedule -> {
+                                Integer consultantId = schedule.getStaffId();
+                                LambdaQueryWrapper<Consultant> queryWrapper_consultantDTO = Wrappers.lambdaQuery();
+                                Consultant consultant=consultantMapper.selectOne(queryWrapper_consultantDTO.eq(Consultant::getId,consultantId));
+                                if(consultant.isDisabled()==false&&consultant.isValid()==true){
+                                    return true;
+                                }else{
+                                    return false;
+                                }
+                            }
+                    )
+                    .map(schedule -> {
                 Integer consultantId = schedule.getStaffId();
                 LambdaQueryWrapper<Consultant> queryWrapper_consultantDTO = Wrappers.lambdaQuery();
                 Consultant consultant=consultantMapper.selectOne(queryWrapper_consultantDTO.eq(Consultant::getId,consultantId));
-                if(consultant.isDisabled()==true||consultant.isValid()==false){
-                    return null;
-                }else{
-                    ConsultantDto consultantDTO = ConsultantDto.builder()
-                            .id(String.valueOf(consultant.getId()))
-                            .consultantName(consultant.getName())
-                            .consultantAvatar(consultant.getAvatar())
-                            .build();
-                    return consultantDTO;
-                }
+
+                ConsultantScheDTO consultantDTO = ConsultantScheDTO.builder()
+                        .consultantId(consultant.getId())
+                        .consultantName(consultant.getName())
+                        .consultantAvatar(consultant.getAvatar())
+                        .build();
+                return consultantDTO;
+
             }).collect(Collectors.toList());
             //督导
             LambdaQueryWrapper<Schedule> queryWrapper_supervisor= Wrappers.lambdaQuery();
             queryWrapper_supervisor.eq(Schedule::getStaffType, TypeConstant.SUPERVISOR).eq(Schedule::getWorkday,today);
             //Integer count_supervisor=this.baseMapper.selectCount(queryWrapper_supervisor);
             //根据schedule表中的supervisor id ，去supervisor表中查询supervisor的信息
-            List<SupervisorDTO> supervisorDTOList = this.baseMapper.selectList(queryWrapper_supervisor).stream().map(schedule -> {
+            List<SupervisorDTO> supervisorDTOList = this.baseMapper.selectList(queryWrapper_supervisor).stream()
+                    .filter(
+                            schedule -> {
+                                Integer supervisorId = schedule.getStaffId();
+                                LambdaQueryWrapper<Supervisor> queryWrapper_supervisorDTO = Wrappers.lambdaQuery();
+                                Supervisor supervisor=supervisorMapper.selectOne(queryWrapper_supervisorDTO.eq(Supervisor::getId,supervisorId));
+                                if(supervisor.isDisabled()==false&&supervisor.isValid()==true){
+                                    return true;
+                                }else{
+                                    return false;
+                                }
+                            }
+                    )
+                    .map(schedule -> {
                 Integer supervisorId = schedule.getStaffId();
                 LambdaQueryWrapper<Supervisor> queryWrapper_supervisorDTO = Wrappers.lambdaQuery();
                 Supervisor supervisor=supervisorMapper.selectOne(queryWrapper_supervisorDTO.eq(Supervisor::getId,supervisorId));
-                if(supervisor.isDisabled()==true||supervisor.isValid()==false){
-                    return null;
-                }else{
-                    SupervisorDTO supervisorDTO = SupervisorDTO.builder()
-                            .id(supervisor.getId())
-                            .supervisorName(supervisor.getName())
-                            .avatar(supervisor.getAvatar())
-                            .build();
-                    return supervisorDTO;
-                }
+                SupervisorDTO supervisorDTO = SupervisorDTO.builder()
+                        .id(supervisor.getId())
+                        .supervisorName(supervisor.getName())
+                        .avatar(supervisor.getAvatar())
+                        .build();
+                return supervisorDTO;
             }).collect(Collectors.toList());
 
             ScheduleDTO scheduleDTO = ScheduleDTO.builder()
