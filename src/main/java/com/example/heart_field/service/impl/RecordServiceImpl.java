@@ -41,6 +41,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
     private ChatMapper chatMapper;
 
 
+
     @Override
     public List<RecordListDTO> getRecords(String visitorId, String state,Integer pageSize, Integer pageNum) {
         LambdaQueryWrapper<Record> queryWrapper= Wrappers.lambdaQuery();
@@ -105,21 +106,19 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
     public List<RecordDTO> queryRecords(String searchValue, int pageSize, int pageNum, LocalDateTime fromDate, LocalDateTime toDate) {
         LambdaQueryWrapper<Record> queryWrapper = Wrappers.lambdaQuery();
         User user = TokenUtil.getTokenUser();
-        if (user!=null){
-            switch (user.getType()) {
-                ////type为0是Visitor，1是Consultant，2是Admin，3是Supervisor
-                case 0:
-                    return new ArrayList<>();
-                case 1:
-                    //咨询师-自己负责的咨询会话
-                    queryWrapper.eq(Record::getConsultantId, user.getId());
-                    break;
-                default:
-                    //督导/管理员-全平台会话（即所有的咨询记录列表）
-                    break;
-            }
+        //if (user == null) { return new ArrayList<>();}
+        switch (user.getType()) {
+            ////type为0是Visitor，1是Consultant，2是Admin，3是Supervisor
+            case 0:
+                return new ArrayList<>();
+            case 1:
+                //咨询师-自己负责的咨询会话
+                queryWrapper.eq(Record::getConsultantId, user.getId());
+                break;
+            default:
+                //督导/管理员-全平台会话（即所有的咨询记录列表）
+                break;
         }
-        log.info("用户类型:{}",user.getType());
         log.info("searchValue:{}", searchValue);
         if (fromDate != null) {
             queryWrapper.ge(Record::getCreateTime, fromDate);

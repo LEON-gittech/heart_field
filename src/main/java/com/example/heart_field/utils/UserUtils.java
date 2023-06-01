@@ -89,6 +89,7 @@ public class UserUtils {
         }
         //督导
         else if (object.getClass().equals(Supervisor.class)) {
+            log.info("----进入判断-----");
             LambdaQueryWrapper<Supervisor> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(Supervisor::getPhone, ((Supervisor) object).getPhone());
             Supervisor supervisor = supervisorService.getOne(lambdaQueryWrapper);

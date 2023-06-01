@@ -47,6 +47,6 @@ public class TokenUtil {
      * @return
      */
     public static int getTokenUserId() {
-        return 0;
+        return getTokenUser().getUserId();
     }
 }
