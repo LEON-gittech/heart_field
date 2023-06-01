@@ -72,7 +72,7 @@ public class ConsultantController {
         });
         int page = Integer.parseInt(httpServletRequest.getParameter("page"));
         int pageSize = Integer.parseInt(httpServletRequest.getParameter("pageSize"));
-        String searchValue = httpServletRequest.getParameter("searchValue");
+        String searchValue = httpServletRequest.getParameter("searchValue") ;
         int sortType = Integer.parseInt(httpServletRequest.getParameter("sortType"));
         int sort = Integer.parseInt(httpServletRequest.getParameter("sort"));
         log.info("分类信息查询，page={},pageSize={},searchValue={}",page,pageSize,searchValue);

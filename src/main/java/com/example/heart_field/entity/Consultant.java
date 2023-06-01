@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -54,7 +55,7 @@ public class Consultant {
     public ConsultantDto convert2ConsultantDto(ConsultantService consultantService) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         return ConsultantDto.builder()
-                .expertiseTag(objectMapper.readValue(this.expertiseTag, new TypeReference<List<ExpertiseTag>>() {}))
+                .expertiseTag(this.expertiseTag==null? new ArrayList<>() : objectMapper.readValue(this.expertiseTag, new TypeReference<List<ExpertiseTag>>() {}))
                 .id(String.valueOf(this.id))
                 .briefIntroduction(this.briefIntro)
                 .consultantAvatar(this.avatar)
