@@ -127,7 +127,7 @@ public class ConsultantController {
         ConsultantsDto consultantsDto = new ConsultantsDto();
         List<Consultant> consultants = pageinfo.getRecords();
         List<ConsultantDto> consultantDtos = new ArrayList<>();
-        Integer pageNum = Math.toIntExact(pageinfo.getSize());
+        Integer pageNum = Math.toIntExact(pageinfo.getPages());
         consultantsDto.setPageNum(pageNum);
         consultantsDto.setConsultants(consultantDtos);
         //对consultans进行批处理
