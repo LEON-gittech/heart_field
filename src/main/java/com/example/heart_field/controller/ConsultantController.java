@@ -7,13 +7,12 @@ import com.example.heart_field.common.R;
 import com.example.heart_field.dto.consultant.ConsultantDto;
 import com.example.heart_field.dto.consultant.ConsultantsDto;
 import com.example.heart_field.dto.consultant.ExpertiseTag;
-//import com.example.heart_field.dto.consultant.binding.SupervisorBindedDto;
+import com.example.heart_field.dto.consultant.binding.SupervisorBindedDto;
 import com.example.heart_field.dto.consultant.comment.CommentDto;
 import com.example.heart_field.dto.consultant.comment.CommentsDto;
 import com.example.heart_field.dto.consultant.profile.AnyConsultantProfileDto;
 import com.example.heart_field.dto.consultant.profile.ConsultantProfileDto;
 import com.example.heart_field.dto.consultant.profile.UpdateConsultantProfileDto;
-import com.example.heart_field.entity.Record;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.service.*;
 import com.example.heart_field.tokens.AdminToken;
@@ -28,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -143,7 +143,7 @@ public class ConsultantController {
      */
     @AdminToken
     @PostMapping
-    public R<String> save(@RequestBody Consultant consultant){
+    public R<String> save(@Validated @RequestBody Consultant consultant){
         log.info("consultant:{}",consultant);
         consultantService.save(consultant);
         //同步添加到User类,从Consultant表中获取id
@@ -168,7 +168,7 @@ public class ConsultantController {
      * 使用ConsultantDto作为中转实体类，因为Consultant中的expertiseTag是json数组，需要转换
      */
     @PutMapping("/{consultantId}/profile")
-    public R<String> update(@PathVariable("consultantId") Integer consultantId, @RequestBody UpdateConsultantProfileDto updateConsultantProfileDto) throws JsonProcessingException {
+    public R<String> update(@PathVariable("consultantId") Integer consultantId,@Validated @RequestBody UpdateConsultantProfileDto updateConsultantProfileDto) throws JsonProcessingException {
         log.info("consultantId:{},consultant:{}",consultantId,updateConsultantProfileDto);
         //权限验证
         Integer id = TokenUtil.getTokenUser().getUserId();

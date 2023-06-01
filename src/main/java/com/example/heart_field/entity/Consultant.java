@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.example.heart_field.annotation.Phone;
 import com.example.heart_field.dto.consultant.ConsultantDto;
 import com.example.heart_field.dto.consultant.ExpertiseTag;
 import com.example.heart_field.service.ConsultantService;
@@ -42,6 +43,7 @@ public class Consultant {
     private Integer todayTotalHelpTime;
     private Integer todayTotalHelpCount;
     private Double rating = 0.0; // 默认值为0.0
+    @Phone
     private String phone;
     private String cardId; //身份证号码
     private String detailedIntro;
