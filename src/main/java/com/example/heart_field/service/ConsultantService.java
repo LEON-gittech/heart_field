@@ -17,5 +17,7 @@ public interface ConsultantService extends IService<Consultant> {
     List<SupervisorBinding> getSupervisorBindings(Consultant consultant);
     List<CommentDto> getCommentDto(Integer consultantId, Integer page, Integer pageSize, Integer pageNum);
     CommentsDto getCommentsDto(CommentsDto commentsDto ,Integer consultantId, Integer page, Integer pageSize);
+
+    //ResultInfo createChat(Integer , Integer , Integer );
     //ResultInfo<UserLoginDTO> login(UserLoginParam loginParam);
 }

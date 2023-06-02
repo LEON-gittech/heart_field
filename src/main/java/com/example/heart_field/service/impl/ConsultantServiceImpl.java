@@ -14,6 +14,9 @@ import com.example.heart_field.dto.UserLoginDTO;
 import com.example.heart_field.entity.Record;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.mapper.ConsultantMapper;
+import com.example.heart_field.mapper.RecordMapper;
+import com.example.heart_field.mapper.SupervisorMapper;
+import com.example.heart_field.mapper.VisitorMapper;
 import com.example.heart_field.param.UserLoginParam;
 import com.example.heart_field.service.*;
 import com.example.heart_field.tokens.TokenService;
@@ -40,6 +43,7 @@ public class ConsultantServiceImpl extends ServiceImpl<ConsultantMapper, Consult
     private VisitorService visitorService;
     @Autowired
     private TokenService tokenService;
+
     //重置Consultant的每日属性
     public void resetDailyProperties() {
         List<Consultant> consultants = this.list();
@@ -123,6 +127,7 @@ public class ConsultantServiceImpl extends ServiceImpl<ConsultantMapper, Consult
         commentsDto.setCommentsDto(commentDtos);
         return commentsDto;
     }
+
 
 
 }
