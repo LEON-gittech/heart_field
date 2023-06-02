@@ -45,8 +45,8 @@ public class RecordController {
                                @RequestParam(value = "fromDate", required = false) String fromDate,
                                @RequestParam(value = "toDate", required = false) String toDate){
 
-        LocalDateTime from = LocalDateTime.parse(fromDate+" 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-        LocalDateTime to = LocalDateTime.parse(toDate+" 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        LocalDateTime from = LocalDateTime.parse(fromDate+"T00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss"));
+        LocalDateTime to = LocalDateTime.parse(toDate+"T00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss"));
 
         List<RecordDTO> resultInfo = recordService.queryRecords(searchValue, pageSize, pageNum, from, to);
         int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
