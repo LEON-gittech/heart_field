@@ -12,6 +12,6 @@ public class WxLoginParam {
 
     String code;
 
-    String encryptData;
+    String encryptedData;
 
 }

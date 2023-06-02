@@ -8,4 +8,6 @@ import com.example.heart_field.param.WxLoginParam;
 public interface VisitorService extends IService<Visitor> {
 
     R authLogin(WxLoginParam loginParam);
+
+    R testLogin();
 }

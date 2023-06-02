@@ -117,8 +117,9 @@ public class UserUtils {
         //访客
         else if (object.getClass().equals(Visitor.class)){
             LambdaQueryWrapper<Visitor> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-            lambdaQueryWrapper.eq(Visitor::getPhone, ((Visitor) object).getPhone());
+            lambdaQueryWrapper.eq(Visitor::getOpenId, ((Visitor) object).getOpenId());
             Visitor visitor = visitorService.getOne(lambdaQueryWrapper);
+            password ="123456";
             id = visitor.getId();
             phone = visitor.getPhone();
             user.setType(0);
@@ -126,6 +127,10 @@ public class UserUtils {
         user.setUserId(id);
         user.setPhone(phone);
         user.setPassword(password);
+        log.info("同步visitor，userid为：{}"+user.getId());
+        log.info("phone为:{}",user.getPhone());
+        log.info("password为默认值：{}",user.getPassword());
+
         return user;
     }
 
