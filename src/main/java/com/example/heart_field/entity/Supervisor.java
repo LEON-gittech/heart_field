@@ -10,9 +10,9 @@ import java.time.LocalDateTime;
 public class Supervisor {
     @TableId(value="id",type = IdType.AUTO)
     private Integer id;
-    private boolean isOnline;
-    private boolean isDisabled;
-    private boolean isValid;
+    private int isOnline=0;
+    private int isDisabled=0;
+    private int isValid=0;
     private LocalDateTime createTime;
     private LocalDateTime updateTime;
     private String name;

@@ -72,7 +72,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                 Integer supervisorId = schedule.getStaffId();
                 LambdaQueryWrapper<Supervisor> queryWrapper_supervisorDTO = Wrappers.lambdaQuery();
                 Supervisor supervisor=supervisorMapper.selectOne(queryWrapper_supervisorDTO.eq(Supervisor::getId,supervisorId));
-                if(supervisor.isDisabled()==true||supervisor.isValid()==false){
+                if(supervisor.getIsDisabled()==1||supervisor.getIsValid()==0){
                     return null;
                 }else{
                     SupervisorDTO supervisorDTO = SupervisorDTO.builder()

@@ -7,13 +7,12 @@ import com.example.heart_field.common.R;
 import com.example.heart_field.dto.consultant.ConsultantDto;
 import com.example.heart_field.dto.consultant.ConsultantsDto;
 import com.example.heart_field.dto.consultant.ExpertiseTag;
-//import com.example.heart_field.dto.consultant.binding.SupervisorBindedDto;
+import com.example.heart_field.dto.consultant.binding.SupervisorBindedDto;
 import com.example.heart_field.dto.consultant.comment.CommentDto;
 import com.example.heart_field.dto.consultant.comment.CommentsDto;
 import com.example.heart_field.dto.consultant.profile.AnyConsultantProfileDto;
 import com.example.heart_field.dto.consultant.profile.ConsultantProfileDto;
 import com.example.heart_field.dto.consultant.profile.UpdateConsultantProfileDto;
-import com.example.heart_field.entity.Record;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.service.*;
 import com.example.heart_field.tokens.AdminToken;
@@ -304,7 +303,7 @@ public class ConsultantController {
     @PutMapping("/{consultantId}/bindings")
     public R<SupervisorBindedDto> updateBindings(@PathVariable("consultantId") Integer consultantId, @RequestBody SupervisorBindedDto supervisorBindedDto){
         //获取指定咨询师的所有绑定记录
-        List<Integer> supervisorBinded = supervisorBindedDto.getSupervisorBinded();
+        List<Integer> supervisorBinded = supervisorBindedDto.getSupervisorBinding();
         LambdaQueryWrapper<Binding> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Binding::getConsultantId,consultantId);
         List<Binding> bindings = bindingService.list(queryWrapper);

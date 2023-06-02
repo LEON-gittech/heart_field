@@ -6,6 +6,7 @@ import com.example.heart_field.common.R;
 import com.example.heart_field.dto.*;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.service.*;
+import com.example.heart_field.service.impl.StaffStatServiceImpl;
 import com.example.heart_field.tokens.AdminToken;
 import com.example.heart_field.tokens.UserLoginToken;
 import com.example.heart_field.utils.PwdCheckUtil;
@@ -20,7 +21,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -45,8 +45,12 @@ public class SupervisorController {
     private AdminService adminService;
     @Autowired
     private ScheduleService scheduleService;
+    @Autowired
+    private StaffStatServiceImpl staffStatService;
+
     /**
      * 新增一个督导
+     * 权限：管理员
      */
 
     @AdminToken
@@ -95,9 +99,14 @@ public class SupervisorController {
     @GetMapping("/preview")
     public R<List<SupervisorPreviewDto>> getSupervisorPreview(){
         List<SupervisorPreviewDto> list = new ArrayList<>();
-        try{
+        //try{
+            User user = TokenUtil.getTokenUser();
+            Integer id = user.getUserId();
+            Integer type = user.getType();
+            if(type!=2)
+                return R.auth_error();
             LambdaQueryWrapper<Supervisor> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(Supervisor::isOnline,1);
+            queryWrapper.eq(Supervisor::getIsOnline,1);
             List<Supervisor> supervisors = supervisorService.list(queryWrapper);
             for(int i = 0;i<supervisors.size();i++)
             {
@@ -106,7 +115,7 @@ public class SupervisorController {
                 SupervisorPreviewDto supervisorPreview = new SupervisorPreviewDto();
                 supervisorPreview.id = one.getId();
                 supervisorPreview.supervisorName=one.getName();
-                if(one.isDisabled()){
+                if(one.getIsDisabled()==1){
                     if(2*one.getConcurrentNum() > one.getMaxConcurrent()){
                         supervisorPreview.state = "1";
                     }
@@ -119,9 +128,9 @@ public class SupervisorController {
                 list.add(supervisorPreview);
         }
         return R.success(list);
-            }catch(Exception e){
+            /*}catch(Exception e){
                return R.error("系统错误");
-          }
+          }*/
     }
     /**
      * 获取督导列表(可搜索)
@@ -156,10 +165,10 @@ public class SupervisorController {
             if(sort == 0){
                 switch (sortType){
                     case 0:
-                        queryWrapper.orderByDesc(Supervisor::isOnline);
+                        queryWrapper.orderByDesc(Supervisor::getIsOnline);
                         break;
                     case 1:
-                        queryWrapper.orderByAsc(Supervisor::isDisabled);
+                        queryWrapper.orderByAsc(Supervisor::getIsDisabled);
                         break;
                     case 2:
                         queryWrapper.orderByAsc(Supervisor::getName);
@@ -169,10 +178,10 @@ public class SupervisorController {
             }else {
                 switch (sortType){
                     case 0:
-                        queryWrapper.orderByAsc(Supervisor::isOnline);
+                        queryWrapper.orderByAsc(Supervisor::getIsOnline);
                         break;
                     case 1:
-                        queryWrapper.orderByAsc(Supervisor::isDisabled);
+                        queryWrapper.orderByAsc(Supervisor::getIsDisabled);
                         break;
                     case 2:
                         queryWrapper.orderByAsc(Supervisor::getName);
@@ -183,6 +192,8 @@ public class SupervisorController {
             supervisorService.page(pageInfo,queryWrapper);
             // 实现返回部分字段
             List<Supervisor> supervisors = supervisorService.list(queryWrapper);
+            if(supervisors.size()==0)
+                return R.resource_error();
             List<SupervisorComDto> list = new ArrayList<>();
             for(int i=0;i<supervisors.size();i++){
                 SupervisorComDto supervisorCom = new SupervisorComDto();
@@ -212,7 +223,7 @@ public class SupervisorController {
                 }
                 supervisorCom.supervisorBind=consultantList;
                 //统计帮助次数和时长
-                LambdaQueryWrapper<Help> helpLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                /*LambdaQueryWrapper<Help> helpLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 helpLambdaQueryWrapper.eq(Help::getSupervisorId,supervisorId);
                 List<Help> helpList = helpService.list(helpLambdaQueryWrapper);
                 int total = 0;
@@ -224,7 +235,12 @@ public class SupervisorController {
                     total++;
                 }
                 supervisorCom.consultTotalCount= total;
-                supervisorCom.consultTotalTime = time;
+                supervisorCom.consultTotalTime = time;*/
+                LambdaQueryWrapper<StaffStat> staffStatLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                staffStatLambdaQueryWrapper.eq(StaffStat::getStaffId,supervisorId).eq(StaffStat::getStaffType,1);
+                StaffStat stat = staffStatService.getOne(staffStatLambdaQueryWrapper);
+                supervisorCom.consultTotalCount= stat.getTotalCount();
+                supervisorCom.consultTotalTime = Long.valueOf(stat.getTotalTime());
                 supervisorCom.phoneNum = one.getPhone();
                 // 统计督导排班
                 LambdaQueryWrapper<Schedule> scheduleLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -244,6 +260,7 @@ public class SupervisorController {
             for(int i=0;i<list.size();i++){
                 log.info("i:{},list:{}",i,list.get(i));
             }
+
             Page<SupervisorComDto> onePage = new Page<SupervisorComDto>(page,pageSize);
             //onePage.addOrder((OrderItem) list);
             onePage.setTotal(list.size());
@@ -276,11 +293,28 @@ public class SupervisorController {
             //判断传入的id参数是否与tokenid一致且不属于管理员,无权修改
             if(!tokenId.equals(Integer.valueOf(supervisorId)) && adminService.getById(tokenId)==null)
             {return R.auth_error();}
+            if(supervisorService.getById(supervisorId)==null)
+                return R.resource_error();
             LambdaQueryWrapper<Supervisor> supervisorLambdaQueryWrapper = new LambdaQueryWrapper<>();
             supervisorLambdaQueryWrapper.eq(Supervisor::getId,supervisorId);
             Supervisor supervisor=supervisorService.getOne(supervisorLambdaQueryWrapper);
             supervisor.setId(Integer.valueOf(supervisorId));
             supervisor.setName(updateSupervisorDto.getName());
+            String password = updateSupervisorDto.getPassword();
+            //密码最小八位数，最大20位
+            if (!PwdCheckUtil.checkPasswordLength(password,"8","20") ) {
+                return R.error("密码长度不符合");
+            }else{
+                int i = 0;
+                if(PwdCheckUtil.checkContainDigit(password) && PwdCheckUtil.checkContainCase(password))
+                    i++;
+                if(PwdCheckUtil.checkContainLowerCase(password)&&PwdCheckUtil.checkContainUpperCase(password))
+                    i++;
+                if(PwdCheckUtil.checkContainSpecialChar(password))
+                    i++;
+                if(i<2)
+                    return R.error("密码强度不符合");
+            }
             supervisor.setPassword(updateSupervisorDto.getPassword());
             supervisor.setPhone(updateSupervisorDto.getPhone());
             supervisor.setQualificationId(updateSupervisorDto.getQualificationId());
@@ -311,7 +345,12 @@ public class SupervisorController {
     @GetMapping("/profile")
     public R<SupervisorProfileDto> getSupervisorProfile(){
         try{
-            Integer id = Integer.valueOf(TokenUtil.getTokenUserId());
+
+            User user = TokenUtil.getTokenUser();
+            Integer id = user.getUserId();
+            Integer type = user.getType();
+            if(type == 2)
+                return R.auth_error();
             log.info("id:{}",id);
             LambdaQueryWrapper<Supervisor> queryWrapper = new LambdaQueryWrapper<>();
             queryWrapper.eq(Supervisor::getId,id);
@@ -320,15 +359,16 @@ public class SupervisorController {
                 return R.resource_error();
             SupervisorProfileDto supervisorProfileDto = new SupervisorProfileDto();
             supervisorProfileDto.setType(1);
+            supervisorProfileDto.setId(String.valueOf(id));
             supervisorProfileDto.setName(supervisor.getName());
             supervisorProfileDto.setMaxConcurrentCount(supervisor.getMaxConcurrent());
             supervisorProfileDto.setMaxCount(supervisor.getMaxNum());
             supervisorProfileDto.setCurrentSessionCount(supervisor.getConcurrentNum());
-            if(supervisor.isOnline())
+            if(supervisor.getIsOnline()==1)
                 supervisorProfileDto.setState(1);
             else
                 supervisorProfileDto.setState(0);
-            LambdaQueryWrapper<Help> queryWrapper1 = new LambdaQueryWrapper<>();
+            /*LambdaQueryWrapper<Help> queryWrapper1 = new LambdaQueryWrapper<>();
             LocalDateTime localDateTime = LocalDateTime.now();
             queryWrapper1.eq(Help::getSupervisorId,id)
                     .eq(Help::getUpdateTime,localDateTime)
@@ -344,7 +384,12 @@ public class SupervisorController {
 
             }
             supervisorProfileDto.setTodayTotalCount(totalTotalCount);
-            supervisorProfileDto.setTodayTotalTime(todayTotalTime);
+            supervisorProfileDto.setTodayTotalTime(todayTotalTime);*/
+            LambdaQueryWrapper<StaffStat> staffStatLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            staffStatLambdaQueryWrapper.eq(StaffStat::getStaffId,id).eq(StaffStat::getStaffType,1);
+            StaffStat stat = staffStatService.getOne(staffStatLambdaQueryWrapper);
+            supervisorProfileDto.setTodayTotalCount(stat.getTotalCount());
+            supervisorProfileDto.setTodayTotalTime(Long.valueOf(stat.getTotalTime()));
             return R.success(supervisorProfileDto);
         }catch (Exception e){
             return R.error("系统错误");
@@ -420,8 +465,8 @@ public class SupervisorController {
         if(supervisor==null)
             return R.resource_error();
         if(enable)//开启督导使用权限
-            supervisor.setDisabled(false);
-        else supervisor.setDisabled(true);
+            supervisor.setIsDisabled(0);
+        else supervisor.setIsDisabled(1);
         supervisorService.updateById(supervisor);
         return R.success("修改督导使用状态成功");
 

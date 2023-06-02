@@ -9,5 +9,5 @@ import java.util.List;
  */
 @Data
 public class SupervisorBindedDto {
-    private List<Integer> supervisorBinded;
+    private List<Integer> supervisorBinding;
 }
