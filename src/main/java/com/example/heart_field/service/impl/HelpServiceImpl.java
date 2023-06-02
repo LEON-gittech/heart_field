@@ -9,10 +9,7 @@ import com.example.heart_field.dto.HelpDTO;
 import com.example.heart_field.dto.consultant.record.RecordDTO;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.entity.Record;
-import com.example.heart_field.mapper.ChatMapper;
-import com.example.heart_field.mapper.ConsultantMapper;
-import com.example.heart_field.mapper.HelpMapper;
-import com.example.heart_field.mapper.SupervisorMapper;
+import com.example.heart_field.mapper.*;
 import com.example.heart_field.service.HelpService;
 import com.example.heart_field.utils.TokenUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +38,9 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
 
     @Autowired
     private SupervisorMapper supervisorMapper;
+
+    @Autowired
+    private RecordMapper recordMapper;
 
     @Override
     public List<HelpDTO> queryRecords(String searchValue, int pageSize, int pageNum, LocalDateTime fromDate, LocalDateTime toDate) {
@@ -91,7 +91,6 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
                         .continueTime(h.getEndTime().getSecond() - h.getStartTime().getSecond())
 
                         .chatId(h.getChatId())
-                        .recordId(h.getRecordId())
                         .build();
                 helpDTOS.add(helpDTO);
             }
@@ -132,6 +131,14 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
             return ResultInfo.error("该chat的督导不存在,id:"+chat.getUserB());
         }//封禁也返回
 
+        /*
+        查record
+         */
+        Record record = recordMapper.selectById(recordId);
+        if(record==null){
+            return ResultInfo.error("该record不存在,id:"+recordId);
+        }
+
         /**
          * 创建help
          */
@@ -142,9 +149,10 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
                 .startTime(chat.getStartTime())
                 .endTime(chat.getEndTime())
                 .chatId(chatId)
-                .recordId(recordId)
                 .build();
         this.baseMapper.insert(help);
+        record.setHelpId(help.getId());
+
         return ResultInfo.success(help.getId());
     }
 }

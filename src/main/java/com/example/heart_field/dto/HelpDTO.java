@@ -26,7 +26,6 @@ public class HelpDTO {
     private LocalDateTime startTime;
 
     private Integer chatId;
-    private Integer recordId;
 
 
 }
