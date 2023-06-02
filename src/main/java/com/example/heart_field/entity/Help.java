@@ -65,6 +65,4 @@ public class Help {
 
     private Integer chatId;
 
-    private Integer recordId;
-
 }

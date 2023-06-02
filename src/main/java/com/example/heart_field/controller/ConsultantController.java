@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -71,7 +72,7 @@ public class ConsultantController {
         });
         int page = Integer.parseInt(httpServletRequest.getParameter("page"));
         int pageSize = Integer.parseInt(httpServletRequest.getParameter("pageSize"));
-        String searchValue = httpServletRequest.getParameter("searchValue");
+        String searchValue = httpServletRequest.getParameter("searchValue") ;
         int sortType = Integer.parseInt(httpServletRequest.getParameter("sortType"));
         int sort = Integer.parseInt(httpServletRequest.getParameter("sort"));
         log.info("分类信息查询，page={},pageSize={},searchValue={}",page,pageSize,searchValue);
@@ -126,7 +127,7 @@ public class ConsultantController {
         ConsultantsDto consultantsDto = new ConsultantsDto();
         List<Consultant> consultants = pageinfo.getRecords();
         List<ConsultantDto> consultantDtos = new ArrayList<>();
-        Integer pageNum = Math.toIntExact(pageinfo.getCurrent());
+        Integer pageNum = Math.toIntExact(pageinfo.getPages());
         consultantsDto.setPageNum(pageNum);
         consultantsDto.setConsultants(consultantDtos);
         //对consultans进行批处理
@@ -142,7 +143,7 @@ public class ConsultantController {
      */
     @AdminToken
     @PostMapping
-    public R<String> save(@RequestBody Consultant consultant){
+    public R<String> save(@Validated @RequestBody Consultant consultant){
         log.info("consultant:{}",consultant);
         consultantService.save(consultant);
         //同步添加到User类,从Consultant表中获取id
@@ -167,7 +168,7 @@ public class ConsultantController {
      * 使用ConsultantDto作为中转实体类，因为Consultant中的expertiseTag是json数组，需要转换
      */
     @PutMapping("/{consultantId}/profile")
-    public R<String> update(@PathVariable("consultantId") Integer consultantId, @RequestBody UpdateConsultantProfileDto updateConsultantProfileDto) throws JsonProcessingException {
+    public R<String> update(@PathVariable("consultantId") Integer consultantId,@Validated @RequestBody UpdateConsultantProfileDto updateConsultantProfileDto) throws JsonProcessingException {
         log.info("consultantId:{},consultant:{}",consultantId,updateConsultantProfileDto);
         //权限验证
         Integer id = TokenUtil.getTokenUser().getUserId();

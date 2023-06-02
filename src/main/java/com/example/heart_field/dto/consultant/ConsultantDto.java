@@ -26,4 +26,6 @@ public class ConsultantDto{
     private Integer consultTotalTime;
     private Integer averageRank;
     private String phone;
+
+
 }

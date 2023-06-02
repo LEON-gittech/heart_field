@@ -1,5 +1,6 @@
 package com.example.heart_field.dto.consultant.profile;
 
+import com.example.heart_field.annotation.Phone;
 import com.example.heart_field.dto.consultant.ExpertiseTag;
 import lombok.Data;
 
@@ -15,6 +16,7 @@ public class UpdateConsultantProfileDto {
     private String detailedIntro;
     private List<ExpertiseTag> expertiseTag;
     private Integer gender;
+    @Phone
     private String phone;
     private String cardId;
     private String password;

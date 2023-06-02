@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.example.heart_field.annotation.Phone;
 import com.example.heart_field.dto.consultant.ConsultantDto;
 import com.example.heart_field.dto.consultant.ExpertiseTag;
 import com.example.heart_field.service.ConsultantService;
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -41,6 +43,7 @@ public class Consultant {
     private Integer todayTotalHelpTime;
     private Integer todayTotalHelpCount;
     private Double rating = 0.0; // 默认值为0.0
+    @Phone
     private String phone;
     private String cardId; //身份证号码
     private String detailedIntro;
@@ -54,7 +57,7 @@ public class Consultant {
     public ConsultantDto convert2ConsultantDto(ConsultantService consultantService) throws JsonProcessingException {
         ObjectMapper objectMapper = new ObjectMapper();
         return ConsultantDto.builder()
-                .expertiseTag(objectMapper.readValue(this.expertiseTag, new TypeReference<List<ExpertiseTag>>() {}))
+                .expertiseTag(this.expertiseTag==null? new ArrayList<>() : objectMapper.readValue(this.expertiseTag, new TypeReference<List<ExpertiseTag>>() {}))
                 .id(String.valueOf(this.id))
                 .briefIntroduction(this.briefIntro)
                 .consultantAvatar(this.avatar)
