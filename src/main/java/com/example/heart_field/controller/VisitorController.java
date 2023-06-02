@@ -12,10 +12,13 @@ import com.example.heart_field.dto.consultant.record.RecordPage;
 import com.example.heart_field.entity.User;
 import com.example.heart_field.entity.Visitor;
 import com.example.heart_field.mapper.UserMapper;
+import com.example.heart_field.mapper.VisitorMapper;
+import com.example.heart_field.param.VisitorUpdateParam;
 import com.example.heart_field.param.WxLoginParam;
 import com.example.heart_field.service.RecordService;
 import com.example.heart_field.service.VisitorService;
 import com.example.heart_field.utils.TokenUtil;
+import com.example.heart_field.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
@@ -40,6 +43,9 @@ public class VisitorController {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private VisitorMapper visitorMapper;
 
     @PostMapping("/auth/login")
     public R<WxLoginDTO> login(@RequestBody WxLoginParam loginParam){
@@ -129,23 +135,29 @@ public class VisitorController {
     @PutMapping("/{visitor-id}/profile")
 //    @UserLoginToken
     public R updateVisitorProfile(@PathVariable(value = "visitor-id") Integer visitorId,
-                                  @RequestBody Visitor visitor) {
+                                  @RequestBody VisitorUpdateParam visitor) {
         //if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
-        Visitor checkVisitor = visitorService.getById(visitorId);
-        if(checkVisitor==null){
+        Visitor realVisitor = visitorMapper.selectById(visitorId);
+        log.info("checkVisitor:{}", realVisitor);
+        if(realVisitor==null||realVisitor.getIsDisabled()==1){
             return R.resource_error();
         }
         log.info("visitorId:{}", visitorId);
         log.info("visitor:{}", visitor);
-        visitor.setId(visitorId);
         String newPhone = visitor.getPhone();
-        Pattern phonePattern = Pattern.compile(RegexPattern.MOBILE_PHONE_NUMBER_PATTERN);
         String emergencyPhone = visitor.getEmergencyPhone();
+        Pattern phonePattern = Pattern.compile(RegexPattern.MOBILE_PHONE_NUMBER_PATTERN);
         //手机号码格式校验
-        if(!phonePattern.matcher(newPhone).matches()||!phonePattern.matcher(emergencyPhone).matches()){
+        if(newPhone==emergencyPhone||!phonePattern.matcher(newPhone).matches()||!phonePattern.matcher(emergencyPhone).matches()){
             return R.argument_error("请输入正确的手机号码");
         }
-        boolean result = visitorService.updateById(visitor);
+        realVisitor.setUsername(visitor.getUsername());
+        realVisitor.setName(visitor.getName());
+        realVisitor.setEmergencyName(visitor.getEmergencyName());
+        realVisitor.setPhone(newPhone);
+        realVisitor.setEmergencyPhone(emergencyPhone);
+        realVisitor.setGender(visitor.getGender().byteValue());
+        boolean result=visitorService.updateById(realVisitor);
         if(result==false){
             return R.error("更新失败");
         }else{

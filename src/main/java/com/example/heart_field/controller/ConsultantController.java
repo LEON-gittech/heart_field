@@ -337,7 +337,7 @@ public class ConsultantController {
         //更新权限
         Consultant consultant = consultantService.getById(consultantId);
             //权限取反
-        consultant.setDisabled(!consultant.isDisabled());
+        consultant.setIsDisabled(consultant.getIsDisabled()==1?0:1);
         consultantService.updateById(consultant);
         return R.success("更新咨询师权限成功");
     }
