@@ -3,6 +3,7 @@ package com.example.heart_field.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import lombok.Builder;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -13,6 +14,7 @@ import java.time.LocalDateTime;
  * @since 2023-05-15 16:53:23
  */
 @Data
+@Builder
 public class Chat {
     //主键，自增长
     @TableId(value="id",type = IdType.AUTO)

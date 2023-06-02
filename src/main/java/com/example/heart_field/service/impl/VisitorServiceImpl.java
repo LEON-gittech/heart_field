@@ -139,6 +139,7 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
                 visitor.setAvatar(wxUserInfo.getAvatarUrl());
                 visitor.setGender((byte) (wxUserInfo.getGender()==0?1:0));
 
+
                 //获取token
                 LambdaQueryWrapper<User> queryWrapper= Wrappers.lambdaQuery();
                 queryWrapper.eq(User::getType, TypeConstant.VISITOR).eq(User::getId,visitor.getId());

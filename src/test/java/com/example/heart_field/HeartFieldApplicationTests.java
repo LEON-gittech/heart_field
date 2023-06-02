@@ -8,8 +8,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
 @SpringBootTest
@@ -17,6 +19,14 @@ class HeartFieldApplicationTests {
 
     @Test
     void contextLoads() {
+
+    }
+
+    @Test
+    void testTimeConvert(){
+        String dateStr = "2021-08-19";
+        LocalDateTime date2 = LocalDateTime.parse(dateStr+" 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        System.out.println(date2);
 
     }
 

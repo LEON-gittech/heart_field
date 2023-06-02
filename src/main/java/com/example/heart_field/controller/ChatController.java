@@ -1,7 +1,9 @@
 package com.example.heart_field.controller;
 
 import com.example.heart_field.common.R;
+import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.entity.Consultant;
+import com.example.heart_field.service.ChatService;
 import com.example.heart_field.service.ConsultantService;
 import com.example.heart_field.tokens.UserLoginToken;
 import lombok.Data;
@@ -18,6 +20,9 @@ import java.util.Map;
 public class ChatController {
     @Autowired
     private ConsultantService consultantService;
+
+    @Autowired
+    private ChatService chatService;
 
     /**
      * 更新咨询师正在进行的会话数
@@ -48,5 +53,27 @@ public class ChatController {
         concurrentCountDto.setConcurrentCount(consultant.getCurrentSessionCount());
         return R.success(concurrentCountDto);
     }
+
+
+    @PostMapping
+    public R createChat(@RequestParam(value="type")Integer type,
+                        @RequestParam(value="user-a")Integer userA,
+                        @RequestParam(value="user-b")Integer userB){
+        ResultInfo resultInfo = chatService.createChat(type,userA,userB);
+        return resultInfo.isRight()
+                ? R.success(resultInfo.getData())
+                : R.error(resultInfo.getMessage());
+    }
+
+    @PutMapping
+    public R endChat(@RequestParam(value="chat-id")Integer chatId){
+        ResultInfo resultInfo = chatService.endChat(chatId);
+        return resultInfo.isRight()
+                ? R.success(resultInfo.getData())
+                : R.error(resultInfo.getMessage());
+    }
+
+
+
 
 }
