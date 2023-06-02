@@ -1,5 +1,7 @@
 package com.example.heart_field;
 
+import com.alibaba.fastjson.JSON;
+import com.example.heart_field.dto.WxUserInfo;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +30,13 @@ class HeartFieldApplicationTests {
         LocalDateTime date2 = LocalDateTime.parse(dateStr+" 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         System.out.println(date2);
 
+    }
+
+    @Test
+    void testJson(){
+        String json="{\"nickName\":\"ZHY'\",\"gender\":0,\"language\":\"zh_CN\",\"city\":\"\",\"province\":\"\",\"country\":\"\",\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/6X3UWePYiaUzbaGXplicYh5gQkElq3RYZgsCNtterro8V5V6o0tSsQYHH1S7Z5loe59zX7uWyf74PDS6FULWnCcw/132\",\"watermark\":{\"timestamp\":1685671920,\"appid\":\"wxb9f9c2c27af57638\"}}";
+        WxUserInfo wxUserInfo = JSON.parseObject(json,WxUserInfo.class);
+        System.out.println("用户信息：{}"+wxUserInfo);
     }
 
     @Test

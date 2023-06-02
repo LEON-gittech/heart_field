@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.R;
+import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.TypeConstant;
 import com.example.heart_field.dto.WxLoginDTO;
 import com.example.heart_field.dto.WxUserInfo;
@@ -33,6 +34,7 @@ import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.spec.AlgorithmParameterSpec;
+import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.UUID;
 
@@ -77,6 +79,7 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
         String json =  redisTemplate.opsForValue().get(REDIS_KEY + sessionId);
         log.info("信息："+json);
         JSONObject jsonObject = JSON.parseObject(json);
+
         String sessionKey = (String) jsonObject.get("session_key");
         byte[] encData = cn.hutool.core.codec.Base64.decode(encryptedData);
         byte[] iv = cn.hutool.core.codec.Base64.decode(vi);
@@ -121,30 +124,106 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
         return val.toString();
     }
 
+
+    public R testLogin(){
+        String openId ="just-test";
+        String wxRes="{\"nickName\":\"ZHY'\",\"gender\":0,\"language\":\"zh_CN\",\"city\":\"\",\"province\":\"\",\"country\":\"\",\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/6X3UWePYiaUzbaGXplicYh5gQkElq3RYZgsCNtterro8V5V6o0tSsQYHH1S7Z5loe59zX7uWyf74PDS6FULWnCcw/132\",\"watermark\":{\"timestamp\":1685671920,\"appid\":\"wxb9f9c2c27af57638\"}}";
+        WxUserInfo wxUserInfo = JSON.parseObject(wxRes,WxUserInfo.class);
+        log.info("用户信息：{}"+wxUserInfo);
+        //根据openId查用户是否存在
+        LambdaQueryWrapper<Visitor> query= Wrappers.lambdaQuery();
+        query.eq(Visitor::getOpenId,openId);
+        Visitor visitor = baseMapper.selectOne(query);
+        if(visitor != null){//用户已经存在
+            log.info("用户已经存在，id为：{}"+visitor.getId());
+            return R.success("just a test,success");
+        }else{
+            //用户不存在，创建用户
+            visitor =Visitor.builder()
+                    .avatar(wxUserInfo.getAvatarUrl())
+                    .openId(openId)
+                    .gender(Byte.parseByte(wxUserInfo.getGender()))
+                    .username(wxUserInfo.getNickName())
+                    .createTime(LocalDateTime.now())
+                    .isDisabled((byte) 0)
+                    .updateTime(LocalDateTime.now())
+                    .build();
+
+            baseMapper.insert(visitor);
+            log.info("新建visitor，id为：{}"+visitor.getId());
+
+            //同步user，获取token
+            User user=userUtils.saveUser(visitor);
+
+            String token = tokenService.getToken(user);
+            log.info("token为：{}"+token);
+
+            //创建im账号
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("Identifier",user.getType().toString()+"_"+user.getUserId().toString());
+            jsonObject.put("Nick",visitor.getUsername());
+            jsonObject.put("FaceUrl",visitor.getAvatar());
+            String identifier = user.getType().toString()+"_"+user.getUserId().toString();
+            boolean isSuccess = tencentCloudImUtil.accountImport(identifier);
+            log.info("腾讯IM导入账号结果：{}"+isSuccess);
+            if(!isSuccess){
+                this.baseMapper.delete(new LambdaQueryWrapper<Visitor>().eq(Visitor::getId,visitor.getId()));
+                userUtils.deleteUser(user);
+                return R.error("腾讯IM导入账号失败");
+            }
+            WxLoginDTO res=WxLoginDTO.builder()
+                    .accessToken(token)
+                    .fstLogin(false)
+                    .chatUserId(identifier)
+                    .chatUserSig(tencentCloudImUtil.getTxCloudUserSig())
+                    .userId(visitor.getId())
+                    .userInfo(visitor)
+                    .build();
+            return R.success(res);
+        }
+
+    }
+
+    /**
+     * 用户登录，通过openId判断是否存在，同步添加到user表中
+     * @param loginParam
+     * @return
+     */
+
     @Override
     public R authLogin(WxLoginParam loginParam) {
         try{
             String sessionId = getSessionId(loginParam.getCode());
             String openId = getOpenId(sessionId);
             //获取用户信息
-            String wxRes = wxDecrypt(loginParam.getEncryptData(), sessionId, loginParam.getIv());
-            log.info("登录信息："+wxRes);
+            boolean success = tryDecrypt(sessionId);
+            if(!success){
+                return R.error(errorCodeDecyrpt(sessionId),errorMsgDecyrpt(sessionId));
+            }
+            String wxRes = wxDecrypt(loginParam.getEncryptedData(), sessionId, loginParam.getIv());
+            log.info("登录信息：{}"+wxRes);
+            //String wxRes="{\"nickName\":\"ZHY'\",\"gender\":0,\"language\":\"zh_CN\",\"city\":\"\",\"province\":\"\",\"country\":\"\",\"avatarUrl\":\"https://thirdwx.qlogo.cn/mmopen/vi_32/6X3UWePYiaUzbaGXplicYh5gQkElq3RYZgsCNtterro8V5V6o0tSsQYHH1S7Z5loe59zX7uWyf74PDS6FULWnCcw/132\",\"watermark\":{\"timestamp\":1685671920,\"appid\":\"wxb9f9c2c27af57638\"}}";
             WxUserInfo wxUserInfo = JSON.parseObject(wxRes,WxUserInfo.class);
+            log.info("用户信息："+wxUserInfo);
             //根据openId查用户是否存在
-            Visitor visitor = baseMapper.selectById(openId);
+            LambdaQueryWrapper<Visitor> query= Wrappers.lambdaQuery();
+            query.eq(Visitor::getOpenId,openId);
+            Visitor visitor = baseMapper.selectOne(query);
             if(visitor != null){//用户已经存在
+                log.info("此次登陆为fastLogin");
                 //更新用户信息
                 visitor.setOpenId(openId);
                 visitor.setUsername(wxUserInfo.getNickName());
                 visitor.setAvatar(wxUserInfo.getAvatarUrl());
-                visitor.setGender((byte) (wxUserInfo.getGender()==0?1:0));
-
+                visitor.setGender(Byte.parseByte(wxUserInfo.getGender()));
+                baseMapper.updateById(visitor);
 
                 //获取token
                 LambdaQueryWrapper<User> queryWrapper= Wrappers.lambdaQuery();
-                queryWrapper.eq(User::getType, TypeConstant.VISITOR).eq(User::getId,visitor.getId());
+                queryWrapper.eq(User::getType, TypeConstant.VISITOR).eq(User::getUserId,visitor.getId());
                 User user=userMapper.selectOne(queryWrapper);
                 String token = tokenService.getToken(user);
+                log.info("token为：{}"+token);
 
                 //获取im相关信息，更新im信息
                 String identifier = user.getType().toString()+"_"+user.getUserId().toString();
@@ -163,7 +242,7 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
 
                 WxLoginDTO res=WxLoginDTO.builder()
                         .accessToken(token)
-                        .fstLogin(false)
+                        .fstLogin(true)
                         .chatUserId(identifier)
                         .chatUserSig(tencentCloudImUtil.getTxCloudUserSig())
                         .userId(visitor.getId())
@@ -172,16 +251,24 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
                 return R.success(res);
             }else{
                 //用户不存在，创建用户
-                visitor = new Visitor();
-                visitor.setOpenId(openId);
-                visitor.setUsername(wxUserInfo.getNickName());
-                visitor.setAvatar(wxUserInfo.getAvatarUrl());
-                visitor.setGender((byte) (wxUserInfo.getGender()==0?1:0));
+                visitor =Visitor.builder()
+                        .avatar(wxUserInfo.getAvatarUrl())
+                        .openId(openId)
+                        .gender((byte) (wxUserInfo.getGender().equals("0")?1:0))
+                        .username(wxUserInfo.getNickName())
+                        .createTime(LocalDateTime.now())
+                        .updateTime(LocalDateTime.now())
+                        .isDisabled((byte)0)
+                        .build();
+
                 baseMapper.insert(visitor);
+                log.info("新建visitor，id为：{}"+visitor.getId());
 
                 //同步user，获取token
                 User user=userUtils.saveUser(visitor);
+
                 String token = tokenService.getToken(user);
+                log.info("token为：{}"+token);
 
                 //创建im账号
                 JSONObject jsonObject = new JSONObject();
@@ -211,4 +298,34 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
         }
         return R.login_error("登录失败");
     }
+
+    private boolean tryDecrypt(String sessionId) {
+        String json =  redisTemplate.opsForValue().get(REDIS_KEY + sessionId);
+        log.info("信息："+json);
+        JSONObject jsonObject = JSON.parseObject(json);
+        if (jsonObject.get("errcode") != null) {
+            String errorCode = jsonObject.get("errcode").toString();
+            String errorMsg= jsonObject.get("errmsg").toString();
+            return false;
+        }
+        return true;
+    }
+
+    private String errorMsgDecyrpt(String sessionId){
+        String json =  redisTemplate.opsForValue().get(REDIS_KEY + sessionId);
+        log.info("信息："+json);
+        JSONObject jsonObject = JSON.parseObject(json);
+        String errorMsg= jsonObject.get("errmsg").toString();
+        return errorMsg;
+    }
+
+    private Integer errorCodeDecyrpt(String sessionId){
+        String json =  redisTemplate.opsForValue().get(REDIS_KEY + sessionId);
+        log.info("信息："+json);
+        JSONObject jsonObject = JSON.parseObject(json);
+        Integer errorCode= Integer.parseInt(jsonObject.get("errcode").toString());
+        return errorCode;
+    }
+
+
 }
