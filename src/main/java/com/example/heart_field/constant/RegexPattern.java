@@ -20,7 +20,8 @@ public class RegexPattern {
     public static final String NAME_PATTERN = "^[\\u4e00-\\u9fa5]{2,32}$|^[a-zA-Z]{2,32}$";
 
     //身份证限制
-    public static final String ID_PATTERN = "^\\d{17}(\\d|X|x)$\n^\\d{17}(\\d|X|x)$\n";
+    public static final String ID_PATTERN_18 = "^[1-9]\\d{5}(19|20)\\d{2}((0[1-9])|(1[0-2]))(([0-2]\\d)|3[0-1])\\d{3}[0-9X]$";
+    public static final String ID_PATTERN_15 =  "^[1-9]\\d{7}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])\\d{2}[0-9X]$";
 
     /**
      * 密码限制字符: 由数字、大小写字母组成

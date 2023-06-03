@@ -26,7 +26,7 @@ public class TokenService {
                 // 添加默认数据
                 .setSubject(user.getUserId().toString())
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))//一小时有效时间
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 24))//24小时有效时间
                 .signWith(SignatureAlgorithm.HS256,secret)
                 .compact();
         return token;
