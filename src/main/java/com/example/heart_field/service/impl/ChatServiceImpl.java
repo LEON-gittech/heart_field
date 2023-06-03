@@ -1,12 +1,21 @@
 package com.example.heart_field.service.impl;
 
+import com.alibaba.druid.sql.visitor.functions.Char;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.TypeConstant;
 import com.example.heart_field.entity.Chat;
+import com.example.heart_field.entity.Consultant;
+import com.example.heart_field.entity.Supervisor;
+import com.example.heart_field.entity.Visitor;
 import com.example.heart_field.mapper.ChatMapper;
+import com.example.heart_field.mapper.ConsultantMapper;
+import com.example.heart_field.mapper.SupervisorMapper;
+import com.example.heart_field.mapper.VisitorMapper;
 import com.example.heart_field.service.ChatService;
 import com.example.heart_field.utils.TimeUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -21,6 +30,16 @@ import java.util.List;
  */
 @Service
 public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements ChatService {
+
+    @Autowired
+    private VisitorMapper visitorMapper;
+
+    @Autowired
+    private ConsultantMapper consultantMapper;
+
+    @Autowired
+    private SupervisorMapper supervisorMapper;
+
 
     LocalDateTime now = LocalDateTime.now();
 
@@ -161,6 +180,82 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         }
         return result;
 
+    }
+
+
+    @Override
+    public ResultInfo createChat(Integer type, Integer userA, Integer userB) {
+        switch (type) {
+            case 0:
+                return createCounselChat(userA,userB);
+            case 1:
+                return createHelpChat(userA,userB);
+            default:
+                return ResultInfo.error("参数错误");
+        }
+    }
+
+    @Override
+    public ResultInfo endChat(Integer chatId) {
+        Chat chat = baseMapper.selectById(chatId);
+        if(chat == null||chat.getEndTime()!=null){
+            return ResultInfo.error("会话不存在或已结束");
+        }
+        chat.setEndTime(now);
+        baseMapper.updateById(chat);
+        return ResultInfo.success();
+    }
+
+    /**
+     * 督导会话，userA为咨询师，userB为督导
+     * @param userA
+     * @param userB
+     * @return
+     * todo
+     */
+    private ResultInfo createCounselChat(Integer userA, Integer userB) {
+        Consultant consultant = consultantMapper.selectById(userA);
+        if(consultant == null||consultant.getIsValid()==0||consultant.getIsDisabled()==1||consultant.getCurStatus()!=0) {
+            return ResultInfo.error("咨询师不存在或已被封禁");
+        }
+        Supervisor supervisor = supervisorMapper.selectById(userB);
+        if(supervisor == null||supervisor.getIsValid()==0||supervisor.getIsDisabled()==0) {
+            return ResultInfo.error("督导不存在或已被封禁");
+        }
+        Chat chat = Chat.builder()
+                .type(TypeConstant.HELP_CHAT)
+                .startTime(now)
+                .userA(consultant.getId())
+                .userB(supervisor.getId())
+                .build();
+        baseMapper.insert(chat);
+        return ResultInfo.success(chat.getId());
+    }
+
+    /**
+     * 咨询会话，userA为访客，userB为咨询师
+     * @param userA
+     * @param userB
+     * @return
+     * todo: 咨询师状态存疑
+     */
+    private ResultInfo createHelpChat(Integer userA, Integer userB) {
+        Visitor visistor = visitorMapper.selectById(userA);
+        if(visistor == null||visistor.getIsDisabled() == 1) {
+            return ResultInfo.error("访客不存在或已被封禁");
+        }
+        Consultant consultant = consultantMapper.selectById(userB);
+        if(consultant == null||consultant.getIsValid()==0||consultant.getIsDisabled()==1||consultant.getCurStatus()!=0) {
+            return ResultInfo.error("咨询师不存在或已被封禁");
+        }
+        Chat chat = Chat.builder()
+                .startTime(now)
+                .type(TypeConstant.COUNSEL_CHAT)
+                .userA(visistor.getId())
+                .userB(consultant.getId())
+                .build();
+        baseMapper.insert(chat);
+        return ResultInfo.success(chat.getId());
     }
 }
 

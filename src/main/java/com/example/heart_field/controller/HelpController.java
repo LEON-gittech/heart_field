@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 /**
@@ -43,12 +44,13 @@ public class HelpController {
     public R getConsultRecords(@RequestParam(value = "searchValue", required = false) String searchValue,
                                @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize,
                                @RequestParam(value = "pageNum", required = false,defaultValue = "1") int pageNum,
-                               @RequestParam(value = "fromDate", required = false) LocalDateTime fromDate,
-                               @RequestParam(value = "toDate", required = false) LocalDateTime toDate){
+                               @RequestParam(value = "fromDate", required = false) String fromDate,
+                               @RequestParam(value = "toDate", required = false) String toDate){
         List<HelpDTO> resultInfo = helpService.queryRecords(searchValue, pageSize, pageNum, fromDate, toDate);
         int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
-        Page<HelpDTO> resPage = new Page<HelpDTO>(pageNum, pageSize, pages).setRecords(resultInfo);
-        RecordPage<HelpDTO> res = new RecordPage<HelpDTO>(resPage,pages);
+        int total = resultInfo.size();
+        Page<HelpDTO> resPage = new Page<HelpDTO>(pageNum, pageSize).setRecords(resultInfo);
+        RecordPage<HelpDTO> res = new RecordPage<HelpDTO>(resPage,pages,total);
         return R.success(res);
     }
 

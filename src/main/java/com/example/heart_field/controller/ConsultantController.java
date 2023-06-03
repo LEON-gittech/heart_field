@@ -17,6 +17,7 @@ import com.example.heart_field.entity.*;
 import com.example.heart_field.service.*;
 import com.example.heart_field.tokens.AdminToken;
 import com.example.heart_field.tokens.UserLoginToken;
+import com.example.heart_field.utils.ConsultantUtil;
 import com.example.heart_field.utils.TencentCloudImUtil;
 import com.example.heart_field.utils.TokenUtil;
 import com.example.heart_field.utils.UserUtils;
@@ -59,6 +60,8 @@ public class ConsultantController {
     private ScheduleService scheduleService;
     @Autowired
     private TencentCloudImUtil tencentCloudImUtil;
+    @Autowired
+    private ConsultantUtil consultantUtil;
     // 创建一个ObjectMapper实例
     ObjectMapper objectMapper = new ObjectMapper();
 
@@ -145,6 +148,11 @@ public class ConsultantController {
     @PostMapping
     public R<String> save(@Validated @RequestBody Consultant consultant){
         log.info("consultant:{}",consultant);
+        String phone = consultant.getPhone();
+        //判断手机号是否已经注册
+        if(consultantService.getOne(new LambdaQueryWrapper<Consultant>().eq(Consultant::getPhone,phone))!=null){
+            return R.error("该手机号已经注册");
+        }
         consultantService.save(consultant);
         //同步添加到User类,从Consultant表中获取id
         User user = userUtils.saveUser(consultant);
@@ -171,10 +179,7 @@ public class ConsultantController {
     public R<String> update(@PathVariable("consultantId") Integer consultantId,@Validated @RequestBody UpdateConsultantProfileDto updateConsultantProfileDto) throws JsonProcessingException {
         log.info("consultantId:{},consultant:{}",consultantId,updateConsultantProfileDto);
         //权限验证
-        Integer id = TokenUtil.getTokenUser().getUserId();
-        if(!consultantId.equals(id)&&adminService.getById(id)==null){
-            return R.auth_error();
-        }
+        consultantUtil.isConsultantOrAdmin(consultantId);
         //将consultantDto的值复制给consultant
         Consultant consultant = consultantService.getById(updateConsultantProfileDto.getId());
         BeanUtils.copyProperties(updateConsultantProfileDto,consultant,"expertiseTag");
@@ -208,7 +213,10 @@ public class ConsultantController {
      */
     @GetMapping("/profile")
     public R<ConsultantProfileDto> getOwnProfile() throws JsonProcessingException {
-        Integer id = TokenUtil.getTokenUser().getUserId();
+        User user = TokenUtil.getTokenUser();
+        Integer id = user.getUserId();
+        Integer type = user.getType();
+        if(type != 1) return R.error("非咨询师本人无权限");
         Consultant consultant = consultantService.getById(id);
         ConsultantProfileDto consultantProfileDto = new ConsultantProfileDto();
         BeanUtils.copyProperties(consultant,consultantProfileDto,"expertiseTag");
@@ -231,10 +239,7 @@ public class ConsultantController {
     @GetMapping("/{consultantId}/profile")
     public R<AnyConsultantProfileDto> getProfile(@PathVariable("consultantId") Integer consultantId) throws JsonProcessingException {
         //权限验证
-        Integer id = TokenUtil.getTokenUser().getUserId();
-        if(!consultantId.equals(id)&&adminService.getById(id)==null){
-            return R.auth_error();
-        }
+        consultantUtil.isConsultantOrAdmin(consultantId);
         //返回数据
         AnyConsultantProfileDto anyConsultantProfileDto = new AnyConsultantProfileDto();
         Consultant consultant = consultantService.getById(consultantId);
@@ -284,10 +289,7 @@ public class ConsultantController {
     @GetMapping("/{consultantId}/comments")
     public R<CommentsDto> getComments(@PathVariable("consultantId") Integer consultantId, HttpServletRequest httpServletRequest){
         //权限验证
-        Integer id = TokenUtil.getTokenUser().getUserId();
-        if(!consultantId.equals(id)&&adminService.getById(consultantId)==null){
-            return R.auth_error();
-        }
+        consultantUtil.isConsultantOrAdmin(consultantId);
         //分页查询
         int page = Integer.parseInt(httpServletRequest.getParameter("page"));
         int pageSize = Integer.parseInt(httpServletRequest.getParameter("pageSize"));
@@ -304,23 +306,27 @@ public class ConsultantController {
     @PutMapping("/{consultantId}/bindings")
     public R<SupervisorBindedDto> updateBindings(@PathVariable("consultantId") Integer consultantId, @RequestBody SupervisorBindedDto supervisorBindedDto){
         //获取指定咨询师的所有绑定记录
-        List<Integer> supervisorBinded = supervisorBindedDto.getSupervisorBinding();
+        List<Integer> supervisorBinded = supervisorBindedDto.getSupervisorBinded();
         LambdaQueryWrapper<Binding> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Binding::getConsultantId,consultantId);
         List<Binding> bindings = bindingService.list(queryWrapper);
         //删除解绑的督导
-        for(Binding binding : bindings){
-            if(!supervisorBinded.contains(binding.getSupervisorId())){
-                bindingService.removeById(binding.getId());
+        if(bindings!=null){
+            for(Binding binding : bindings){
+                if(!supervisorBinded.contains(binding.getSupervisorId())){
+                    bindingService.removeById(binding.getId());
+                }
             }
         }
-        //加入新绑定的
-        for(Integer supervisorId: supervisorBinded){
-            if(!bindings.stream().map(Binding::getSupervisorId).collect(Collectors.toList()).contains(supervisorId)){
-                Binding binding = new Binding();
-                binding.setConsultantId(consultantId);
-                binding.setSupervisorId(supervisorId);
-                bindingService.save(binding);
+        if(supervisorBinded!=null){
+            //加入新绑定的
+            for(Integer supervisorId: supervisorBinded){
+                if(!bindings.stream().map(Binding::getSupervisorId).collect(Collectors.toList()).contains(supervisorId)){
+                    Binding binding = new Binding();
+                    binding.setConsultantId(consultantId);
+                    binding.setSupervisorId(supervisorId);
+                    bindingService.save(binding);
+                }
             }
         }
         return R.success(supervisorBindedDto);
@@ -337,7 +343,7 @@ public class ConsultantController {
         //更新权限
         Consultant consultant = consultantService.getById(consultantId);
             //权限取反
-        consultant.setDisabled(!consultant.isDisabled());
+        consultant.setIsDisabled(consultant.getIsDisabled()==1?0:1);
         consultantService.updateById(consultant);
         return R.success("更新咨询师权限成功");
     }
@@ -351,10 +357,7 @@ public class ConsultantController {
     @PutMapping("/{consultantId}/max-consult-count")
     public R<String> updateMaxConsultCount(@PathVariable("consultantId") String consultantId,@RequestBody Map body){
         //权限验证
-        Integer id = TokenUtil.getTokenUser().getUserId();
-        if(!consultantId.equals(id.toString())&&adminService.getById(consultantId)==null){
-            return R.auth_error();
-        }
+        consultantUtil.isConsultantOrAdmin(Integer.valueOf(consultantId));
         //更新最大咨询数
         Consultant consultant = consultantService.getById(Integer.parseInt(consultantId));
         consultant.setMaxNum((Integer) body.get("consultMaxCount"));
@@ -387,11 +390,6 @@ public class ConsultantController {
      */
     @PostMapping("/schedule/{date}")
     public R<String> addConsultantToSchedule(@PathVariable("date") String date,@RequestBody HashMap<String, List<LinkedHashMap<String, Object>>> consultants){
-        //权限判断,只有督导员和管理员可以更新
-//        User user = TokenUtil.getTokenUser();
-//        if(user.getType().equals(1)){
-//            return R.auth_error();
-//        }
         List<LinkedHashMap<String, Object>> consultantSchedules = consultants.get("consultants");
         //添加咨询师
         for(LinkedHashMap<String, Object> consultant:consultantSchedules){

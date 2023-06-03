@@ -2,21 +2,23 @@ package com.example.heart_field.controller;
 
 import cn.hutool.core.util.PageUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
-import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.RegexPattern;
 import com.example.heart_field.dto.WxLoginDTO;
-import com.example.heart_field.dto.WxUserInfo;
 import com.example.heart_field.dto.consultant.record.RecordListDTO;
 import com.example.heart_field.dto.consultant.record.RecordPage;
-import com.example.heart_field.entity.Admin;
-import com.example.heart_field.entity.Record;
+import com.example.heart_field.entity.User;
 import com.example.heart_field.entity.Visitor;
+import com.example.heart_field.mapper.UserMapper;
+import com.example.heart_field.mapper.VisitorMapper;
+import com.example.heart_field.param.VisitorUpdateParam;
 import com.example.heart_field.param.WxLoginParam;
 import com.example.heart_field.service.RecordService;
 import com.example.heart_field.service.VisitorService;
 import com.example.heart_field.utils.TokenUtil;
+import com.example.heart_field.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
@@ -38,6 +40,12 @@ public class VisitorController {
 
     @Autowired
     private RecordService recordService;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private VisitorMapper visitorMapper;
 
     @PostMapping("/auth/login")
     public R<WxLoginDTO> login(@RequestBody WxLoginParam loginParam){
@@ -118,7 +126,7 @@ public class VisitorController {
 
     /**
      * 用于
-     *  -微信小程序端：可以自己的修改昵称、真实姓名、紧急联系人，不能修改【自己的电话号码】
+     *  -微信小程序端：可以自己的修改昵称、真实姓名、紧急联系人、电话号码
      *  -管理端管理员使用
      * @param visitorId
      * @param visitor
@@ -127,26 +135,37 @@ public class VisitorController {
     @PutMapping("/{visitor-id}/profile")
 //    @UserLoginToken
     public R updateVisitorProfile(@PathVariable(value = "visitor-id") Integer visitorId,
-                                  @RequestBody Visitor visitor) {
+                                  @RequestBody VisitorUpdateParam visitor) {
         //if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
-        Visitor checkVisitor = visitorService.getById(visitorId);
-        if(checkVisitor==null){
+        Visitor realVisitor = visitorMapper.selectById(visitorId);
+        log.info("checkVisitor:{}", realVisitor);
+        if(realVisitor==null||realVisitor.getIsDisabled()==1){
             return R.resource_error();
         }
         log.info("visitorId:{}", visitorId);
         log.info("visitor:{}", visitor);
-        visitor.setId(visitorId);
         String newPhone = visitor.getPhone();
         String emergencyPhone = visitor.getEmergencyPhone();
-        //手机号码格式校验
         Pattern phonePattern = Pattern.compile(RegexPattern.MOBILE_PHONE_NUMBER_PATTERN);
-        if(!phonePattern.matcher(emergencyPhone).matches()){
+        //手机号码格式校验
+        if(newPhone==emergencyPhone||!phonePattern.matcher(newPhone).matches()||!phonePattern.matcher(emergencyPhone).matches()){
             return R.argument_error("请输入正确的手机号码");
         }
-        boolean result = visitorService.updateById(visitor);
-        return result
-                ? R.success("更新成功")
-                : R.error("更新失败");
+        realVisitor.setUsername(visitor.getUsername());
+        realVisitor.setName(visitor.getName());
+        realVisitor.setEmergencyName(visitor.getEmergencyName());
+        realVisitor.setPhone(newPhone);
+        realVisitor.setEmergencyPhone(emergencyPhone);
+        realVisitor.setGender(visitor.getGender().byteValue());
+        boolean result=visitorService.updateById(realVisitor);
+        if(result==false){
+            return R.error("更新失败");
+        }else{
+            User user = userMapper.selectOne(new QueryWrapper<User>().eq("type", 0).eq("user_id",visitorId));
+            user.setPhone(newPhone);
+            return R.success("更新成功");
+        }
+
     }
 
     /**
@@ -222,8 +241,9 @@ public class VisitorController {
         }
         List<RecordListDTO> resultInfo = recordService.getRecords(visitorId,state,pageSize,pageNum);
         int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
+        int total = resultInfo.size();
         Page<RecordListDTO> resPage = new Page<RecordListDTO>(pageNum, pageSize, pages).setRecords(resultInfo);
-        RecordPage<RecordListDTO> res =new RecordPage(resPage,pages);
+        RecordPage<RecordListDTO> res =new RecordPage(resPage,pages,total);
         return R.success(res);
     }
 
@@ -247,6 +267,12 @@ public class VisitorController {
         return result
                 ? R.success("更新成功")
                 : R.error("更新失败");
+    }
+
+    @PostMapping("/test/login")
+    public R testLogin(){
+        R res=visitorService.testLogin();
+        return res;
     }
 
 }

@@ -2,7 +2,9 @@ package com.example.heart_field.filter;
 
 import com.example.heart_field.constant.TypeConstant;
 import com.example.heart_field.entity.User;
-import com.example.heart_field.service.*;
+import com.example.heart_field.service.AdminService;
+import com.example.heart_field.service.UserService;
+import com.example.heart_field.service.VisitorService;
 import com.example.heart_field.tokens.*;
 import com.example.heart_field.utils.TokenUtil;
 import com.example.heart_field.utils.UserUtils;
@@ -105,8 +107,6 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                 }
             }
         }
-
-
         return true;
     }
 

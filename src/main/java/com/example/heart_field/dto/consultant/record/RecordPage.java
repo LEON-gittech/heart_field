@@ -19,6 +19,11 @@ public class RecordPage<T> {
 
     private Page<T> records;
 
-    public RecordPage(Page<T> resPage, int pages) {
+    private Integer total;
+
+    public RecordPage(Page<T> resPage, int pages,int total) {
+        this.pages = pages;
+        this.records = resPage;
+        this.total = total;
     }
 }

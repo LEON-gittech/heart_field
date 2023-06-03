@@ -1,5 +1,6 @@
 package com.example.heart_field.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -9,12 +10,19 @@ import lombok.Data;
  */
 @Data
 @Builder
+@AllArgsConstructor
 public class WxUserInfo {
     private String nickName;
-
-    private Integer gender;//0男1女
-
+    private String gender;//0男1女
+    private String language;
+    private String city;
+    private String province;
+    private String country;
     private String avatarUrl;
+    private Watermark watermark;
+
+
+
     /**
      * {
      * "nickName":"樱",
@@ -32,4 +40,9 @@ public class WxUserInfo {
      * }
      */
 
+}
+
+class Watermark{
+    private String timestamp;
+    private String appid;
 }
