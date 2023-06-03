@@ -160,8 +160,8 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                         .consultRank(r.getVisitorScore())
                         .consultComment(r.getVisitorComment())
 
-                        .startTime(r.getCreateTime())
-                        .continueTime(r.getEndTime().getSecond() - r.getCreateTime().getSecond())
+                        .startTime(r.getStartTime())
+                        .continueTime(r.getEndTime().getSecond() - r.getStartTime().getSecond())
 
                         .chatId(r.getChatId())
                         .build();
