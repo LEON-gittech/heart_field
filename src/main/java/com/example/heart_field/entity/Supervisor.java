@@ -17,7 +17,7 @@ public class Supervisor {
     private LocalDateTime updateTime;
     private String name;
     private Integer age;
-    private byte gender;
+    private int gender;
     private String password;
     private String avatar;
     private Integer maxConcurrent;

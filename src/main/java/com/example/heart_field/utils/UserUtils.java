@@ -143,10 +143,15 @@ public class UserUtils {
     public <T> User updateUser(T object){
         User user = newUser(object);
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getUserId, user.getUserId());
+        queryWrapper.eq(User::getPhone, user.getPhone());
         userService.update(user,queryWrapper);
         return user;
     }
+    /*//仅更新用户密码
+    public <T> User updateUserPassword(T object){
+
+    }*/
+
     //根据传入的User信息匹配数据库中的User
     public User getUser(User user){
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();

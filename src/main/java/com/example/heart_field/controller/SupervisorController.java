@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
 import com.example.heart_field.dto.*;
 import com.example.heart_field.entity.*;
+import com.example.heart_field.param.UpdateSupervisorPasswordParam;
 import com.example.heart_field.service.*;
 import com.example.heart_field.service.impl.StaffStatServiceImpl;
 import com.example.heart_field.tokens.AdminToken;
@@ -47,6 +48,8 @@ public class SupervisorController {
     private ScheduleService scheduleService;
     @Autowired
     private StaffStatServiceImpl staffStatService;
+    @Autowired
+    private UserService userService;
 
     /**
      * 新增一个督导
@@ -239,8 +242,14 @@ public class SupervisorController {
                 LambdaQueryWrapper<StaffStat> staffStatLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 staffStatLambdaQueryWrapper.eq(StaffStat::getStaffId,supervisorId).eq(StaffStat::getStaffType,1);
                 StaffStat stat = staffStatService.getOne(staffStatLambdaQueryWrapper);
-                supervisorCom.consultTotalCount= stat.getTotalCount();
-                supervisorCom.consultTotalTime = Long.valueOf(stat.getTotalTime());
+                if (stat != null) {
+                    supervisorCom.consultTotalCount= stat.getTotalCount();
+                    supervisorCom.consultTotalTime = Long.valueOf(stat.getTotalTime());
+                }
+                else {
+                    supervisorCom.consultTotalCount=null;
+                    supervisorCom.consultTotalTime =null;
+                }
                 supervisorCom.phoneNum = one.getPhone();
                 // 统计督导排班
                 LambdaQueryWrapper<Schedule> scheduleLambdaQueryWrapper = new LambdaQueryWrapper<>();
@@ -281,6 +290,40 @@ public class SupervisorController {
         }*/
 
     }
+    /**
+     * 修改督导密码
+     * 权限：督导本人
+     */
+    @PutMapping("/{supervisor-id}/password")
+    public R<String> updateSupervisorPassword(@PathVariable("supervisor-id") String supervisorId,@RequestBody UpdateSupervisorPasswordParam updatePassword){
+        User user = TokenUtil.getTokenUser();
+        Integer id = user.getUserId();
+        Integer type = user.getType();
+        String password = updatePassword.getPassword();
+        if (!PwdCheckUtil.checkPasswordLength(password,"8","20") ) {
+            return R.error("密码长度不符合");
+        }else{
+            int i = 0;
+            if(PwdCheckUtil.checkContainDigit(password) && PwdCheckUtil.checkContainCase(password))
+                i++;
+            if(PwdCheckUtil.checkContainLowerCase(password)&&PwdCheckUtil.checkContainUpperCase(password))
+                i++;
+            if(PwdCheckUtil.checkContainSpecialChar(password))
+                i++;
+            if(i<2)
+                return R.error("密码强度不符合");
+        }
+        if(type==3&&id==Integer.valueOf(supervisorId)){
+            Supervisor supervisor = supervisorService.getById(id);
+            supervisor.setPassword(password);
+            supervisorService.updateById(supervisor);
+            log.info("supervisor:{}",supervisor);
+            userUtils.updateUser(supervisor);
+            return R.success("密码修改成功");
+        } else {
+            return R.auth_error();
+        }
+    }
 
     /**
      * 修改督导个人信息
@@ -300,23 +343,8 @@ public class SupervisorController {
             Supervisor supervisor=supervisorService.getOne(supervisorLambdaQueryWrapper);
             supervisor.setId(Integer.valueOf(supervisorId));
             supervisor.setName(updateSupervisorDto.getName());
-            String password = updateSupervisorDto.getPassword();
-            //密码最小八位数，最大20位
-            if (!PwdCheckUtil.checkPasswordLength(password,"8","20") ) {
-                return R.error("密码长度不符合");
-            }else{
-                int i = 0;
-                if(PwdCheckUtil.checkContainDigit(password) && PwdCheckUtil.checkContainCase(password))
-                    i++;
-                if(PwdCheckUtil.checkContainLowerCase(password)&&PwdCheckUtil.checkContainUpperCase(password))
-                    i++;
-                if(PwdCheckUtil.checkContainSpecialChar(password))
-                    i++;
-                if(i<2)
-                    return R.error("密码强度不符合");
-            }
-            supervisor.setPassword(updateSupervisorDto.getPassword());
-            supervisor.setPhone(updateSupervisorDto.getPhone());
+            //supervisor.setPassword(updateSupervisorDto.getPassword());
+            //supervisor.setPhone(updateSupervisorDto.getPhone());
             supervisor.setQualificationId(updateSupervisorDto.getQualificationId());
             supervisor.setQualification(updateSupervisorDto.getQualification());
             supervisor.setAvatar(updateSupervisorDto.getAvatar());
@@ -324,14 +352,27 @@ public class SupervisorController {
             supervisor.setCardId(updateSupervisorDto.getCardId());
             supervisor.setWorkplace(updateSupervisorDto.getWorkplace());
             supervisor.setTitle(updateSupervisorDto.getTitle());
-            supervisor.setGender(Byte.parseByte(updateSupervisorDto.getGender()));
+            supervisor.setGender(Integer.parseInt(updateSupervisorDto.getGender()));
             supervisor.setAge(updateSupervisorDto.getAge());
+            //单独处理电话号码更改情况
+            if(updateSupervisorDto.getPhone()!=supervisor.getPhone()){
+                if(updateSupervisorDto.getPhone().length()!=11)
+                    return R.argument_error("电话号码长度不合法");
+
+                supervisor.setPhone(updateSupervisorDto.getPhone());
+                LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                userLambdaQueryWrapper.eq(User::getUserId,supervisorId).eq(User::getType,3);
+                User user = userService.getOne(userLambdaQueryWrapper);
+                user.setPhone(updateSupervisorDto.getPhone());
+                userService.updateById(user);
+            }
             supervisorService.updateById(supervisor);
-            Supervisor newOne = supervisorService.getById(supervisor.getId());
+
+            Supervisor newOne = supervisorService.getById(supervisorId);
             log.info("newOneClass:{}",newOne.getClass());
             log.info("newOne-----{}",newOne);
         // 更新user
-            userUtils.updateUser(newOne);
+           // userUtils.updateUser(newOne);
             log.info("supervisor:{}",supervisor);
             return R.success("更新成功");
 

@@ -11,7 +11,7 @@ public class UpdateSupervisorDto {
     private String gender;
     //private String id;
     private String cardId;
-    private String password;
+   // private String password;
     private String phone;
     private String qualification;
     private String qualificationId;

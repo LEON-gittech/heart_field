@@ -5,7 +5,7 @@ import lombok.Data;
 @Data
 public class SupervisorInfoDto {
     private String email;
-    private boolean gender;
+    private int gender;
     private Integer id;
     private String cardId;
     private String password;
