@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -103,7 +104,8 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
      * @return
      */
     @Override
-    public List<RecordDTO> queryRecords(String searchValue, int pageSize, int pageNum, LocalDateTime fromDate, LocalDateTime toDate) {
+    public List<RecordDTO> queryRecords(String searchValue, int pageSize, int pageNum, String fromDate, String toDate) {
+
         LambdaQueryWrapper<Record> queryWrapper = Wrappers.lambdaQuery();
         User user = TokenUtil.getTokenUser();
         //if (user == null) { return new ArrayList<>();}
@@ -117,14 +119,19 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                 break;
             default:
                 //督导/管理员-全平台会话（即所有的咨询记录列表）
+                //log.info("咨询师或督导");
                 break;
         }
         log.info("searchValue:{}", searchValue);
         if (fromDate != null) {
-            queryWrapper.ge(Record::getCreateTime, fromDate);
+            LocalDateTime from = LocalDateTime.parse(fromDate+" 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            log.info("from:{}", from);
+            queryWrapper.ge(Record::getCreateTime, from);
         }
         if (toDate != null) {
-            queryWrapper.le(Record::getCreateTime, toDate);
+            LocalDateTime to = LocalDateTime.parse(toDate+" 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            log.info("to:{}", to);
+            queryWrapper.le(Record::getCreateTime, to);
         }
 
         queryWrapper.orderByDesc(Record::getCreateTime);
@@ -139,6 +146,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
             if (searchValue == null
                     || (searchValue != null && (visitor.getName().contains(searchValue) || visitor.getUsername().contains(searchValue)
                              || consultant.getName().contains(searchValue)))) {
+                log.info("有符合的记录");
                 RecordDTO recordDTO = RecordDTO.builder()
                         .id(r.getId())
                         .visitorId(visitor.getId())
@@ -158,6 +166,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                         .chatId(r.getChatId())
                         .build();
                 recordDTOS.add(recordDTO);
+                log.info("recordDTO:{}", recordDTO);
             }
         }
         return recordDTOS;

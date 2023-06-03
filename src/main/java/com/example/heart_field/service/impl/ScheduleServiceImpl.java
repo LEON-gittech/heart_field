@@ -54,7 +54,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                                 Integer consultantId = schedule.getStaffId();
                                 LambdaQueryWrapper<Consultant> queryWrapper_consultantDTO = Wrappers.lambdaQuery();
                                 Consultant consultant=consultantMapper.selectOne(queryWrapper_consultantDTO.eq(Consultant::getId,consultantId));
-                                if(consultant.isDisabled()==false&&consultant.isValid()==true){
+                                if(consultant.getIsDisabled()==0&&consultant.getIsValid()==1){
                                     return true;
                                 }else{
                                     return false;

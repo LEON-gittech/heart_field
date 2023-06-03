@@ -16,7 +16,7 @@ import java.util.List;
 public interface RecordService extends IService<Record> {
     List<RecordListDTO> getRecords(String visitorId, String state,Integer pageSize,Integer pageNum);
 
-    List<RecordDTO> queryRecords(String searchValue, int pageSize, int pageNum, LocalDateTime fromDate, LocalDateTime toDate);
+    List<RecordDTO> queryRecords(String searchValue, int pageSize, int pageNum, String fromDate, String toDate);
 
     ResultInfo addRecordByChatId(Integer chatId);
 

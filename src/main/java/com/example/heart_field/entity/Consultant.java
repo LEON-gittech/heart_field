@@ -22,9 +22,9 @@ import java.util.List;
 public class Consultant {
     @TableId(value="id",type = IdType.AUTO)
     private Integer id;
-    private boolean isOnline = false; // 默认值为false
-    private boolean isDisabled = false; // 默认值为false
-    private boolean isValid = false; // 默认值为false
+    private int isOnline = 0; // 默认值为false
+    private int isDisabled = 0; // 默认值为false
+    private int isValid = 0; // 默认值为false
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createTime ; // 默认值为当前时间
     @TableField(fill = FieldFill.INSERT_UPDATE)
