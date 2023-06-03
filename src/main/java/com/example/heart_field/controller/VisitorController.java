@@ -158,11 +158,14 @@ public class VisitorController {
         realVisitor.setEmergencyPhone(emergencyPhone);
         realVisitor.setGender(visitor.getGender().byteValue());
         boolean result=visitorService.updateById(realVisitor);
+        log.info("result:{}", result);
         if(result==false){
             return R.error("更新失败");
         }else{
             User user = userMapper.selectOne(new QueryWrapper<User>().eq("type", 0).eq("user_id",visitorId));
+            log.info("user:{}", user);
             user.setPhone(newPhone);
+            userMapper.updateById(user);
             return R.success("更新成功");
         }
 

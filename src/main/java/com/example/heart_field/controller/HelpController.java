@@ -49,9 +49,9 @@ public class HelpController {
         List<HelpDTO> resultInfo = helpService.queryRecords(searchValue, pageSize, pageNum, fromDate, toDate);
         int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
         int total = resultInfo.size();
-        Page<HelpDTO> resPage = new Page<HelpDTO>(pageNum, pageSize).setRecords(resultInfo);
+        Page<HelpDTO> resPage = new Page<HelpDTO>(pageNum, pageSize,total).setRecords(resultInfo);
         RecordPage<HelpDTO> res = new RecordPage<HelpDTO>(resPage,pages,total);
-        return R.success(res);
+        return R.success(resPage);
     }
 
     @PostMapping("/records/supervisor")

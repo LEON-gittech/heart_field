@@ -147,6 +147,11 @@ public class UserUtils {
         userService.update(user,queryWrapper);
         return user;
     }
+    /*//仅更新用户密码
+    public <T> User updateUserPassword(T object){
+
+    }*/
+
     //根据传入的User信息匹配数据库中的User
     public User getUser(User user){
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
