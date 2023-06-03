@@ -138,7 +138,7 @@ public class UserUtils {
     public <T> User updateUser(T object){
         User user = newUser(object);
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getPhone, user.getPhone());
+        queryWrapper.eq(User::getUserId, user.getUserId());
         userService.update(user,queryWrapper);
         return user;
     }

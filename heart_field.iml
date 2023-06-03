@@ -10,16 +10,7 @@
             <entry key="lastExternalPluginCheckTime" value="1684071056655" />
           </map>
         </option>
-        <option name="version" value="8" />
-      </configuration>
-    </facet>
-    <facet type="web" name="Web">
-      <configuration>
-        <webroots />
-        <sourceRoots>
-          <root url="file://$MODULE_DIR$/src/main/java" />
-          <root url="file://$MODULE_DIR$/src/main/resources" />
-        </sourceRoots>
+        <option name="version" value="9" />
       </configuration>
     </facet>
     <facet type="Spring" name="Spring">
