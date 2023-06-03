@@ -45,13 +45,16 @@ public class RecordController {
                                @RequestParam(value = "fromDate", required = false) String fromDate,
                                @RequestParam(value = "toDate", required = false) String toDate){
 
-        LocalDateTime from = LocalDateTime.parse(fromDate+"T00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss"));
-        LocalDateTime to = LocalDateTime.parse(toDate+"T00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss"));
-
-        List<RecordDTO> resultInfo = recordService.queryRecords(searchValue, pageSize, pageNum, from, to);
+        List<RecordDTO> resultInfo = recordService.queryRecords(searchValue, pageSize, pageNum, fromDate, toDate);
+        log.info("从controller中："+resultInfo);
         int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
-        Page<RecordDTO> resPage = new Page<RecordDTO>(pageNum, pageSize, pages).setRecords(resultInfo);
-        RecordPage<RecordDTO> res = new RecordPage<RecordDTO>(resPage,pages);
+        int total = resultInfo.size();
+        log.info("总页数："+pages);
+        Page<RecordDTO> resPage = new Page<RecordDTO>(pageNum,pageSize).setRecords(resultInfo);
+        log.info("当前页："+resPage.getRecords());
+        //current – 当前页 ,size – 每页显示条数
+        RecordPage<RecordDTO> res = new RecordPage<RecordDTO>(resPage,pages,total);
+        log.info("返回结果："+res);
         return R.success(res);
     }
 
