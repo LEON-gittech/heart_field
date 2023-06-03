@@ -1,6 +1,5 @@
 package com.example.heart_field.service.impl;
 
-import com.alibaba.druid.sql.visitor.functions.Char;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
@@ -219,7 +218,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
             return ResultInfo.error("咨询师不存在或已被封禁");
         }
         Supervisor supervisor = supervisorMapper.selectById(userB);
-        if(supervisor == null||supervisor.isValid()==false||supervisor.isDisabled()==true) {
+        if(supervisor == null||supervisor.getIsValid()==0||supervisor.getIsDisabled()==1) {
             return ResultInfo.error("督导不存在或已被封禁");
         }
         Chat chat = Chat.builder()

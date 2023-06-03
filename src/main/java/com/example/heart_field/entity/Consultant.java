@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.example.heart_field.annotation.Password;
 import com.example.heart_field.annotation.Phone;
 import com.example.heart_field.dto.consultant.ConsultantDto;
 import com.example.heart_field.dto.consultant.ExpertiseTag;
@@ -31,6 +32,7 @@ public class Consultant {
     private String name;
     private Integer age;
     private Integer gender = 2; // 默认值为2
+    @Password
     private String password;
     private String avatar;
     private Integer maxConcurrent = 2; // 默认值为2

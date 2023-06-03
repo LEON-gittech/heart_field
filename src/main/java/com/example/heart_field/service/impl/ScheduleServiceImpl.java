@@ -5,11 +5,9 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.TypeConstant;
-import com.example.heart_field.dto.ConsultantEasyDto;
 import com.example.heart_field.dto.ConsultantScheDTO;
 import com.example.heart_field.dto.ScheduleDTO;
 import com.example.heart_field.dto.SupervisorDTO;
-import com.example.heart_field.dto.consultant.schedule.ConsultantScheduleDto;
 import com.example.heart_field.entity.Consultant;
 import com.example.heart_field.entity.Schedule;
 import com.example.heart_field.entity.Supervisor;
@@ -19,7 +17,6 @@ import com.example.heart_field.mapper.SupervisorMapper;
 import com.example.heart_field.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.example.heart_field.dto.consultant.ConsultantDto;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -88,7 +85,7 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                                 Integer supervisorId = schedule.getStaffId();
                                 LambdaQueryWrapper<Supervisor> queryWrapper_supervisorDTO = Wrappers.lambdaQuery();
                                 Supervisor supervisor=supervisorMapper.selectOne(queryWrapper_supervisorDTO.eq(Supervisor::getId,supervisorId));
-                                if(supervisor.isDisabled()==false&&supervisor.isValid()==true){
+                                if(supervisor.getIsDisabled()==0&&supervisor.getIsValid()==1){
                                     return true;
                                 }else{
                                     return false;

@@ -16,10 +16,16 @@ public class RegexPattern {
      */
     public static final char[] LIMIT_CHARS = "\\;!@#$%^&**()".toCharArray();
 
+    //姓名限制
+    public static final String NAME_PATTERN = "^[\\u4e00-\\u9fa5]{2,32}$|^[a-zA-Z]{2,32}$";
+
+    //身份证限制
+    public static final String ID_PATTERN = "^\\d{17}(\\d|X|x)$\n^\\d{17}(\\d|X|x)$\n";
+
     /**
      * 密码限制字符: 由数字、大小写字母组成
      */
-    public static final String PASSWORD_PATTERN = "^(?=.[a-z])(?=.[A-Z])(?=.*\\d)[\\s\\S]{8,20}$";
+    public static final String PASSWORD_PATTERN = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,20}$";
 
 
     /**
