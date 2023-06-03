@@ -46,13 +46,11 @@ public class HelpController {
                                @RequestParam(value = "pageNum", required = false,defaultValue = "1") int pageNum,
                                @RequestParam(value = "fromDate", required = false) String fromDate,
                                @RequestParam(value = "toDate", required = false) String toDate){
-        LocalDateTime from = LocalDateTime.parse(fromDate+"T00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss"));
-        LocalDateTime to = LocalDateTime.parse(toDate+"T00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-ddTHH:mm:ss"));
-
-        List<HelpDTO> resultInfo = helpService.queryRecords(searchValue, pageSize, pageNum, from, to);
+        List<HelpDTO> resultInfo = helpService.queryRecords(searchValue, pageSize, pageNum, fromDate, toDate);
         int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
-        Page<HelpDTO> resPage = new Page<HelpDTO>(pageNum, pageSize, pages).setRecords(resultInfo);
-        RecordPage<HelpDTO> res = new RecordPage<HelpDTO>(resPage,pages);
+        int total = resultInfo.size();
+        Page<HelpDTO> resPage = new Page<HelpDTO>(pageNum, pageSize).setRecords(resultInfo);
+        RecordPage<HelpDTO> res = new RecordPage<HelpDTO>(resPage,pages,total);
         return R.success(res);
     }
 

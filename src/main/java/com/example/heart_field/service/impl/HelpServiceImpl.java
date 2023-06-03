@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
     private RecordMapper recordMapper;
 
     @Override
-    public List<HelpDTO> queryRecords(String searchValue, int pageSize, int pageNum, LocalDateTime fromDate, LocalDateTime toDate) {
+    public List<HelpDTO> queryRecords(String searchValue, int pageSize, int pageNum, String fromDate, String toDate) {
         LambdaQueryWrapper<Help> queryWrapper= Wrappers.lambdaQuery();
         User user = TokenUtil.getTokenUser();
         //if (user == null) { return new ArrayList<>();}
@@ -60,9 +61,11 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
         }
         log.info("searchValue:{}",searchValue);
         if(fromDate!=null){
+            LocalDateTime from = LocalDateTime.parse(fromDate+" 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             queryWrapper.ge(Help::getStartTime,fromDate);
         }
         if(toDate!=null){
+            LocalDateTime to = LocalDateTime.parse(toDate+" 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             queryWrapper.le(Help::getEndTime,toDate);
         }
         queryWrapper.orderByDesc(Help::getCreateTime);
