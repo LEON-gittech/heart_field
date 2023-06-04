@@ -146,17 +146,15 @@ public class VisitorController {
         }
         log.info("visitorId:{}", visitorId);
         log.info("visitor:{}", visitor);
-        String newPhone = visitor.getPhone();
         String emergencyPhone = visitor.getEmergencyPhone();
         Pattern phonePattern = Pattern.compile(RegexPattern.MOBILE_PHONE_NUMBER_PATTERN);
         //手机号码格式校验
-        if(newPhone==emergencyPhone||!phonePattern.matcher(newPhone).matches()||!phonePattern.matcher(emergencyPhone).matches()){
+        if(realVisitor.getPhone()==emergencyPhone||!phonePattern.matcher(emergencyPhone).matches()){
             return R.argument_error("请输入正确的手机号码");
         }
         realVisitor.setUsername(visitor.getUsername());
         realVisitor.setName(visitor.getName());
         realVisitor.setEmergencyName(visitor.getEmergencyName());
-        realVisitor.setPhone(newPhone);
         realVisitor.setEmergencyPhone(emergencyPhone);
         realVisitor.setGender(visitor.getGender().byteValue());
         boolean result=visitorService.updateById(realVisitor);
@@ -164,10 +162,10 @@ public class VisitorController {
         if(result==false){
             return R.error("更新失败");
         }else{
-            User user = userMapper.selectOne(new QueryWrapper<User>().eq("type", 0).eq("user_id",visitorId));
-            log.info("user:{}", user);
-            user.setPhone(newPhone);
-            userMapper.updateById(user);
+//            User user = userMapper.selectOne(new QueryWrapper<User>().eq("type", 0).eq("user_id",visitorId));
+//            log.info("user:{}", user);
+//            user.setPhone(newPhone);
+//            userMapper.updateById(user);
             return R.success("更新成功");
         }
 
