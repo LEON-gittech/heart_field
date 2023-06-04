@@ -3,6 +3,7 @@ package com.example.heart_field.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.entity.Chat;
+import com.example.heart_field.param.ChatParam;
 
 import java.util.List;
 
@@ -26,7 +27,7 @@ public interface ChatService extends IService<Chat> {
 
     List<Integer> getTodayCounsels();
 
-    ResultInfo createChat(Integer type, Integer userA, Integer userB);
+    ResultInfo createChat(ChatParam chat);
 
     ResultInfo endChat(Integer chatId);
 }

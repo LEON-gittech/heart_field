@@ -13,6 +13,7 @@ import com.example.heart_field.mapper.ChatMapper;
 import com.example.heart_field.mapper.ConsultantMapper;
 import com.example.heart_field.mapper.SupervisorMapper;
 import com.example.heart_field.mapper.VisitorMapper;
+import com.example.heart_field.param.ChatParam;
 import com.example.heart_field.service.ChatService;
 import com.example.heart_field.utils.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -184,12 +185,12 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
 
     @Override
-    public ResultInfo createChat(Integer type, Integer userA, Integer userB) {
-        switch (type) {
+    public ResultInfo createChat(ChatParam chat) {
+        switch (chat.getType()) {
             case 0:
-                return createCounselChat(userA,userB);
+                return createCounselChat(chat.getUserA(),chat.getUserB());
             case 1:
-                return createHelpChat(userA,userB);
+                return createHelpChat(chat.getUserA(),chat.getUserB());
             default:
                 return ResultInfo.error("参数错误");
         }
@@ -207,13 +208,13 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     }
 
     /**
-     * 督导会话，userA为咨询师，userB为督导
+     * 求助会话，userA为咨询师，userB为督导
      * @param userA
      * @param userB
      * @return
      * todo
      */
-    private ResultInfo createCounselChat(Integer userA, Integer userB) {
+    private ResultInfo createHelpChat(Integer userA, Integer userB) {
         Consultant consultant = consultantMapper.selectById(userA);
         if(consultant == null||consultant.getIsValid()==0||consultant.getIsDisabled()==1||consultant.getCurStatus()!=0) {
             return ResultInfo.error("咨询师不存在或已被封禁");
@@ -239,13 +240,13 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
      * @return
      * todo: 咨询师状态存疑
      */
-    private ResultInfo createHelpChat(Integer userA, Integer userB) {
+    private ResultInfo createCounselChat(Integer userA, Integer userB) {
         Visitor visistor = visitorMapper.selectById(userA);
         if(visistor == null||visistor.getIsDisabled() == 1) {
             return ResultInfo.error("访客不存在或已被封禁");
         }
         Consultant consultant = consultantMapper.selectById(userB);
-        if(consultant == null||consultant.getIsValid()==0||consultant.getIsDisabled()==1||consultant.getCurStatus()!=0) {
+        if(consultant == null||consultant.getIsValid()==0||consultant.getIsDisabled()==1) {
             return ResultInfo.error("咨询师不存在或已被封禁");
         }
         Chat chat = Chat.builder()
@@ -255,7 +256,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
                 .userB(consultant.getId())
                 .build();
         baseMapper.insert(chat);
-        return ResultInfo.success(chat.getId());
+        return ResultInfo.success(chat);
     }
 }
 

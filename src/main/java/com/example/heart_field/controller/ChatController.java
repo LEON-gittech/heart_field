@@ -3,6 +3,8 @@ package com.example.heart_field.controller;
 import com.example.heart_field.common.R;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.entity.Consultant;
+import com.example.heart_field.param.ChatEndParam;
+import com.example.heart_field.param.ChatParam;
 import com.example.heart_field.service.ChatService;
 import com.example.heart_field.service.ConsultantService;
 import com.example.heart_field.tokens.UserLoginToken;
@@ -56,20 +58,18 @@ public class ChatController {
 
 
     @PostMapping
-    public R createChat(@RequestParam(value="type")Integer type,
-                        @RequestParam(value="user-a")Integer userA,
-                        @RequestParam(value="user-b")Integer userB){
-        ResultInfo resultInfo = chatService.createChat(type,userA,userB);
+    public R createChat(@RequestBody ChatParam chat){
+        ResultInfo resultInfo = chatService.createChat(chat);
         return resultInfo.isRight()
                 ? R.success(resultInfo.getData())
                 : R.error(resultInfo.getMessage());
     }
 
     @PutMapping
-    public R endChat(@RequestParam(value="chat-id")Integer chatId){
-        ResultInfo resultInfo = chatService.endChat(chatId);
+    public R endChat(@RequestBody ChatEndParam chat){
+        ResultInfo resultInfo = chatService.endChat(chat.getChatId());
         return resultInfo.isRight()
-                ? R.success(resultInfo.getData())
+                ? R.success("结束成功")
                 : R.error(resultInfo.getMessage());
     }
 
