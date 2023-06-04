@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
 import com.example.heart_field.constant.RegexPattern;
+import com.example.heart_field.dto.VisitorPcychDTO;
 import com.example.heart_field.dto.WxLoginDTO;
 import com.example.heart_field.dto.consultant.record.RecordListDTO;
 import com.example.heart_field.dto.consultant.record.RecordPage;
@@ -13,6 +14,7 @@ import com.example.heart_field.entity.User;
 import com.example.heart_field.entity.Visitor;
 import com.example.heart_field.mapper.UserMapper;
 import com.example.heart_field.mapper.VisitorMapper;
+import com.example.heart_field.param.VisitorPcychParam;
 import com.example.heart_field.param.VisitorUpdateParam;
 import com.example.heart_field.param.WxLoginParam;
 import com.example.heart_field.service.RecordService;
@@ -181,13 +183,14 @@ public class VisitorController {
      */
     @GetMapping("/{visitor-id}/psych-archive")
     //@UserLoginToken
-    public R<Visitor> getPsychArchive(@PathVariable(value = "visitor-id") Integer visitorId) {
+    public R<VisitorPcychDTO> getPsychArchive(@PathVariable(value = "visitor-id") Integer visitorId) {
         //if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
         log.info("visitorId:{}", visitorId);
-        Visitor visitor = visitorService.getById(visitorId);
+        Visitor visitor= visitorService.getById(visitorId);
+        VisitorPcychDTO visitorPcychDTO=visitor.convertToVisitorPcychDTO();
         return visitor==null
                 ? R.error("该咨询师不存在")
-                : R.success(visitor);
+                : R.success(visitorPcychDTO);
     }
 
     /**
@@ -202,7 +205,7 @@ public class VisitorController {
     //    @UserLoginToken
     @PutMapping("/{visitor-id}/psych-archive")
     public R updatePcychArchive(@PathVariable(value = "visitor-id") Integer visitorId,
-                                         @RequestBody Visitor visitor){
+                                         @RequestBody VisitorPcychParam visitor){
         //if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
         Visitor checkVisitor = visitorService.getById(visitorId);
         if(checkVisitor==null){
@@ -210,8 +213,11 @@ public class VisitorController {
         }
         log.info("visitorId:{}", visitorId);
         log.info("visitor:{}", visitor);
-        visitor.setId(visitorId);
-        boolean result = visitorService.updateById(visitor);
+        checkVisitor.setQuestion(visitor.getQuestion().toString().substring(1,visitor.getQuestion().toString().length()-1));
+        checkVisitor.setHistory(visitor.getHistory());
+        checkVisitor.setPuzzle(visitor.getPuzzle());
+        checkVisitor.setDirection(visitor.getDirection());
+        boolean result = visitorService.updateById(checkVisitor);
         return result
                 ? R.success("更新成功")
                 : R.error("更新失败");
