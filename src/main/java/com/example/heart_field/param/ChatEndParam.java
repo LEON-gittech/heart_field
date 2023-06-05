@@ -7,16 +7,12 @@ import lombok.NoArgsConstructor;
 
 /**
  * @author albac0020@gmail.com
- * data 2023/6/2 9:45 PM
+ * data 2023/6/4 11:04 PM
  */
 @Data
-@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class VisitorUpdateParam {
-    private String name;
-    private String username;
-    private String emergencyName;
-    private String emergencyPhone;
-    private Integer gender;
+@Builder
+public class ChatEndParam {
+    private Integer chatId;
 }
