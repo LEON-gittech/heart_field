@@ -7,6 +7,8 @@ import com.example.heart_field.common.R;
 import com.example.heart_field.dto.consultant.ConsultantDto;
 import com.example.heart_field.dto.consultant.ConsultantsDto;
 import com.example.heart_field.dto.consultant.ExpertiseTag;
+import com.example.heart_field.dto.consultant.PasswordDto;
+import com.example.heart_field.dto.consultant.binding.OnlineBinding;
 import com.example.heart_field.dto.consultant.binding.SupervisorBindedDto;
 import com.example.heart_field.dto.consultant.comment.CommentDto;
 import com.example.heart_field.dto.consultant.comment.CommentsDto;
@@ -27,13 +29,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 import java.util.stream.Collectors;
+
 
 @Slf4j
 @RestController
@@ -86,10 +89,12 @@ public class ConsultantController {
         LambdaQueryWrapper<Consultant> queryWrapper = new LambdaQueryWrapper<>();
 
         //根据searchValue对姓名，简介，详细介绍，标签进行模糊查询
-        queryWrapper.like(StringUtils.hasText(searchValue),Consultant::getName,searchValue)
-                .or().like(Consultant::getBriefIntro,searchValue)
-                .or().like(Consultant::getDetailedIntro,searchValue)
-                .or().like(Consultant::getExpertiseTag,searchValue)
+        if(!(searchValue.equals(null)||searchValue.equals(""))){
+            queryWrapper.like(Consultant::getName,searchValue)
+                    .or().like(Consultant::getBriefIntro,searchValue)
+                    .or().like(Consultant::getDetailedIntro,searchValue)
+                    .or().like(Consultant::getExpertiseTag,searchValue);
+        }
         //JSON_CONTAINS函数用于判断json数组中是否包含某个元素
         ;
 
@@ -126,6 +131,7 @@ public class ConsultantController {
             }
         }
         //执行查询
+        List<Consultant> consultantsLs = consultantService.list();
         consultantService.page(pageinfo,queryWrapper);
         ConsultantsDto consultantsDto = new ConsultantsDto();
         List<Consultant> consultants = pageinfo.getRecords();
@@ -183,7 +189,7 @@ public class ConsultantController {
         //将consultantDto的值复制给consultant
         Consultant consultant = consultantService.getById(updateConsultantProfileDto.getId());
         BeanUtils.copyProperties(updateConsultantProfileDto,consultant,"expertiseTag");
-        consultant.setExpertiseTag(objectMapper.writeValueAsString(updateConsultantProfileDto.getExpertiseTag()));
+        if(updateConsultantProfileDto.getExpertiseTag()!=null) consultant.setExpertiseTag(objectMapper.writeValueAsString(updateConsultantProfileDto.getExpertiseTag()));
         consultantService.updateById(consultant);
         //同步更新User表
         userUtils.updateUser(consultant);
@@ -460,5 +466,62 @@ public class ConsultantController {
         //更新record
         recordService.updateById(record);
         return R.success("咨询师填写用户评估成功");
+    }
+
+    /**
+     * 更新密码
+     * @return
+     */
+    @PutMapping("/{consultant-id}/password")
+    public R<String> updatePassword(@PathVariable("consultant-id") String consultantId,@Validated @RequestBody PasswordDto body) {
+        //权限判断
+        consultantUtil.isConsultantOrAdmin(Integer.valueOf(consultantId));
+        //更新密码
+        Consultant consultant = consultantService.getById(consultantId);
+        consultant.setPassword(body.getPassword());
+        consultantService.updateById(consultant);
+        //同步更新User表
+        userUtils.updateUser(consultant);
+        return R.success("更新密码成功");
+    }
+
+//    @PutMapping("/{consultant-id}/phone")
+//    public R<String> updatePhone(@PathVariable("consultant-id") String consultantId,@RequestBody Map body) {
+//        //权限判断
+//        consultantUtil.isConsultantOrAdmin(Integer.valueOf(consultantId));
+//        //更新手机号
+//        Consultant consultant = consultantService.getById(consultantId);
+//        consultant.setPhone((String) body.get("phone"));
+//        consultantService.updateById(consultant);
+//        //同步更新User表
+//        userUtils.updateUser(consultant);
+//        return R.success("更新手机号成功");
+//    }
+    @GetMapping("/{consultant-id}/online/bindings")
+    public R<List<OnlineBinding>> getOnlineBindings(@PathVariable("consultant-id") String consultantId) {
+        //权限判断
+        consultantUtil.isConsultantOrAdmin(Integer.valueOf(consultantId));
+        //督导需在线
+        LambdaQueryWrapper<Supervisor> queryWrapper1 = new LambdaQueryWrapper<>();
+        queryWrapper1.eq(Supervisor::getIsOnline,1);
+        List<Supervisor> supervisors = supervisorService.list(queryWrapper1);
+        List<Integer> supervisorIds = supervisors.stream()
+                .map(Supervisor::getId)
+                .collect(Collectors.toList());
+        //获取绑定信息
+        LambdaQueryWrapper<Binding> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Binding::getConsultantId,consultantId);
+        queryWrapper.apply("supervisor_id IN (SELECT id FROM supervisor WHERE id IN (" + StringUtils.join(supervisorIds, ",") + "))");
+        List<Binding> bindings = bindingService.list(queryWrapper);
+        //输出Dto
+        List<OnlineBinding> onlineBindings = new ArrayList<>();
+        for(Binding binding:bindings){
+            OnlineBinding onlineBinding = new OnlineBinding();
+            onlineBinding.setId(binding.getSupervisorId());
+            Supervisor supervisor = supervisorService.getById(binding.getSupervisorId());
+            onlineBinding.setName(supervisor.getName());
+            onlineBindings.add(onlineBinding);
+        }
+        return R.success(onlineBindings);
     }
 }

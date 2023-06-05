@@ -65,3 +65,12 @@ default:
   string: ""
   boolean: false
 
+aliyun:
+  msg:
+    #  "cn-beijing"
+    regionid: "cn-hangzhou"
+    access-key-id: "LTAI5t77W7H7aXVyuG8c8Kw7"
+    access-key-secret: "FBVPdFFglM9ZYJ4yPIRVtKyp5hjCF9"
+    sign-name: "王泽洲的博客"
+    template-code: "SMS_461060677"
+

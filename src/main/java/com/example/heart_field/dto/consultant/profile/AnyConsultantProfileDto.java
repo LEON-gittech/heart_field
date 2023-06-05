@@ -34,8 +34,8 @@ public class AnyConsultantProfileDto {
     private String phone;
     private String cardId;
     private String email;
-    private String password;
     private String workplace;
     private String title;
     private String id;
+    private Integer age;
 }
