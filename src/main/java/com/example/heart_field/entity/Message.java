@@ -73,4 +73,7 @@ public class Message {
      * 该消息是否被删除
      */
     private Boolean isDeleted;
+
+    private String senderName;
+    private String receiverName;
 }
