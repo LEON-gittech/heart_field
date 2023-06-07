@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,11 +19,11 @@ import java.util.List;
 public class VisitorPcychDTO {
     private Integer id;
 
-    private String direction;
+    private String direction="";
 
-    private String puzzle;
+    private String puzzle="";
 
-    private String history;
+    private String history="";
 
-    private List<Integer> question;
+    private List<Integer> question=new ArrayList<Integer>();
 }
