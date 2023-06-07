@@ -15,5 +15,6 @@ public class SupervisorComDto {
     public Integer consultTotalCount;
     public Long consultTotalTime;
     public List<Integer> workArrange;
+    public Integer state;
 
 }

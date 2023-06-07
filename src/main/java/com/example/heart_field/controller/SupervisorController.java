@@ -1,5 +1,6 @@
 package com.example.heart_field.controller;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
@@ -7,10 +8,10 @@ import com.example.heart_field.dto.*;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.param.UpdateSupervisorPasswordParam;
 import com.example.heart_field.service.*;
-import com.example.heart_field.service.impl.StaffStatServiceImpl;
 import com.example.heart_field.tokens.AdminToken;
 import com.example.heart_field.tokens.UserLoginToken;
 import com.example.heart_field.utils.PwdCheckUtil;
+import com.example.heart_field.utils.TencentCloudImUtil;
 import com.example.heart_field.utils.TokenUtil;
 import com.example.heart_field.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -46,11 +47,44 @@ public class SupervisorController {
     private AdminService adminService;
     @Autowired
     private ScheduleService scheduleService;
-    @Autowired
-    private StaffStatServiceImpl staffStatService;
+
     @Autowired
     private UserService userService;
+    @Autowired
+    private TencentCloudImUtil tencentCloudImUtil;
 
+    public void updateIsOnline(){
+        log.info("进入----------");
+        List<Supervisor> supervisors = supervisorService.list();
+
+        log.info("supervisors:{}",supervisors);
+        for(int i=0;i<supervisors.size();i++){
+            Supervisor one = supervisors.get(i);
+            Integer id = one.getId();
+            int nowTime = LocalDateTime.now().getDayOfMonth();
+            LambdaQueryWrapper<Schedule> scheduleLambdaQueryWrapper=new LambdaQueryWrapper<>();
+            scheduleLambdaQueryWrapper.eq(Schedule::getStaffType,3).eq(Schedule::getStaffId,id).orderByAsc(
+                    Schedule::getWorkday);
+            List<Schedule> schedules = scheduleService.list(scheduleLambdaQueryWrapper);
+            boolean flag = false;
+            for(int j = 0;j<schedules.size();j++){
+                Schedule arrange = schedules.get(j);
+                int day = arrange.getWorkday();
+                if(day==nowTime){
+                    flag = true;
+                }
+            }
+            if(flag){
+                one.setIsOnline(1);
+                supervisorService.updateById(one);
+            }
+            else {
+                one.setIsOnline(0);
+                supervisorService.updateById(one);
+            }
+        }
+
+    }
     /**
      * 新增一个督导
      * 权限：管理员
@@ -91,6 +125,20 @@ public class SupervisorController {
             supervisor.setPassword(password);
             supervisorService.save(supervisor);
             User user = userUtils.saveUser(supervisor);
+            //新增到腾讯云
+        //导入账号到腾讯云IM
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("Identifier",user.getType().toString()+"_"+user.getUserId().toString());
+            jsonObject.put("Nick",supervisor.getName());
+            //jsonObject.put("FaceUrl",supervisor.getAvatar());
+            String identifier = user.getType().toString()+"_"+user.getUserId().toString();
+            boolean isSuccess = tencentCloudImUtil.accountImport(identifier);
+            if(!isSuccess){
+                supervisorService.remove(new LambdaQueryWrapper<Supervisor>().eq(Supervisor::getId,supervisor.getId()));
+                userUtils.deleteUser(user);
+                return R.error("腾讯IM导入账号失败");
+        }
+
             log.info("新增成功,新增id:{}", supervisor.getId());
             return R.success("添加成功");
 
@@ -103,6 +151,7 @@ public class SupervisorController {
     public R<List<SupervisorPreviewDto>> getSupervisorPreview(){
         List<SupervisorPreviewDto> list = new ArrayList<>();
         //try{
+            updateIsOnline();
             User user = TokenUtil.getTokenUser();
             Integer id = user.getUserId();
             Integer type = user.getType();
@@ -144,7 +193,7 @@ public class SupervisorController {
     @GetMapping
     public R<SupervisorPageSearchDto> getSupervisorList(HttpServletRequest httpServletRequest){
         //try{
-
+            updateIsOnline();
             httpServletRequest.getParameterMap().forEach((k,v)->{
                 log.info("key={},value={}",k,v);
             });
@@ -239,7 +288,7 @@ public class SupervisorController {
                 }
                 supervisorCom.consultTotalCount= total;
                 supervisorCom.consultTotalTime = time;*/
-                LambdaQueryWrapper<StaffStat> staffStatLambdaQueryWrapper = new LambdaQueryWrapper<>();
+                /*LambdaQueryWrapper<StaffStat> staffStatLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 staffStatLambdaQueryWrapper.eq(StaffStat::getStaffId,supervisorId).eq(StaffStat::getStaffType,1);
                 StaffStat stat = staffStatService.getOne(staffStatLambdaQueryWrapper);
                 if (stat != null) {
@@ -249,8 +298,12 @@ public class SupervisorController {
                 else {
                     supervisorCom.consultTotalCount=null;
                     supervisorCom.consultTotalTime =null;
-                }
+                }*/
+
+                supervisorCom.consultTotalCount= one.getTodayTotalHelpCount()==null?0:one.getTodayTotalHelpCount();
+                supervisorCom.consultTotalTime = one.getTodayTotalHelpTime()==null?0:Long.valueOf(one.getTodayTotalHelpTime());
                 supervisorCom.phoneNum = one.getPhone();
+                supervisorCom.state = one.getIsOnline();
                 // 统计督导排班
                 LambdaQueryWrapper<Schedule> scheduleLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 scheduleLambdaQueryWrapper.eq(Schedule::getStaffType,3).eq(Schedule::getStaffId,supervisorId).orderByAsc(Schedule::getWorkday);
@@ -386,7 +439,7 @@ public class SupervisorController {
     @GetMapping("/profile")
     public R<SupervisorProfileDto> getSupervisorProfile(){
         try{
-
+            updateIsOnline();
             User user = TokenUtil.getTokenUser();
             Integer id = user.getUserId();
             Integer type = user.getType();
@@ -426,11 +479,14 @@ public class SupervisorController {
             }
             supervisorProfileDto.setTodayTotalCount(totalTotalCount);
             supervisorProfileDto.setTodayTotalTime(todayTotalTime);*/
-            LambdaQueryWrapper<StaffStat> staffStatLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            /*LambdaQueryWrapper<StaffStat> staffStatLambdaQueryWrapper = new LambdaQueryWrapper<>();
             staffStatLambdaQueryWrapper.eq(StaffStat::getStaffId,id).eq(StaffStat::getStaffType,1);
             StaffStat stat = staffStatService.getOne(staffStatLambdaQueryWrapper);
             supervisorProfileDto.setTodayTotalCount(stat.getTotalCount());
-            supervisorProfileDto.setTodayTotalTime(Long.valueOf(stat.getTotalTime()));
+            supervisorProfileDto.setTodayTotalTime(Long.valueOf(stat.getTotalTime()));*/
+
+            supervisorProfileDto.setTodayTotalCount(supervisor.getTodayTotalHelpCount()==null?0:supervisor.getTodayTotalHelpCount());
+            supervisorProfileDto.setTodayTotalTime(supervisor.getTodayTotalHelpTime()==null?0:Long.valueOf(supervisor.getTodayTotalHelpTime()));
             return R.success(supervisorProfileDto);
         }catch (Exception e){
             return R.error("系统错误");
@@ -476,6 +532,7 @@ public class SupervisorController {
         if(supervisor==null)
             return R.resource_error();
         //不再多重判断传入的咨询师列表是否合法，默认合法,有自带外键约束！
+        //但是需要判断咨询师之前是否有绑定督导？不需要
         LambdaQueryWrapper<Binding> bindingLambdaQueryWrapper = new LambdaQueryWrapper<>();
         bindingLambdaQueryWrapper.eq(Binding::getSupervisorId,supervisorId);
         List<Binding> bindings = bindingService.list(bindingLambdaQueryWrapper);
@@ -487,6 +544,7 @@ public class SupervisorController {
             Binding newBind = new Binding();
             newBind.setConsultantId(Integer.valueOf(consultantBinded.getConsultantBinded().get(j)));
             newBind.setSupervisorId(supervisorId);
+            newBind.setIsDeleted(0);
             bindingService.save(newBind);
         }
         return R.success("更新绑定成功");
@@ -597,6 +655,13 @@ public class SupervisorController {
             Supervisor supervisor = supervisorService.getById(list.get(i));
             if(supervisor==null||date>31||date<1)
                 return R.argument_error();
+            //判断该督导该天是否已有排班
+            LambdaQueryWrapper<Schedule> scheduleLambdaQueryWrapper = new LambdaQueryWrapper<>();
+            scheduleLambdaQueryWrapper.eq(Schedule::getStaffId,list.get(i)).eq(Schedule::getStaffType,3).eq(Schedule::getWorkday,date);
+            Schedule isFind = scheduleService.getOne(scheduleLambdaQueryWrapper);
+            if(isFind!=null){
+                continue;
+            }
             Schedule schedule = new Schedule();
             schedule.setStaffId(list.get(i));
             schedule.setWorkday(date);

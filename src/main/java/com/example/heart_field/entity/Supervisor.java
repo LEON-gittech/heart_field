@@ -31,4 +31,8 @@ public class Supervisor {
     private String qualificationId;
 
     private Integer concurrentNum;
+    private Integer totalHelpTime;
+    private Integer helpTotalNum;
+    private Integer todayTotalHelpCount;
+    private Integer todayTotalHelpTime;
 }
