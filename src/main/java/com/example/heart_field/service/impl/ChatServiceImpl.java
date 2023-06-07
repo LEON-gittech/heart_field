@@ -2,6 +2,7 @@ package com.example.heart_field.service.impl;
 
 import com.alibaba.druid.sql.visitor.functions.Char;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.TypeConstant;
@@ -204,7 +205,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         }
         chat.setEndTime(now);
         baseMapper.updateById(chat);
-        return ResultInfo.success();
+        return ResultInfo.success(chat);
     }
 
     /**
@@ -222,6 +223,15 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         Supervisor supervisor = supervisorMapper.selectById(userB);
         if(supervisor == null||supervisor.getIsValid()==0||supervisor.getIsDisabled()==0) {
             return ResultInfo.error("督导不存在或已被封禁");
+        }
+        int count = new LambdaQueryChainWrapper<>(this.baseMapper)
+                .eq(Chat::getType, TypeConstant.HELP_CHAT)
+                .eq(Chat::getUserA,userA)
+                .eq(Chat::getUserB,userB)
+                .isNull(Chat::getEndTime)
+                .count();
+        if(count>0){
+            return ResultInfo.error("双方存在未完成会话");
         }
         Chat chat = Chat.builder()
                 .type(TypeConstant.HELP_CHAT)
@@ -241,18 +251,27 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
      * todo: 咨询师状态存疑
      */
     private ResultInfo createCounselChat(Integer userA, Integer userB) {
-        Visitor visistor = visitorMapper.selectById(userA);
-        if(visistor == null||visistor.getIsDisabled() == 1) {
+        Visitor visitor = visitorMapper.selectById(userA);
+        if(visitor == null||visitor.getIsDisabled() == 1) {
             return ResultInfo.error("访客不存在或已被封禁");
         }
         Consultant consultant = consultantMapper.selectById(userB);
         if(consultant == null||consultant.getIsValid()==0||consultant.getIsDisabled()==1) {
             return ResultInfo.error("咨询师不存在或已被封禁");
         }
+        int count = new LambdaQueryChainWrapper<>(this.baseMapper)
+                .eq(Chat::getType, TypeConstant.COUNSEL_CHAT)
+                .eq(Chat::getUserA,userA)
+                .eq(Chat::getUserB,userB)
+                .isNull(Chat::getEndTime)
+                .count();
+        if(count>0){
+            return ResultInfo.error("双方存在未完成会话");
+        }
         Chat chat = Chat.builder()
                 .startTime(now)
                 .type(TypeConstant.COUNSEL_CHAT)
-                .userA(visistor.getId())
+                .userA(visitor.getId())
                 .userB(consultant.getId())
                 .build();
         baseMapper.insert(chat);

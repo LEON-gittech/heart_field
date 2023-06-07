@@ -69,7 +69,7 @@ public class ChatController {
     public R endChat(@RequestBody ChatEndParam chat){
         ResultInfo resultInfo = chatService.endChat(chat.getChatId());
         return resultInfo.isRight()
-                ? R.success("结束成功")
+                ? R.success(resultInfo.getData())
                 : R.error(resultInfo.getMessage());
     }
 
