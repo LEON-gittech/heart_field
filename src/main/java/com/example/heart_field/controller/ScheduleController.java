@@ -23,13 +23,13 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-//@UserLoginToken
+@UserLoginToken
 public class ScheduleController {
     @Autowired
     private ScheduleService scheduleService;
 
     @GetMapping("/all-schedules")
-    //@AdminOrSupervisorToken
+    @AdminOrSupervisorToken
     public R<List<ScheduleDTO>> getAllSchedules(){
         ResultInfo<List<ScheduleDTO>> scheduleResult = scheduleService.getAllSchedules();
         return scheduleResult.isRight()

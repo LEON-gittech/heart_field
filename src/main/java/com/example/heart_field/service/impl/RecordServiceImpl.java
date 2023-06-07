@@ -44,7 +44,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
 
 
     @Override
-    public List<RecordListDTO> getRecords(String visitorId, String state,Integer pageSize, Integer pageNum) {
+    public List<RecordListDTO> getRecords(Integer visitorId, String state,Integer pageSize, Integer pageNum) {
         LambdaQueryWrapper<Record> queryWrapper= Wrappers.lambdaQuery();
         queryWrapper.eq(Record::getVisitorId,visitorId);
         //Integer count=this.baseMapper.selectCount(queryWrapper);
@@ -238,6 +238,9 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
         }
         if(record.getIsCompleted()==1){
             return ResultInfo.error("该record已经完成评价，请勿重复评价，id:"+recordId);
+        }
+        if(record.getVisitorId()!=TokenUtil.getTokenUser().getUserId()){
+            return ResultInfo.error("该record不属于当前访客，id:"+recordId);
         }
         record.setVisitorComment(comment);
         record.setVisitorScore(score);

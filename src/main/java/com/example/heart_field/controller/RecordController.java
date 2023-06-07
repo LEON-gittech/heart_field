@@ -7,6 +7,7 @@ import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.dto.consultant.record.RecordDTO;
 import com.example.heart_field.dto.consultant.record.RecordListDTO;
 import com.example.heart_field.dto.consultant.record.RecordPage;
+import com.example.heart_field.param.VisitorCommentParam;
 import com.example.heart_field.service.RecordService;
 import com.example.heart_field.tokens.StaffToken;
 import com.example.heart_field.tokens.UserLoginToken;
@@ -24,13 +25,12 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-//@UserLoginToken
+@UserLoginToken
 public class RecordController {
     @Autowired
     private RecordService recordService;
 
     /**
-     *todo:待测试
      *
         根据不同角色返回对话列表（即咨询记录列表）
      * 咨询师-自己负责的咨询会话
@@ -66,11 +66,14 @@ public class RecordController {
                  :R.error(resultInfo.getMessage());
     }
 
+    /**
+     * 访客评价咨询师
+     */
     @PostMapping("/visitors/{record-id}/comment")
     public R addComment(@PathVariable(value = "record_id", required=true)Integer recordId,
-                        @RequestParam(value = "comment", required = true) String comment,
-                        @RequestParam(value = "rank", required = true) Integer score){
-        ResultInfo<String> resultInfo = recordService.addComment(recordId, comment, score);
+                        @RequestBody VisitorCommentParam commentParam
+                        ){
+        ResultInfo<String> resultInfo = recordService.addComment(recordId,commentParam.getComment(),commentParam.getScore());
         return resultInfo.isRight()
                 ?R.success(resultInfo.getData())
                 :R.error(resultInfo.getMessage());
