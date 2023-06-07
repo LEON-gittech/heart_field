@@ -190,9 +190,6 @@ public class ConsultantController {
         Consultant consultant = consultantService.getById(updateConsultantProfileDto.getId());
         BeanUtils.copyProperties(updateConsultantProfileDto,consultant,"expertiseTag");
         if(updateConsultantProfileDto.getExpertiseTag()!=null) consultant.setExpertiseTag(objectMapper.writeValueAsString(updateConsultantProfileDto.getExpertiseTag()));
-        consultantService.updateById(consultant);
-        //同步更新User表
-        userUtils.updateUser(consultant);
         //同步更新腾讯云IM
         String identifier = "1"+"_"+consultantId.toString();
         String gender = "Gender_Type_Unknown";
@@ -209,6 +206,12 @@ public class ConsultantController {
         boolean isSuccess = tencentCloudImUtil.updateAccount(identifier,consultant.getName(),consultant.getAvatar(),gender);
         if(!isSuccess){
             return R.error("腾讯IM更新账号失败");
+        }
+        else{
+            //同步更新Consultant表
+            consultantService.updateById(consultant);
+            //同步更新User表
+            userUtils.updateUser(consultant);
         }
         return R.success("修改咨询师详情成功");
     }

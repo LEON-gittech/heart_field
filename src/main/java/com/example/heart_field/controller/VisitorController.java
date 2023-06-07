@@ -10,15 +10,16 @@ import com.example.heart_field.dto.VisitorPcychDTO;
 import com.example.heart_field.dto.WxLoginDTO;
 import com.example.heart_field.dto.consultant.record.RecordListDTO;
 import com.example.heart_field.dto.consultant.record.RecordPage;
-import com.example.heart_field.entity.User;
-import com.example.heart_field.entity.Visitor;
-import com.example.heart_field.mapper.UserMapper;
-import com.example.heart_field.mapper.VisitorMapper;
+import com.example.heart_field.entity.*;
+import com.example.heart_field.mapper.*;
 import com.example.heart_field.param.VisitorPcychParam;
 import com.example.heart_field.param.VisitorUpdateParam;
 import com.example.heart_field.param.WxLoginParam;
 import com.example.heart_field.service.RecordService;
 import com.example.heart_field.service.VisitorService;
+import com.example.heart_field.tokens.AdminToken;
+import com.example.heart_field.tokens.StaffToken;
+import com.example.heart_field.tokens.UserLoginToken;
 import com.example.heart_field.utils.TokenUtil;
 import com.example.heart_field.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -49,6 +50,15 @@ public class VisitorController {
     @Autowired
     private VisitorMapper visitorMapper;
 
+    @Autowired
+    private ConsultantMapper consultantMapper;
+
+    @Autowired
+    private SupervisorMapper supervisorMapper;
+
+    @Autowired
+    private AdminMapper adminMapper;
+
     @PostMapping("/auth/login")
     public R<WxLoginDTO> login(@RequestBody WxLoginParam loginParam){
         log.info("loginParam:{}",loginParam);
@@ -68,7 +78,7 @@ public class VisitorController {
      * @return
      */
     @GetMapping()
-   // @ExceptVisitorToken
+    @StaffToken
     public R<Page> page(@RequestParam(value = "searchValue", required = false) String searchValue,
                         @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize,
                         @RequestParam(value = "pageNum", required = false,defaultValue = "1") int pageNum) {
@@ -77,7 +87,32 @@ public class VisitorController {
         if(pageNum<1||pageSize<1){
             return R.argument_error("分页参数不合法");
         }
-
+        User user = TokenUtil.getTokenUser();
+        switch (user.getType()){
+            //type为0是Visitor，1是Consultant，2是Admin，3是Supervisor
+            case 0:
+                return R.auth_error("访客端无法访问");
+            case 1:
+                Consultant consultant = consultantMapper.selectById(user.getUserId());
+                if(consultant==null||consultant.getIsDisabled()==1){
+                    return R.auth_error("账号不存在或已被禁用");
+                }
+                break;
+            case 2:
+                Admin admin = adminMapper.selectById(user.getUserId());
+                if(admin==null||admin.getIsDisabled()==1){
+                    return R.auth_error("账号不存在或已被禁用");
+                }
+                break;
+            case 3:
+                Supervisor supervisor = supervisorMapper.selectById(user.getUserId());
+                if(supervisor==null||supervisor.getIsDisabled()==1){
+                    return R.auth_error("账号不存在或已被禁用");
+                }
+                break;
+            default:
+                return R.auth_error("账号不存在或已被禁用");
+        }
         //构造分页构造器
         Page<Visitor> pageInfo = new Page<>(pageNum,pageSize);
 
@@ -105,19 +140,21 @@ public class VisitorController {
      * @return
      */
     @GetMapping("/{visitor-id}/profile")
-    //@UserLoginToken
+    @UserLoginToken
     public R<Visitor> getVisitorProfile(@PathVariable(value = "visitor-id") Integer visitorId) {
         log.info("visitorId:{}", visitorId);
-        //if(!UserUtils.checkSelfOrBack(visitorId)) return R.auth_error();
+        if(!UserUtils.checkSelfOrBack(visitorId)) return R.auth_error();
         Visitor visitor = visitorService.getById(visitorId);
         Integer type=TokenUtil.getTokenUser().getType();
         //type为0是Visitor，1是Consultant，2是Admin，3是Supervisor
         if(type==0){
+            //访客自己已被封禁-不能查看
             return (visitor==null||visitor.getIsDisabled()==1)
-                    ? R.error("本账号已被禁用")
+                    ? R.error("本账号不存在或已被禁用")
                     : R.success(visitor);
         }
         else{
+            //管理端可以查看已被封禁的
             return visitor==null
                     ? R.error("该访客不存在")
                     : R.success(visitor);
@@ -135,10 +172,10 @@ public class VisitorController {
      * @return
      */
     @PutMapping("/{visitor-id}/profile")
-//    @UserLoginToken
+    @UserLoginToken
     public R updateVisitorProfile(@PathVariable(value = "visitor-id") Integer visitorId,
                                   @RequestBody VisitorUpdateParam visitor) {
-        //if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
+        if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
         Visitor realVisitor = visitorMapper.selectById(visitorId);
         log.info("checkVisitor:{}", realVisitor);
         if(realVisitor==null||realVisitor.getIsDisabled()==1){
@@ -180,14 +217,14 @@ public class VisitorController {
      * @return
      */
     @GetMapping("/{visitor-id}/psych-archive")
-    //@UserLoginToken
+    @UserLoginToken
     public R<VisitorPcychDTO> getPsychArchive(@PathVariable(value = "visitor-id") Integer visitorId) {
-        //if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
+        if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
         log.info("visitorId:{}", visitorId);
         Visitor visitor= visitorService.getById(visitorId);
         VisitorPcychDTO visitorPcychDTO=visitor.convertToVisitorPcychDTO();
-        return visitor==null
-                ? R.error("该咨询师不存在")
+        return visitor==null||visitor.getIsDisabled()==1
+                ? R.error("该访客不存在")
                 : R.success(visitorPcychDTO);
     }
 
@@ -200,11 +237,11 @@ public class VisitorController {
      * @param visitor
      * @return
      */
-    //    @UserLoginToken
+    @UserLoginToken
     @PutMapping("/{visitor-id}/psych-archive")
     public R updatePcychArchive(@PathVariable(value = "visitor-id") Integer visitorId,
                                          @RequestBody VisitorPcychParam visitor){
-        //if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
+        if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
         Visitor checkVisitor = visitorService.getById(visitorId);
         if(checkVisitor==null){
             return R.resource_error();
@@ -219,11 +256,9 @@ public class VisitorController {
         return result
                 ? R.success("更新成功")
                 : R.error("更新失败");
-
     }
 
     /**
-     * todo:分页待测试
      * 查看访客的咨询记录
      * 用于：
      *  -访客本人
@@ -233,12 +268,12 @@ public class VisitorController {
      * @return
      */
     @GetMapping("/{visitor-id}/records")
-    //@UserLoginToken
-    public R getRecords(@PathVariable(value = "visitor-id") String visitorId,
+    @UserLoginToken
+    public R getRecords(@PathVariable(value = "visitor-id") Integer visitorId,
                                              @RequestParam(value = "recordState", required = false) String state,
                                              @RequestParam(value = "pageNum", required = false, defaultValue = "1") Integer pageNum,
                                              @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize){
-        //if(!UserUtils.checkSelfOrBack(visitorId)) return R.auth_error();
+        if(!UserUtils.checkSelfOrBack(visitorId)) return R.auth_error();
         log.info("visitorId:{}", visitorId);
         if(state!=null&&!state.equals("0")&&!state.equals("1")&&!state.equals("2")){
             return R.argument_error("recordState参数错误");
@@ -262,7 +297,7 @@ public class VisitorController {
      * @return
      */
     @PutMapping("/{visitor-id}/permission")
-    //@AdminToken
+    @AdminToken
     public R updatePermission(@PathVariable(value = "visitor-id") Integer visitorId){
         log.info("visitorId:{}", visitorId);
         Visitor visitor = visitorService.getById(visitorId);
@@ -276,6 +311,7 @@ public class VisitorController {
                 : R.error("更新失败");
     }
 
+    @Deprecated
     @PostMapping("/test/login")
     public R testLogin(){
         R res=visitorService.testLogin();

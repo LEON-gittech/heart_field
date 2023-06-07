@@ -20,6 +20,7 @@ spring:
     port: 6379
     timeout: 10000
     client-name: jedis
+    password:
 
     #配置jedis
     jedis:

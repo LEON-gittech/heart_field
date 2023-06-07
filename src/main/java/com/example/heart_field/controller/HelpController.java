@@ -25,21 +25,19 @@ import java.util.List;
 
 @Slf4j
 @RestController
-//@AdminOrSupervisorToken
+@AdminOrSupervisorToken
 public class HelpController {
 
     @Autowired
     private HelpService helpService;
 
     /**
-     *todo:待测试
      *
      根据不同角色返回对话列表（即咨询记录列表）
      * 咨询师-自己负责的咨询会话
      * 督导/管理员-全平台会话（即所有的咨询记录列表）
      * @return
      */
-    //@AdminOrSupervisorToken
     @GetMapping("/records/assistance")
     public R getConsultRecords(@RequestParam(value = "searchValue", required = false) String searchValue,
                                @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize,

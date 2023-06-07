@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Slf4j
 @RestController
-//@AdminToken
+@AdminToken
 public class StatController {
 
     @Autowired
