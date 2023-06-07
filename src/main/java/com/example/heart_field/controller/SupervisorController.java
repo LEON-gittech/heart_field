@@ -419,8 +419,25 @@ public class SupervisorController {
                 user.setPhone(updateSupervisorDto.getPhone());
                 userService.updateById(user);
             }
-            supervisorService.updateById(supervisor);
 
+        //同步更新腾讯云IM
+            String identifier = "3"+"_"+supervisorId.toString();
+            String gender = "Gender_Type_Unknown";
+            switch (supervisor.getGender()){
+                case 0:
+                    gender = "Gender_Type_Female";
+                    break;
+                case 1:
+                    gender = "Gender_Type_Male";
+                    break;
+                default:
+                    break;
+            }
+            boolean isSuccess = tencentCloudImUtil.updateAccount(identifier,supervisor.getName(),supervisor.getAvatar(),gender);
+            if(!isSuccess){
+                return R.error("腾讯IM更新账号失败");
+            }
+            supervisorService.updateById(supervisor);
             Supervisor newOne = supervisorService.getById(supervisorId);
             log.info("newOneClass:{}",newOne.getClass());
             log.info("newOne-----{}",newOne);
