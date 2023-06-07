@@ -44,13 +44,13 @@ public class UserApi {
     @Resource
     private BCryptPasswordEncoder bCryptPasswordEncoder;  //注入bcryct加密
 
-    //todo:暂时关闭验证
+
     @PostMapping("/backend/login")
     public R<UserLoginDTO> userLogin(@RequestBody UserLoginParam loginParam){
         BaseResult checkResult = loginParam.checkLoginParam();
-//        if(!checkResult.isRight()){
-//            return R.login_error("手机号或密码格式错误");
-//        }
+        if(!checkResult.isRight()){
+            return R.login_error("手机号或密码格式错误");
+        }
         ResultInfo<UserLoginDTO> loginInfo = userService.login(loginParam);
         return loginInfo.isRight()
                 ? R.success(loginInfo.getData())
@@ -58,6 +58,7 @@ public class UserApi {
     }
 
     // 登录
+    @Deprecated
     @GetMapping("/login")
     public Object login(@RequestBody User user, HttpServletResponse response) {
         JSONObject jsonObject = new JSONObject();

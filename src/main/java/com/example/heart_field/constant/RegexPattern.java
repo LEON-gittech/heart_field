@@ -24,7 +24,7 @@ public class RegexPattern {
     public static final String ID_PATTERN_15 =  "^[1-9]\\d{7}((0\\d)|(1[0-2]))(([0|1|2]\\d)|3[0-1])\\d{2}[0-9X]$";
 
     /**
-     * 密码限制字符: 由数字、大小写字母组成
+     * 密码限制字符: 由数字、大小写字母组成,长度8-20
      */
     public static final String PASSWORD_PATTERN = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,20}$";
 

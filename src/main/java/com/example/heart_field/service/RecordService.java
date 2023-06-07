@@ -14,7 +14,7 @@ import java.util.List;
  * data 2023/5/15 9:30 AM
  */
 public interface RecordService extends IService<Record> {
-    List<RecordListDTO> getRecords(String visitorId, String state,Integer pageSize,Integer pageNum);
+    List<RecordListDTO> getRecords(Integer visitorId, String state,Integer pageSize,Integer pageNum);
 
     List<RecordDTO> queryRecords(String searchValue, int pageSize, int pageNum, String fromDate, String toDate);
 
