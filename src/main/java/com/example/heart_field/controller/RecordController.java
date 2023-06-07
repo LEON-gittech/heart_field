@@ -50,12 +50,12 @@ public class RecordController {
         int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
         int total = resultInfo.size();
         log.info("总页数："+pages);
-        Page<RecordDTO> resPage = new Page<RecordDTO>(pageNum,pageSize).setRecords(resultInfo);
+        Page<RecordDTO> resPage = new Page<RecordDTO>(pageNum,pageSize,total).setRecords(resultInfo);
         log.info("当前页："+resPage.getRecords());
         //current – 当前页 ,size – 每页显示条数
         RecordPage<RecordDTO> res = new RecordPage<RecordDTO>(resPage,pages,total);
         log.info("返回结果："+res);
-        return R.success(res);
+        return R.success(resPage);
     }
 
     @PostMapping("/records/consult")

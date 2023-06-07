@@ -43,6 +43,7 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
     @Autowired
     private RecordMapper recordMapper;
 
+
     @Override
     public List<HelpDTO> queryRecords(String searchValue, int pageSize, int pageNum, String fromDate, String toDate) {
         LambdaQueryWrapper<Help> queryWrapper= Wrappers.lambdaQuery();

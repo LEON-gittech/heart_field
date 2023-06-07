@@ -1,26 +1,16 @@
 package com.example.heart_field.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.TypeConstant;
+import com.example.heart_field.dto.consultant.binding.SupervisorBinding;
 import com.example.heart_field.dto.consultant.comment.CommentDto;
 import com.example.heart_field.dto.consultant.comment.CommentsDto;
-import com.example.heart_field.dto.consultant.binding.SupervisorBinding;
-import com.example.heart_field.dto.UserLoginDTO;
-import com.example.heart_field.entity.Record;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.mapper.ConsultantMapper;
-import com.example.heart_field.mapper.RecordMapper;
-import com.example.heart_field.mapper.SupervisorMapper;
-import com.example.heart_field.mapper.VisitorMapper;
-import com.example.heart_field.param.UserLoginParam;
 import com.example.heart_field.service.*;
 import com.example.heart_field.tokens.TokenService;
-import com.example.heart_field.utils.Md5Util;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -100,7 +90,7 @@ public class ConsultantServiceImpl extends ServiceImpl<ConsultantMapper, Consult
             //consultantId
             commentDto.setConsultantId(item.getConsultantId().toString());
             //visitorScore
-            commentDto.setVisitorScore(Integer.valueOf(item.getVisitorScore()));
+            commentDto.setVisitorScore(item.getVisitorScore());
             //visitorId
             commentDto.setVisitorId(item.getVisitorId().toString());
             Integer visitorId = item.getVisitorId();

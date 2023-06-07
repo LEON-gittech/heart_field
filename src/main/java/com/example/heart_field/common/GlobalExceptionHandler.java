@@ -1,5 +1,6 @@
 package com.example.heart_field.common;
 
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -52,5 +53,11 @@ public class GlobalExceptionHandler {
             error += ex.getBindingResult().getAllErrors().get(i).getDefaultMessage()+" ";
         }
         return R.error(error);
+    }
+
+    @ExceptionHandler(ExpiredJwtException.class)
+    public R<String> exceptionHandler(ExpiredJwtException ex){
+        log.error(ex.getMessage());
+        return R.auth_error(ex.getMessage());
     }
 }

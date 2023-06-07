@@ -13,7 +13,10 @@ public class IdValidator implements ConstraintValidator<Id, String> {
     }
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        Pattern namePattern = Pattern.compile(RegexPattern.ID_PATTERN);
-        return value != null && namePattern.matcher(value).matches();
+        Pattern namePattern_18 = Pattern.compile(RegexPattern.ID_PATTERN_18);
+        Pattern namePattern_15 = Pattern.compile(RegexPattern.ID_PATTERN_15);
+        boolean pattern_18 = namePattern_18.matcher(value).matches();
+        boolean pattern_15 = namePattern_15.matcher(value).matches();
+        return value != null && (pattern_18||pattern_15);
     }
 }

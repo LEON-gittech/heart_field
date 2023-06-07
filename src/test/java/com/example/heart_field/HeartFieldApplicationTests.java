@@ -2,27 +2,25 @@ package com.example.heart_field;
 
 import com.alibaba.fastjson.JSON;
 import com.example.heart_field.dto.WxUserInfo;
+import com.example.heart_field.service.MsgService;
+import com.example.heart_field.service.impl.MsgServiceImpl;
+import com.example.heart_field.utils.RedisUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.HashOperations;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 
-import java.sql.Timestamp;
-import java.time.LocalDate;
+import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Locale;
 
 @SpringBootTest
 class HeartFieldApplicationTests {
-
-    @Test
-    void contextLoads() {
-
-    }
+    @Autowired
+    private MsgService msgService;
+    @Resource
+    private RedisUtil redisUtil;
 
     @Test
     void testTimeConvert(){
@@ -70,7 +68,14 @@ class HeartFieldApplicationTests {
         System.out.println(ops.get("info","a"));
     }
 
+    @Test
+    void contextLoads() {
+        msgService.sendMsg("19933153268");
+    }
 
-
-
+    @Test
+    void getCode(){
+        String tempCode = (String) redisUtil.get(MsgServiceImpl.PREFIX_REDIS_KEY + "13391355527");
+        System.out.println(tempCode);
+    }
 }

@@ -2,15 +2,22 @@ package com.example.heart_field.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.example.heart_field.dto.VisitorPcychDTO;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Visitor {
     @TableId(value="id",type = IdType.AUTO)
     private Integer id;
@@ -31,7 +38,14 @@ public class Visitor {
     private String openId;
 
 
-
-
-
+    public VisitorPcychDTO convertToVisitorPcychDTO() {
+        List<Integer> questions = Arrays.stream(this.question.split(", ")).map(Integer::parseInt).collect(Collectors.toList());
+        return VisitorPcychDTO.builder()
+                .id(this.id)
+                .direction(this.direction)
+                .puzzle(this.puzzle)
+                .history(this.history)
+                .question(questions)
+                .build();
+    }
 }

@@ -85,6 +85,13 @@ public class R<T> {
         return r;
     }
 
+    public static <T> R<T> auth_error(String msg) {
+        R r = new R();
+        r.msg = "没有权限"+msg;
+        r.code = -4;
+        return r;
+    }
+
     public static <T> R<T> call_exceed_error() {
         R r = new R();
         r.msg = "接口调用次数超出限制";
