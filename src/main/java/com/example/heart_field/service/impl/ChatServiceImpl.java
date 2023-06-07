@@ -217,11 +217,11 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
      */
     private ResultInfo createHelpChat(Integer userA, Integer userB) {
         Consultant consultant = consultantMapper.selectById(userA);
-        if(consultant == null||consultant.getIsValid()==0||consultant.getIsDisabled()==1||consultant.getCurStatus()!=0) {
+        if(consultant == null||consultant.getIsValid()==0||consultant.getIsDisabled()==1) {
             return ResultInfo.error("咨询师不存在或已被封禁");
         }
         Supervisor supervisor = supervisorMapper.selectById(userB);
-        if(supervisor == null||supervisor.getIsValid()==0||supervisor.getIsDisabled()==0) {
+        if(supervisor == null||supervisor.getIsValid()==0||supervisor.getIsDisabled()==1) {
             return ResultInfo.error("督导不存在或已被封禁");
         }
         int count = new LambdaQueryChainWrapper<>(this.baseMapper)
@@ -240,7 +240,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
                 .userB(supervisor.getId())
                 .build();
         baseMapper.insert(chat);
-        return ResultInfo.success(chat.getId());
+        return ResultInfo.success(chat);
     }
 
     /**
@@ -248,7 +248,6 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
      * @param userA
      * @param userB
      * @return
-     * todo: 咨询师状态存疑
      */
     private ResultInfo createCounselChat(Integer userA, Integer userB) {
         Visitor visitor = visitorMapper.selectById(userA);

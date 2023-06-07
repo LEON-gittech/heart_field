@@ -7,6 +7,7 @@ import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.dto.consultant.record.RecordDTO;
 import com.example.heart_field.dto.consultant.record.RecordListDTO;
 import com.example.heart_field.dto.consultant.record.RecordPage;
+import com.example.heart_field.param.AddRecordParam;
 import com.example.heart_field.param.VisitorCommentParam;
 import com.example.heart_field.service.RecordService;
 import com.example.heart_field.tokens.StaffToken;
@@ -37,7 +38,7 @@ public class RecordController {
      * 督导/管理员-全平台会话（即所有的咨询记录列表）
      * @return
      */
-    //@StaffToken
+    @StaffToken
     @GetMapping("/records/consult")
     public R getConsultRecords(@RequestParam(value = "searchValue", required = false) String searchValue,
                                @RequestParam(value = "pageSize", required = false, defaultValue = "10") int pageSize,
@@ -58,9 +59,10 @@ public class RecordController {
         return R.success(resPage);
     }
 
+    @UserLoginToken
     @PostMapping("/records/consult")
-    public R addConsultRecord(@RequestParam(value = "chatId", required = true) Integer chatId){
-        ResultInfo<String> resultInfo = recordService.addRecordByChatId(chatId);
+    public R addConsultRecord(@RequestBody AddRecordParam param){
+        ResultInfo<String> resultInfo = recordService.addRecordByChatId(param.getChatId());
         return resultInfo.isRight()
                  ?R.success(resultInfo.getData())
                  :R.error(resultInfo.getMessage());

@@ -195,6 +195,9 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
         if(chat==null||chat.getType()!=TypeConstant.COUNSEL_CHAT){
             return ResultInfo.error("该chat不存在,id:"+chatId);
         }
+        if(chat.getEndTime()==null){
+            return ResultInfo.error("该chat还未结束,id:"+chatId);
+        }
         /**
          * 根据chat查咨询师和访客
          *
@@ -226,7 +229,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                 .endTime(chat.getEndTime())
                 .build();
         this.baseMapper.insert(record);
-        return ResultInfo.success(record.getId());
+        return ResultInfo.success(record);
 
     }
 
