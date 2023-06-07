@@ -92,21 +92,21 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             }
         }
 
-        //检查有没有需要[管理员/督导]权限的注解
-        if(method.isAnnotationPresent(AdminOrSupervisorToken.class)){
-            AdminOrSupervisorToken adminOrSupervisorToken = method.getAnnotation(AdminOrSupervisorToken.class);
-            if(adminOrSupervisorToken.required()) {
-                // 执行认证
-                if (token == null) {
-                    throw new RuntimeException("本接口需管理员/督导权限，未登录");
-                }
-                // 获取 token 中的 user type
-                User user_r = userUtils.getUser(TokenUtil.getTokenUser());
-                if(user_r.getType() == TypeConstant.SUPERVISOR|| user_r.getType() == TypeConstant.ADMIN){
-                    throw new RuntimeException("本接口需管理员/督导权限，权限限制");
-                }
-            }
-        }
+//        //检查有没有需要[管理员/督导]权限的注解
+//        if(method.isAnnotationPresent(AdminOrSupervisorToken.class)){
+//            AdminOrSupervisorToken adminOrSupervisorToken = method.getAnnotation(AdminOrSupervisorToken.class);
+//            if(adminOrSupervisorToken.required()) {
+//                // 执行认证
+//                if (token == null) {
+//                    throw new RuntimeException("本接口需管理员/督导权限，未登录");
+//                }
+//                // 获取 token 中的 user type
+//                User user_r = userUtils.getUser(TokenUtil.getTokenUser());
+//                if(user_r.getType() == TypeConstant.SUPERVISOR|| user_r.getType() == TypeConstant.ADMIN){
+//                    throw new RuntimeException("本接口需管理员/督导权限，权限限制");
+//                }
+//            }
+//        }
         return true;
     }
 
