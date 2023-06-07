@@ -163,6 +163,8 @@ CREATE TABLE message (
   send_time timestamp NOT NULL COMMENT '发送时间',
   owner tinyint(1) NOT NULL COMMENT '消息所有者类型，0:咨询师发送 1:访客发送 2:督导发送',
   sender_id int NOT NULL COMMENT '发送方ID',
+  sender_name varchar(50),
+  receiver_name varchar(50),
   receiver_id int NOT NULL COMMENT '接收方ID',
   type tinyint(1) NOT NULL COMMENT '消息类型，0:文字 1:图片 2:语音 3:表情 4:聊天记录 5:无法识别',
   content varchar(255) COMMENT '消息内容',

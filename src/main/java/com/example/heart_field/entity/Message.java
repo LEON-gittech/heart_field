@@ -1,10 +1,12 @@
 package com.example.heart_field.entity;
 
+import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 /**
  * @author albac0020@gmail.com
@@ -27,7 +29,8 @@ public class Message {
     /**
      * 该消息发送时间
      */
-    private Timestamp sendTime;
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime sendTime;
 
     /**
      * 消息所有者类型，0:咨询师发送 1:访客发送 2:督导发送
@@ -38,11 +41,13 @@ public class Message {
      * 消息发送者id
      */
     private Integer senderId;
+    private String senderName;
 
     /**
      * 消息接收者id
      */
-    private Integer ReceiverId;
+    private Integer receiverId;
+    private String receiverName;
 
     /**
      * 消息类型，0:文字 1:图片 2:语音 3:表情 4:聊天记录 5:无法识别
@@ -62,12 +67,14 @@ public class Message {
     /**
      * 消息创建时间
      */
-    private Timestamp createTime;
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createTime;
 
     /**
      * 消息更新时间
      */
-    private Timestamp updateTime;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updateTime;
 
     /**
      * 该消息是否被删除

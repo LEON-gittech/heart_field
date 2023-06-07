@@ -1,0 +1,57 @@
+{
+  "groups": [
+    {
+      "name": "aliyun.msg",
+      "type": "com.example.heart_field.entity.MsgProperites",
+      "sourceType": "com.example.heart_field.entity.MsgProperites"
+    },
+    {
+      "name": "tencent-im",
+      "type": "com.example.heart_field.config.CustomProperties",
+      "sourceType": "com.example.heart_field.config.CustomProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "aliyun.msg.access-key-id",
+      "type": "java.lang.String",
+      "sourceType": "com.example.heart_field.entity.MsgProperites"
+    },
+    {
+      "name": "aliyun.msg.access-key-secret",
+      "type": "java.lang.String",
+      "sourceType": "com.example.heart_field.entity.MsgProperites"
+    },
+    {
+      "name": "aliyun.msg.region-id",
+      "type": "java.lang.String",
+      "sourceType": "com.example.heart_field.entity.MsgProperites"
+    },
+    {
+      "name": "aliyun.msg.sign-name",
+      "type": "java.lang.String",
+      "sourceType": "com.example.heart_field.entity.MsgProperites"
+    },
+    {
+      "name": "aliyun.msg.template-code",
+      "type": "java.lang.String",
+      "sourceType": "com.example.heart_field.entity.MsgProperites"
+    },
+    {
+      "name": "tencent-im.expire-time",
+      "type": "java.lang.Integer",
+      "sourceType": "com.example.heart_field.config.CustomProperties"
+    },
+    {
+      "name": "tencent-im.s-d-k-app-i-d",
+      "type": "java.lang.Long",
+      "sourceType": "com.example.heart_field.config.CustomProperties"
+    },
+    {
+      "name": "tencent-im.secret-key",
+      "type": "java.lang.String",
+      "sourceType": "com.example.heart_field.config.CustomProperties"
+    }
+  ],
+  "hints": []
+}
