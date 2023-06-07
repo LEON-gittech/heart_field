@@ -16,7 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -99,7 +98,7 @@ public class ChatController {
         }
         message.setRelatedChat(0);
         message.setType(Byte.valueOf(newMessage.getMessageType()));
-        message.setSendTime(Timestamp.valueOf(LocalDateTime.now()));
+        message.setSendTime(LocalDateTime.now());
         message.setContent(newMessage.getContent());
 
         //message.setIsDeleted(false);
@@ -127,6 +126,7 @@ public class ChatController {
                 case "0":{
                     message.setSenderId(chat.getUserA());
                     message.setReceiverId(chat.getUserB());
+                    log.info("userA:{},userB:{}",chat.getUserA(),chat.getUserB());
                     String receiverName = consultantService.getById(chat.getUserB()).getName();
                     String senderName = visitorService.getById(chat.getUserA()).getName();
                     message.setSenderName(senderName);
