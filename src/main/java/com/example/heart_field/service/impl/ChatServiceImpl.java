@@ -20,9 +20,13 @@ import com.example.heart_field.utils.TimeUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.heart_field.constant.ConsultantStatus.BUSY;
+import static com.example.heart_field.constant.ConsultantStatus.FREE;
 
 /**
  * 聊天记录表(Chat)表服务实现类
@@ -205,6 +209,29 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         }
         chat.setEndTime(now);
         baseMapper.updateById(chat);
+        Duration duration = Duration.between(chat.getStartTime(),chat.getEndTime());
+        Long durationSeconds = duration.getSeconds();
+        switch (chat.getType()){
+            case 0:
+                Consultant consultant = consultantMapper.selectById(chat.getUserB());
+                if(consultant.getCurStatus()==BUSY){
+                    if(consultant.getCurrentSessionCount()-1<consultant.getMaxConcurrent()){
+                        consultant.setCurStatus(FREE);
+                    }
+                }
+                consultant.setTodayTotalHelpTime((int) (consultant.getTodayTotalHelpTime()+durationSeconds));
+                consultant.setTotalHelpTime((int) (consultant.getTotalHelpTime()+durationSeconds));
+                consultant.setCurrentSessionCount(consultant.getCurrentSessionCount()-1);
+                consultantMapper.updateById(consultant);
+                break;
+            case 1:
+                Supervisor supervisor = supervisorMapper.selectById(chat.getUserB());
+                supervisor.setTotalHelpTime((int) (supervisor.getTotalHelpTime()+durationSeconds));
+                supervisor.setTotalHelpTime((int) (supervisor.getTotalHelpTime()+durationSeconds));
+                supervisor.setConcurrentNum(supervisor.getConcurrentNum()-1);
+                supervisorMapper.updateById(supervisor);
+                break;
+        }
         return ResultInfo.success(chat);
     }
 
@@ -240,6 +267,10 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
                 .userB(supervisor.getId())
                 .build();
         baseMapper.insert(chat);
+        supervisor.setTodayTotalHelpCount(supervisor.getTodayTotalHelpCount()+1);
+        supervisor.setHelpTotalNum(supervisor.getHelpTotalNum()+1);
+        supervisor.setConcurrentNum(supervisor.getConcurrentNum()+1);
+        supervisorMapper.updateById(supervisor);
         return ResultInfo.success(chat);
     }
 
@@ -258,6 +289,9 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         if(consultant == null||consultant.getIsValid()==0||consultant.getIsDisabled()==1) {
             return ResultInfo.error("咨询师不存在或已被封禁");
         }
+        if(consultant.getCurStatus()==BUSY){
+            return ResultInfo.error("咨询师忙碌中");
+        }
         int count = new LambdaQueryChainWrapper<>(this.baseMapper)
                 .eq(Chat::getType, TypeConstant.COUNSEL_CHAT)
                 .eq(Chat::getUserA,userA)
@@ -274,6 +308,16 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
                 .userB(consultant.getId())
                 .build();
         baseMapper.insert(chat);
+        consultant.setHelpNum(consultant.getHelpNum()+1);
+        consultant.setCurrentSessionCount(consultant.getCurrentSessionCount()+1);
+        consultant.setHelpNum(consultant.getHelpNum()+1);
+        if(consultant.getCurrentSessionCount()+1<consultant.getMaxConcurrent()){
+            consultant.setCurStatus(FREE);
+        }else{
+            consultant.setCurStatus(BUSY);
+        }
+        consultant.setTodayTotalHelpCount(consultant.getTodayTotalHelpCount()+1);
+        consultantMapper.updateById(consultant);
         return ResultInfo.success(chat);
     }
 }

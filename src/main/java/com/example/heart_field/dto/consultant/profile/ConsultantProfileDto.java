@@ -12,6 +12,6 @@ public class ConsultantProfileDto {
     private Integer maxCount;
     private Integer maxConcurrentCount;
     private Integer currentSessionCount;
-    private Integer todayTotalTime;
+    private Long todayTotalTime;
     private Integer todayTotalCount;
 }
