@@ -63,6 +63,8 @@ public class Help {
      */
     private LocalDateTime endTime;
 
+    private Integer duration;
+
     private Integer chatId;
 
 }
