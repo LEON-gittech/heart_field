@@ -514,7 +514,9 @@ public class ConsultantController {
         //获取绑定信息
         LambdaQueryWrapper<Binding> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Binding::getConsultantId,consultantId);
-        queryWrapper.apply("supervisor_id IN (SELECT id FROM supervisor WHERE id IN (" + StringUtils.join(supervisorIds, ",") + "))");
+        if(supervisorIds.size()!=0){
+            queryWrapper.apply("supervisor_id IN (SELECT id FROM supervisor WHERE id IN (" + StringUtils.join(supervisorIds, ",") + "))");
+        }
         List<Binding> bindings = bindingService.list(queryWrapper);
         //输出Dto
         List<OnlineBinding> onlineBindings = new ArrayList<>();

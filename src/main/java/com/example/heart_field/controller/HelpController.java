@@ -7,6 +7,7 @@ import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.dto.HelpDTO;
 import com.example.heart_field.dto.consultant.record.RecordDTO;
 import com.example.heart_field.dto.consultant.record.RecordPage;
+import com.example.heart_field.param.AddHelpParam;
 import com.example.heart_field.service.HelpService;
 import com.example.heart_field.service.RecordService;
 import com.example.heart_field.tokens.AdminOrSupervisorToken;
@@ -53,9 +54,8 @@ public class HelpController {
     }
 
     @PostMapping("/records/supervisor")
-    public R addConsultRecord(@RequestParam(value = "chatId", required = true) Integer chatId,
-                              @RequestParam(value = "recordId", required = true) Integer recordId){
-        ResultInfo resultInfo = helpService.addHelp(chatId, recordId);
+    public R addConsultRecord(@RequestBody AddHelpParam param){
+        ResultInfo resultInfo = helpService.addHelp(param.getChatId(), param.getRecordId());
         return resultInfo.isRight()
                  ?R.success(resultInfo.getData())
                 :R.error(resultInfo.getMessage());
