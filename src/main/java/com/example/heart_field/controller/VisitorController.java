@@ -292,8 +292,8 @@ public class VisitorController {
         int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
         int total = resultInfo.size();
         Page<RecordListDTO> resPage = new Page<RecordListDTO>(pageNum, pageSize, pages).setRecords(resultInfo);
-        RecordPage<RecordListDTO> res =new RecordPage(resPage,pages,total);
-        return R.success(res);
+        //RecordPage<RecordListDTO> res =new RecordPage(resPage,pages,total);
+        return R.success(resPage);
     }
 
     /**
