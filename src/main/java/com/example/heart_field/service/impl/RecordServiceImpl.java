@@ -44,16 +44,11 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
 
 
     @Override
-    public List<RecordListDTO> getRecords(Integer visitorId, String state,Integer pageSize, Integer pageNum) {
+    public List<RecordListDTO> getRecords(Integer visitorId,Integer pageSize, Integer pageNum) {
         LambdaQueryWrapper<Record> queryWrapper= Wrappers.lambdaQuery();
         queryWrapper.eq(Record::getVisitorId,visitorId);
         //Integer count=this.baseMapper.selectCount(queryWrapper);
-        if(state!=null&&state.equals("end")){
-            queryWrapper.eq(Record::getIsCompleted,1);
-        }
-        if(state!=null&&state.equals("ing")){
-            queryWrapper.eq(Record::getIsCompleted,0);
-        }
+
         queryWrapper.orderByDesc(Record::getCreateTime);
         List<Record> records=this.baseMapper.selectList(queryWrapper);
         List<RecordListDTO> recordListDTOS=new ArrayList<>();

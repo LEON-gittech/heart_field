@@ -276,30 +276,19 @@ public class VisitorController {
                 : R.error("更新失败");
     }
 
-    /**
-     * 查看访客的咨询记录
-     * 用于：
-     *  -访客本人
-     *  -管理端
-     * @param visitorId
-     * @param state
-     * @return
-     */
+
     @GetMapping("/{visitor-id}/records")
     @UserLoginToken
     public R getRecords(@PathVariable(value = "visitor-id") Integer visitorId,
-                                             @RequestParam(value = "recordState", required = false) String state,
                                              @RequestParam(value = "pageNum", required = false, defaultValue = "1") Integer pageNum,
                                              @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize){
         if(!UserUtils.checkSelfOrBack(visitorId)) return R.auth_error();
         log.info("visitorId:{}", visitorId);
-        if(state!=null&&!state.equals("0")&&!state.equals("1")&&!state.equals("2")){
-            return R.argument_error("recordState参数错误");
-        }
+
         if(visitorService.getById(visitorId)==null||visitorService.getById(visitorId).getIsDisabled()==1){
             return R.resource_error();
         }
-        List<RecordListDTO> resultInfo = recordService.getRecords(visitorId,state,pageSize,pageNum);
+        List<RecordListDTO> resultInfo = recordService.getRecords(visitorId,pageSize,pageNum);
         int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
         int total = resultInfo.size();
         Page<RecordListDTO> resPage = new Page<RecordListDTO>(pageNum, pageSize, pages).setRecords(resultInfo);
