@@ -30,11 +30,6 @@ public class Record {
     private Integer id;
 
     /**
-     * 该记录是否被删除
-     */
-    private Integer isDeleted;//0有效1无效
-
-    /**
      * 该记录创建时间，时间戳类型
      */
     @TableField(fill = FieldFill.INSERT)
@@ -56,27 +51,14 @@ public class Record {
      */
     private Integer visitorId;
 
-    /**
-     * 该记录对应的督导id
-     */
-    private Integer supervisorId;
-
-
 
     /**
      * 该咨询的开始时间
      */
     private LocalDateTime startTime;
-
-    /**
-     * 该咨询的结束时间
-     */
     private LocalDateTime endTime;
+    private Integer duration;
 
-    /**
-     * 该咨询的督导介入时间
-     */
-    private LocalDateTime involveTime;
 
     /**
      * 访客给咨询师评分，1-5的整数
@@ -118,11 +100,11 @@ public class Record {
         return RecordListDTO.builder()
                 .consultantId(this.consultantId)
                 .visitorId(this.visitorId)
-                .supervisorId(this.supervisorId)
                 .id(this.id)
                 .isCompleted((this.endTime==null?0:1))
                 .startTime(this.startTime)
                 .endTime(this.endTime)
+                .duration(this.duration)
                 .visitorComment(this.visitorComment)
                 .visitorScore(this.visitorScore)
                 .chatId(this.chatId)

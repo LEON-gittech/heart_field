@@ -224,9 +224,9 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                 .isCompleted(0)//未填写评价、评分，未完成
                 .visitorId(visitor.getId())
                 .consultantId(consultant.getId())
-                .isDeleted(1)
                 .startTime(chat.getStartTime())
                 .endTime(chat.getEndTime())
+                .duration(chat.getEndTime().getSecond()-chat.getStartTime().getSecond())
                 .build();
         this.baseMapper.insert(record);
         return ResultInfo.success(record);
