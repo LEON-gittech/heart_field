@@ -323,18 +323,25 @@ public class SupervisorController {
                 log.info("i:{},list:{}",i,list.get(i));
             }
 
-            Page<SupervisorComDto> onePage = new Page<SupervisorComDto>(page,pageSize);
+            /*Page<SupervisorComDto> onePage = new Page<SupervisorComDto>(page,pageSize);
             //onePage.addOrder((OrderItem) list);
             onePage.setTotal(list.size());
             onePage.setRecords(list);
             SupervisorPageSearchDto supervisorPageSearchDto = new SupervisorPageSearchDto();
-            supervisorPageSearchDto.setSupervisors(onePage.getRecords());
+            supervisorPageSearchDto.setSupervisors(onePage.getRecords());*/
+            SupervisorPageSearchDto supervisorPageSearchDto = new SupervisorPageSearchDto();
             Integer pageTotals = 0;
             if(list.size()%pageSize!=0)
                 pageTotals = list.size()/pageSize+1;
             else
                 pageTotals = list.size()/pageSize;
             supervisorPageSearchDto.setPageNum(pageTotals);
+            if(page==pageTotals){
+                supervisorPageSearchDto.setSupervisors(list.subList((page-1)*pageSize,list.size()));
+            }else{
+                supervisorPageSearchDto.setSupervisors(list.subList((page-1)*pageSize,pageSize*page));
+            }
+
             return R.success(supervisorPageSearchDto,"成功");
             //return R.error("系统错误");
       /*  }catch (Exception e){
