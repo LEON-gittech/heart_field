@@ -72,7 +72,7 @@ public class RecordController {
     /**
      * 访客评价咨询师
      */
-    @PostMapping("/visitors/{record-id}/comment")
+    @PostMapping("/visitors/{record_id}/comment")
     public R addComment(@PathVariable(value = "record_id", required=true)Integer recordId,
                         @RequestBody VisitorCommentParam commentParam
                         ){
