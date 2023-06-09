@@ -140,7 +140,7 @@ public class SupervisorController {
         }
 
             log.info("新增成功,新增id:{}", supervisor.getId());
-            return R.success("添加成功");
+            return R.success(null,"添加成功");
 
     }
     /**
