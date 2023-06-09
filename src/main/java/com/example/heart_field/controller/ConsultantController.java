@@ -93,11 +93,16 @@ public class ConsultantController {
         LambdaQueryWrapper<Consultant> queryWrapper = new LambdaQueryWrapper<>();
 
         //根据searchValue对姓名，简介，详细介绍，标签进行模糊查询
-        if(!(searchValue.equals(null)||searchValue.equals(""))){
-            queryWrapper.like(Consultant::getName,searchValue)
-                    .or().like(Consultant::getBriefIntro,searchValue)
-                    .or().like(Consultant::getDetailedIntro,searchValue)
-                    .or().like(Consultant::getExpertiseTag,searchValue);
+        if(!(searchValue == null ||searchValue.equals(""))){
+            queryWrapper.and(wrapper -> wrapper
+                    .like(Consultant::getName, searchValue)
+                    .or()
+                    .like(Consultant::getBriefIntro, searchValue)
+                    .or()
+                    .like(Consultant::getDetailedIntro, searchValue)
+                    .or()
+                    .like(Consultant::getExpertiseTag, searchValue)
+            );
         }
         //JSON_CONTAINS函数用于判断json数组中是否包含某个元素
         ;
@@ -137,7 +142,7 @@ public class ConsultantController {
         //角色是访客进行的筛选
         User user = TokenUtil.getTokenUser();
         Set<Integer> hasBindingConsultants;
-        if(user.getType()==TypeConstant.VISITOR){
+        if(Objects.equals(user.getType(), TypeConstant.VISITOR)){
             //筛选在线的咨询师
             queryWrapper.eq(Consultant::getIsOnline,1);
             //筛选今天有绑定督导的咨询师
@@ -154,7 +159,7 @@ public class ConsultantController {
         ConsultantsDto consultantsDto = new ConsultantsDto();
         List<Consultant> consultants = pageinfo.getRecords();
         //角色为访客
-        if(user.getType()==TypeConstant.VISITOR){
+        if(Objects.equals(user.getType(), TypeConstant.VISITOR)){
             //筛选有绑定督导的咨询师
             consultants.removeIf(consultant -> !hasBindingConsultants.contains(consultant.getId()));
         }
@@ -162,12 +167,11 @@ public class ConsultantController {
         List<ConsultantDto> consultantDtos = new ArrayList<>();
         Integer pageNum = Math.toIntExact(pageinfo.getPages());
         consultantsDto.setPageNum(pageNum);
-        consultantsDto.setConsultants(consultantDtos);
         //对consultans进行批处理
         for(Consultant consultant:consultants){
             consultantDtos.add(consultant.convert2ConsultantDto(consultantService));
         }
-
+        consultantsDto.setConsultants(consultantDtos);
         return R.success(consultantsDto);
     }
 
@@ -272,9 +276,6 @@ public class ConsultantController {
      */
     @GetMapping("/{consultantId}/profile")
     public R<AnyConsultantProfileDto> getProfile(@PathVariable("consultantId") Integer consultantId) throws JsonProcessingException {
-        //权限验证
-        R r = consultantUtil.isConsultantOrAdmin(consultantId);
-        if(r!=null) return r;
         //返回数据
         AnyConsultantProfileDto anyConsultantProfileDto = new AnyConsultantProfileDto();
         Consultant consultant = consultantService.getById(consultantId);

@@ -2,7 +2,6 @@ package com.example.heart_field.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.example.heart_field.common.R;
-import com.example.heart_field.common.result.BaseResult;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.dto.UserLoginDTO;
 import com.example.heart_field.entity.User;
@@ -63,19 +62,21 @@ public class UserApi {
     public Object login(@RequestBody User user, HttpServletResponse response) {
         JSONObject jsonObject = new JSONObject();
         User user_r = userUtils.getUser(user);
-        if (!bCryptPasswordEncoder.matches(user.getPassword(),user_r.getPassword())) {
-            jsonObject.put("message", "登录失败,密码错误");
-            return jsonObject;
-        } else {
-            String token = tokenService.getToken(user_r);
-            jsonObject.put("token", token);
-
-            Cookie cookie = new Cookie("token", token);
-            cookie.setPath("/");
-            response.addCookie(cookie);
-
-            return jsonObject;
+        //如果是访客的话就不需要进行校验
+        if(!(user.getType()==0)){
+            if (!bCryptPasswordEncoder.matches(user.getPassword(),user_r.getPassword())) {
+                jsonObject.put("message", "登录失败,密码错误");
+                return jsonObject;
+            }
         }
+        String token = tokenService.getToken(user_r);
+        jsonObject.put("token", token);
+
+        Cookie cookie = new Cookie("token", token);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+
+        return jsonObject;
     }
 
     /***
@@ -109,7 +110,4 @@ public class UserApi {
         }
 
     }
-
-
-
 }
