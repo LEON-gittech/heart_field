@@ -36,6 +36,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -133,20 +134,30 @@ public class ConsultantController {
                     break;
             }
         }
-        //筛选在线的咨询师
-        queryWrapper.eq(Consultant::getIsOnline,1);
-        //筛选今天有绑定督导的咨询师
-        List<Binding> bindings = bindingService.list();
-        Set<Integer> hasBindingConsultants = new HashSet<>();
-        for(Binding binding : bindings){
-            hasBindingConsultants.add(binding.getConsultantId());
+        //角色是访客进行的筛选
+        User user = TokenUtil.getTokenUser();
+        Set<Integer> hasBindingConsultants;
+        if(user.getType()==TypeConstant.VISITOR){
+            //筛选在线的咨询师
+            queryWrapper.eq(Consultant::getIsOnline,1);
+            //筛选今天有绑定督导的咨询师
+            List<Binding> bindings = bindingService.list();
+            hasBindingConsultants = new HashSet<>();
+            for(Binding binding : bindings){
+                hasBindingConsultants.add(binding.getConsultantId());
+            }
+        } else {
+            hasBindingConsultants = new HashSet<>();
         }
         //执行查询
         consultantService.page(pageinfo,queryWrapper);
         ConsultantsDto consultantsDto = new ConsultantsDto();
         List<Consultant> consultants = pageinfo.getRecords();
-        //筛选今天有绑定督导的咨询师
-        consultants.removeIf(consultant -> !hasBindingConsultants.contains(consultant.getId()));
+        //角色为访客
+        if(user.getType()==TypeConstant.VISITOR){
+            //筛选有绑定督导的咨询师
+            consultants.removeIf(consultant -> !hasBindingConsultants.contains(consultant.getId()));
+        }
         //DTO 转换
         List<ConsultantDto> consultantDtos = new ArrayList<>();
         Integer pageNum = Math.toIntExact(pageinfo.getPages());
@@ -431,12 +442,20 @@ public class ConsultantController {
             queryWrapper.eq(Schedule::getStaffId,consultant.get("consultantId"));
             queryWrapper.eq(Schedule::getWorkday,Integer.valueOf(date));
             if(scheduleService.list(queryWrapper).size()>0){
-                return R.error("该咨询师"+consultant.get("consultantName")+"当天已经有排班");
+                continue;
             }
             Schedule schedule = new Schedule();
             schedule.setStaffType(1);
             schedule.setStaffId((Integer) consultant.get("consultantId"));
             schedule.setWorkday(Integer.valueOf(date));
+            //判断是不是当天，如果是当天的话也要更新咨询师的 isOnline 属性
+            Integer day = LocalDate.now().getDayOfMonth();
+            if(day.toString().equals(date)){
+                Integer id = (Integer) consultant.get("consultantId");
+                Consultant consultant1 = consultantService.getById(id);
+                consultant1.setIsOnline(1);
+                consultantService.updateById(consultant1);
+            }
             scheduleService.save(schedule);
         }
         return R.success("添加咨询师排班成功");
@@ -459,6 +478,13 @@ public class ConsultantController {
         queryWrapper.eq(Schedule::getStaffId,consultantId);
         queryWrapper.eq(Schedule::getWorkday,date);
         scheduleService.remove(queryWrapper);
+        //判断是不是当天，如果是当天的话也要更新咨询师的 isOnline 属性
+        Integer day = LocalDate.now().getDayOfMonth();
+        if(day.toString().equals(date)){
+            Consultant consultant1 = consultantService.getById(consultantId);
+            consultant1.setIsOnline(0);
+            consultantService.updateById(consultant1);
+        }
         return R.success("删除咨询师排班成功");
     }
 
