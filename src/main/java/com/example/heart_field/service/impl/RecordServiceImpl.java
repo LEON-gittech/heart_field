@@ -123,7 +123,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                 //log.info("咨询师或督导");
                 break;
         }
-        log.info("searchValue:{}", searchValue);
+        log.info("--------searchValue:{}", searchValue);
         if (fromDate != null) {
             LocalDateTime from = LocalDateTime.parse(fromDate+" 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             log.info("from:{}", from);
@@ -174,6 +174,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                 log.info("recordDTO:{}", recordDTO);
             }
         }
+        log.info("recordDTOS:{}", recordDTOS);
         return recordDTOS;
     }
 

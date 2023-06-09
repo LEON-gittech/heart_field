@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -51,7 +52,7 @@ public class HelpController {
         int fromIndex = (pageNum-1)*pageSize;
         int toIndex = pageNum*pageSize>total?total:pageNum*pageSize;
         if(pageNum>pages){
-            return R.success(new RecordPage<RecordDTO>(null, pages, total));
+            return R.success(new RecordPage<RecordDTO>(new ArrayList<>(), pages, total));
         }
         List<HelpDTO> subList = resultInfo.subList(fromIndex, toIndex);
         RecordPage<HelpDTO> resPage = new RecordPage<HelpDTO>(subList, pages, total);
