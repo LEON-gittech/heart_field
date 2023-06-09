@@ -17,11 +17,11 @@ import java.util.List;
 public class RecordPage<T> {
     private Integer pages;
 
-    private Page<T> records;
+    private List<T> records;
 
     private Integer total;
 
-    public RecordPage(Page<T> resPage, int pages,int total) {
+    public RecordPage(List<T> resPage, int pages,int total) {
         this.pages = pages;
         this.records = resPage;
         this.total = total;

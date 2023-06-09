@@ -46,10 +46,15 @@ public class HelpController {
                                @RequestParam(value = "fromDate", required = false) String fromDate,
                                @RequestParam(value = "toDate", required = false) String toDate){
         List<HelpDTO> resultInfo = helpService.queryRecords(searchValue, pageSize, pageNum, fromDate, toDate);
-        int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
         int total = resultInfo.size();
-        Page<HelpDTO> resPage = new Page<HelpDTO>(pageNum, pageSize,total).setRecords(resultInfo);
-        RecordPage<HelpDTO> res = new RecordPage<HelpDTO>(resPage,pages,total);
+        int pages = PageUtil.totalPage(total, pageSize);
+        int fromIndex = (pageNum-1)*pageSize;
+        int toIndex = pageNum*pageSize>total?total:pageNum*pageSize;
+        if(pageNum>pages){
+            return R.success(new RecordPage<RecordDTO>(null, pages, total));
+        }
+        List<HelpDTO> subList = resultInfo.subList(fromIndex, toIndex);
+        RecordPage<HelpDTO> resPage = new RecordPage<HelpDTO>(subList, pages, total);
         return R.success(resPage);
     }
 

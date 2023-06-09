@@ -8,6 +8,7 @@ import com.example.heart_field.common.R;
 import com.example.heart_field.constant.RegexPattern;
 import com.example.heart_field.dto.VisitorPcychDTO;
 import com.example.heart_field.dto.WxLoginDTO;
+import com.example.heart_field.dto.consultant.record.RecordDTO;
 import com.example.heart_field.dto.consultant.record.RecordListDTO;
 import com.example.heart_field.dto.consultant.record.RecordPage;
 import com.example.heart_field.entity.*;
@@ -289,10 +290,15 @@ public class VisitorController {
             return R.resource_error();
         }
         List<RecordListDTO> resultInfo = recordService.getRecords(visitorId,pageSize,pageNum);
-        int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
         int total = resultInfo.size();
-        Page<RecordListDTO> resPage = new Page<RecordListDTO>(pageNum, pageSize, pages).setRecords(resultInfo);
-        //RecordPage<RecordListDTO> res =new RecordPage(resPage,pages,total);
+        int pages = PageUtil.totalPage(total, pageSize);
+        int fromIndex = (pageNum-1)*pageSize;
+        int toIndex = pageNum*pageSize>total?total:pageNum*pageSize;
+        if(pageNum>pages){
+            return R.success(new RecordPage<RecordDTO>(null, pages, total));
+        }
+        List<RecordListDTO> subList = resultInfo.subList(fromIndex, toIndex);
+        RecordPage<RecordListDTO> resPage = new RecordPage<RecordListDTO>(subList, pages, total);
         return R.success(resPage);
     }
 
