@@ -49,18 +49,18 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             //Integer count_consultant=this.baseMapper.selectCount(queryWrapper_consultant);
             //根据schedule表中的consultant id ，去consultant表中查询consultant的信息
             List<ConsultantScheDTO> consultantDTOList = this.baseMapper.selectList(queryWrapper_consultant).stream()
-                    .filter(
-                            schedule -> {
-                                Integer consultantId = schedule.getStaffId();
-                                LambdaQueryWrapper<Consultant> queryWrapper_consultantDTO = Wrappers.lambdaQuery();
-                                Consultant consultant=consultantMapper.selectOne(queryWrapper_consultantDTO.eq(Consultant::getId,consultantId));
-                                if(consultant.getIsDisabled()==0&&consultant.getIsValid()==1){
-                                    return true;
-                                }else{
-                                    return false;
-                                }
-                            }
-                    )
+//                    .filter(
+//                            schedule -> {
+//                                Integer consultantId = schedule.getStaffId();
+//                                LambdaQueryWrapper<Consultant> queryWrapper_consultantDTO = Wrappers.lambdaQuery();
+//                                Consultant consultant=consultantMapper.selectOne(queryWrapper_consultantDTO.eq(Consultant::getId,consultantId));
+//                                if(consultant.getIsDisabled()==0&&consultant.getIsValid()==1){
+//                                    return true;
+//                                }else{
+//                                    return false;
+//                                }
+//                            }
+//                    )
                     .map(schedule -> {
                 Integer consultantId = schedule.getStaffId();
                 LambdaQueryWrapper<Consultant> queryWrapper_consultantDTO = Wrappers.lambdaQuery();
@@ -80,18 +80,18 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
             //Integer count_supervisor=this.baseMapper.selectCount(queryWrapper_supervisor);
             //根据schedule表中的supervisor id ，去supervisor表中查询supervisor的信息
             List<SupervisorDTO> supervisorDTOList = this.baseMapper.selectList(queryWrapper_supervisor).stream()
-                    .filter(
-                            schedule -> {
-                                Integer supervisorId = schedule.getStaffId();
-                                LambdaQueryWrapper<Supervisor> queryWrapper_supervisorDTO = Wrappers.lambdaQuery();
-                                Supervisor supervisor=supervisorMapper.selectOne(queryWrapper_supervisorDTO.eq(Supervisor::getId,supervisorId));
-                                if(supervisor.getIsDisabled()==0&&supervisor.getIsValid()==1){
-                                    return true;
-                                }else{
-                                    return false;
-                                }
-                            }
-                    )
+//                    .filter(
+//                            schedule -> {
+//                                Integer supervisorId = schedule.getStaffId();
+//                                LambdaQueryWrapper<Supervisor> queryWrapper_supervisorDTO = Wrappers.lambdaQuery();
+//                                Supervisor supervisor=supervisorMapper.selectOne(queryWrapper_supervisorDTO.eq(Supervisor::getId,supervisorId));
+//                                if(supervisor.getIsDisabled()==0&&supervisor.getIsValid()==1){
+//                                    return true;
+//                                }else{
+//                                    return false;
+//                                }
+//                            }
+//                    )
                     .map(schedule -> {
                 Integer supervisorId = schedule.getStaffId();
                 LambdaQueryWrapper<Supervisor> queryWrapper_supervisorDTO = Wrappers.lambdaQuery();
