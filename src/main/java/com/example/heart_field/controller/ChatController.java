@@ -19,6 +19,9 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static com.example.heart_field.constant.TypeConstant.COUNSEL_CHAT;
+import static com.example.heart_field.constant.TypeConstant.HELP_CHAT;
+
 @Slf4j
 @RestController
 @RequestMapping("/chat")
@@ -68,6 +71,12 @@ public class ChatController {
 
     @PostMapping
     public R createChat(@RequestBody ChatParam chat){
+        log.info("进入新建---");
+        log.info(chat.getType() + " " + chat.getUserA() + " " + chat.getUserB() + " ");
+        if(!(chat.getType().equals(0)||chat.getType().equals(1))){
+            log.info("chatType"+chat.getType());
+            return R.error("参数错误");
+        }
         ResultInfo resultInfo = chatService.createChat(chat);
         return resultInfo.isRight()
                 ? R.success(resultInfo.getData())

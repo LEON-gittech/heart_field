@@ -42,7 +42,8 @@ public class RecordListDTO {
     private Integer duration;
 
     //咨询是否完成，0表示未完成，1表示已完成
-    private Integer isCompleted;
+    private Integer visitorCompleted;
+    private Integer consultantCompleted;
 
     //访客对咨询师的评价
     private Integer visitorScore;
@@ -51,6 +52,7 @@ public class RecordListDTO {
     //对应的聊天id和求助会话id
     private Integer chatId;
     private Integer helpId;
+
 
 
 

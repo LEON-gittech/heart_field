@@ -69,6 +69,8 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
             Consultant consultant= consultantMapper.selectById(rlDTO.getConsultantId());
             rlDTO.setConsultantName(consultant.getName());
             rlDTO.setConsultantAvatar(consultant.getAvatar());
+            rlDTO.setVisitorCompleted(rlDTO.getVisitorCompleted());
+            rlDTO.setConsultantCompleted(rlDTO.getConsultantCompleted());
 
             Integer supervisorId=rlDTO.getSupervisorId();
             if(supervisorId==null){
@@ -162,6 +164,10 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                         .startTime(r.getStartTime())
                         .continueTime(r.getDuration())
 
+                        .consultantCompleted(r.getConsultantCompleted())
+                        .visitorCompleted(r.getVisitorCompleted())
+
+
                         .chatId(r.getChatId())
                         .build();
                 recordDTOS.add(recordDTO);
@@ -220,7 +226,8 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
         Duration duration = Duration.between(chat.getStartTime(), chat.getEndTime());
         Record record=Record.builder()
                 .chatId(chatId)
-                .isCompleted(0)//未填写评价、评分，未完成
+                .visitorCompleted(0)
+                .consultantCompleted(0)
                 .visitorId(visitor.getId())
                 .consultantId(consultant.getId())
                 .startTime(chat.getStartTime())
@@ -239,8 +246,8 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
         if(record==null){
             return ResultInfo.error("该record不存在,id:"+recordId);
         }
-        if(record.getIsCompleted()==1){
-            return ResultInfo.error("该record已经完成评价，请勿重复评价，id:"+recordId);
+        if(record.getVisitorCompleted()==1){
+            return ResultInfo.error("该record访客已经完成评价，请勿重复评价，id:"+recordId);
         }
         if(!TokenUtil.getTokenUser().getType().equals(2)){
             if(record.getVisitorId()!=TokenUtil.getTokenUser().getUserId()){
@@ -249,7 +256,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
         }
         record.setVisitorComment(comment);
         record.setVisitorScore(score);
-        record.setIsCompleted(1);
+        record.setVisitorCompleted(1);
         this.baseMapper.updateById(record);
         Consultant consultant = consultantMapper.selectById(record.getConsultantId());
         List<Integer> scores = recordMapper.selectScoresByConsultantId(consultant.getId());
