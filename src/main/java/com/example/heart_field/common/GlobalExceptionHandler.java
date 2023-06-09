@@ -20,6 +20,7 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(SQLIntegrityConstraintViolationException.class)
     public R<String> exceptionHandler(SQLIntegrityConstraintViolationException ex){
+        log.error(String.valueOf(ex.getClass()));
         log.error(ex.getMessage());
         if(ex.getMessage().contains("Duplicate entry")){
             String[] split = ex.getMessage().split(" ");
@@ -35,18 +36,21 @@ public class GlobalExceptionHandler {
      */
     @ExceptionHandler(CustomException.class)
     public R<String> exceptionHandler(CustomException ex){
+        log.error(String.valueOf(ex.getClass()));
         log.error(ex.getMessage());
         return R.error(ex.getMessage());
     }
 
     @ExceptionHandler(RuntimeException.class)
     public R<String> exceptionHandler(RuntimeException ex){
+        log.error(String.valueOf(ex.getClass()));
         log.error(ex.getMessage());
         return R.error(ex.getMessage());
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public R<String> exceptionHandler(MethodArgumentNotValidException ex){
+        log.error(String.valueOf(ex.getClass()));
         log.error(ex.getMessage());
         String error = "";
         for(int i = 0; i < ex.getBindingResult().getAllErrors().size(); i++){
@@ -57,6 +61,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(ExpiredJwtException.class)
     public R<String> exceptionHandler(ExpiredJwtException ex){
+        log.error(String.valueOf(ex.getClass()));
         log.error(ex.getMessage());
         return R.auth_error(ex.getMessage());
     }
