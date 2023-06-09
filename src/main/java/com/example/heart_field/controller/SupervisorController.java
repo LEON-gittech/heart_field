@@ -123,6 +123,11 @@ public class SupervisorController {
             Supervisor supervisor = new Supervisor();
             supervisor.setPhone(phone);
             supervisor.setPassword(password);
+            supervisor.setTotalHelpTime(0);
+            supervisor.setTodayTotalHelpCount(0);
+            supervisor.setHelpTotalNum(0);
+            supervisor.setTodayTotalHelpTime(0);
+            supervisor.setConcurrentNum(0);
             supervisorService.save(supervisor);
             User user = userUtils.saveUser(supervisor);
             //新增到腾讯云
