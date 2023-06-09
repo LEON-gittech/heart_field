@@ -32,5 +32,8 @@ public class RecordDTO {
     private Integer consultRank;//用户对咨询师的评分
     private String consultComment;//用户对咨询师的评价
 
+    private Integer visitorCompleted;//访客是否完成咨询
+    private Integer consultantCompleted;
+
 
 }

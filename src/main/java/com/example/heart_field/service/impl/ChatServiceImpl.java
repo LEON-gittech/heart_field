@@ -17,6 +17,7 @@ import com.example.heart_field.mapper.VisitorMapper;
 import com.example.heart_field.param.ChatParam;
 import com.example.heart_field.service.ChatService;
 import com.example.heart_field.utils.TimeUtil;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,6 +36,7 @@ import static com.example.heart_field.constant.ConsultantStatus.FREE;
  * @since 2023-05-15 16:53:39
  */
 @Service
+@Slf4j
 public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements ChatService {
 
     @Autowired
@@ -46,8 +48,9 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     @Autowired
     private SupervisorMapper supervisorMapper;
 
+    @Autowired
+    private ChatMapper chatMapper;
 
-    LocalDateTime now = LocalDateTime.now();
 
     /**
      * 今日咨询总数:
@@ -64,7 +67,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         List<Chat> allChats=baseMapper.selectList(queryWrapper);
         int totalCount=0;
         for (Chat chat : allChats) {
-            if(chat.getEndTime()!=null&&chat.getEndTime().getDayOfYear()<now.getDayOfYear()){
+            if(chat.getEndTime()!=null&&chat.getEndTime().getDayOfYear()<LocalDateTime.now().getDayOfYear()){
                 continue;
             }
             else{
@@ -90,14 +93,14 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         List<Chat> allChats=baseMapper.selectList(queryWrapper);
         int totalDuration=0;
         for (Chat chat : allChats) {
-            if(chat.getEndTime()!=null&&chat.getEndTime().getDayOfYear()<now.getDayOfYear()){
+            if(chat.getEndTime()!=null&&chat.getEndTime().getDayOfYear()<LocalDateTime.now().getDayOfYear()){
                 continue;
             }
-            LocalDateTime todayStart=(chat.getStartTime().getDayOfYear()==now.getDayOfYear())
+            LocalDateTime todayStart=(chat.getStartTime().getDayOfYear()==LocalDateTime.now().getDayOfYear())
                     ? chat.getStartTime()
                     : TimeUtil.getDayStart();
             LocalDateTime todayEnd=(chat.getEndTime()==null)
-                    ? now
+                    ? LocalDateTime.now()
                     : chat.getEndTime();
             totalDuration += todayEnd.getSecond()-todayStart.getSecond();
 
@@ -135,7 +138,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     @Override
     public List<Integer> getWeekCounsels() {
         List<Integer> result = new ArrayList<>();
-        int size = now.getDayOfWeek().getValue();
+        int size = LocalDateTime.now().getDayOfWeek().getValue();
         for(int i=1;i<=size;i++){
             LocalDateTime start = TimeUtil.getWeekStart().plusDays(i);
             LocalDateTime end = TimeUtil.getWeekStart().plusDays(i+1);
@@ -163,7 +166,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     @Override
     public List<Integer> getTodayCounsels() {
         List<Integer> result = new ArrayList<>();
-        int size = now.getHour();//0-23
+        int size = LocalDateTime.now().getHour();//0-23
         for(int i=0;i<=size;i++){
             LocalDateTime start = TimeUtil.getDayStart().plusHours(i);
             LocalDateTime end = TimeUtil.getDayStart().plusHours(i+1);
@@ -191,6 +194,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
     @Override
     public ResultInfo createChat(ChatParam chat) {
+        log.info("userA"+chat.getUserA()+"userB"+chat.getUserB());
         switch (chat.getType()) {
             case 0:
                 return createCounselChat(chat.getUserA(),chat.getUserB());
@@ -207,21 +211,23 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         if(chat == null||chat.getEndTime()!=null){
             return ResultInfo.error("会话不存在或已结束");
         }
-        chat.setEndTime(now);
+        chat.setEndTime(LocalDateTime.now());
         baseMapper.updateById(chat);
         Duration duration = Duration.between(chat.getStartTime(),chat.getEndTime());
         Long durationSeconds = duration.getSeconds();
         switch (chat.getType()){
             case 0:
                 Consultant consultant = consultantMapper.selectById(chat.getUserB());
-                if(consultant.getCurStatus()==BUSY){
+                if(consultant.getCurStatus()==1){
                     if(consultant.getCurrentSessionCount()-1<consultant.getMaxConcurrent()){
-                        consultant.setCurStatus(FREE);
+                        consultant.setCurStatus(0);
                     }
                 }
+                Integer newHelpNum = chatMapper.getHelpNum(chat.getUserB());
                 consultant.setTodayTotalHelpTime((int) (consultant.getTodayTotalHelpTime()+durationSeconds));
                 consultant.setTotalHelpTime((int) (consultant.getTotalHelpTime()+durationSeconds));
                 consultant.setCurrentSessionCount(consultant.getCurrentSessionCount()-1);
+                consultant.setHelpNum(newHelpNum);
                 consultantMapper.updateById(consultant);
                 break;
             case 1:
@@ -251,26 +257,36 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         if(supervisor == null||supervisor.getIsValid()==0||supervisor.getIsDisabled()==1) {
             return ResultInfo.error("督导不存在或已被封禁");
         }
+        log.info("supervisor"+supervisor);
         int count = new LambdaQueryChainWrapper<>(this.baseMapper)
-                .eq(Chat::getType, TypeConstant.HELP_CHAT)
+                .eq(Chat::getType,TypeConstant.HELP_CHAT)
                 .eq(Chat::getUserA,userA)
                 .eq(Chat::getUserB,userB)
                 .isNull(Chat::getEndTime)
                 .count();
+        List<Chat> chatList = new LambdaQueryChainWrapper<>(this.baseMapper)
+                .eq(Chat::getType,TypeConstant.HELP_CHAT)
+                .eq(Chat::getUserA,userA)
+                .eq(Chat::getUserB,userB)
+                .isNull(Chat::getEndTime)
+                .list();
+        log.info(chatList.toString());
         if(count>0){
             return ResultInfo.error("双方存在未完成会话");
         }
         Chat chat = Chat.builder()
                 .type(TypeConstant.HELP_CHAT)
-                .startTime(now)
+                .startTime(LocalDateTime.now())
                 .userA(consultant.getId())
                 .userB(supervisor.getId())
                 .build();
         baseMapper.insert(chat);
+        log.info("Created chat"+chat);
         supervisor.setTodayTotalHelpCount(supervisor.getTodayTotalHelpCount()+1);
         supervisor.setHelpTotalNum(supervisor.getHelpTotalNum()+1);
         supervisor.setConcurrentNum(supervisor.getConcurrentNum()+1);
         supervisorMapper.updateById(supervisor);
+        log.info("Updated supervisor"+supervisor);
         return ResultInfo.success(chat);
     }
 
@@ -281,11 +297,14 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
      * @return
      */
     private ResultInfo createCounselChat(Integer userA, Integer userB) {
+        log.info("userA"+userA+"userB"+userB);
         Visitor visitor = visitorMapper.selectById(userA);
+        log.info("visitor"+visitor);
         if(visitor == null||visitor.getIsDisabled() == 1) {
             return ResultInfo.error("访客不存在或已被封禁");
         }
         Consultant consultant = consultantMapper.selectById(userB);
+        log.info("consultant"+consultant);
         if(consultant == null||consultant.getIsValid()==0||consultant.getIsDisabled()==1) {
             return ResultInfo.error("咨询师不存在或已被封禁");
         }
@@ -298,11 +317,18 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
                 .eq(Chat::getUserB,userB)
                 .isNull(Chat::getEndTime)
                 .count();
+        List<Chat> chats=new LambdaQueryChainWrapper<>(this.baseMapper)
+                .eq(Chat::getType, TypeConstant.COUNSEL_CHAT)
+                .eq(Chat::getUserA,userA)
+                .eq(Chat::getUserB,userB)
+                .isNull(Chat::getEndTime)
+                .list();
+        log.info("chats"+chats);
         if(count>0){
             return ResultInfo.error("双方存在未完成会话");
         }
         Chat chat = Chat.builder()
-                .startTime(now)
+                .startTime(LocalDateTime.now())
                 .type(TypeConstant.COUNSEL_CHAT)
                 .userA(visitor.getId())
                 .userB(consultant.getId())
@@ -312,9 +338,9 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         consultant.setCurrentSessionCount(consultant.getCurrentSessionCount()+1);
         consultant.setHelpNum(consultant.getHelpNum()+1);
         if(consultant.getCurrentSessionCount()+1<consultant.getMaxConcurrent()){
-            consultant.setCurStatus(FREE);
+            consultant.setCurStatus(0);
         }else{
-            consultant.setCurStatus(BUSY);
+            consultant.setCurStatus(1);
         }
         consultant.setTodayTotalHelpCount(consultant.getTodayTotalHelpCount()+1);
         consultantMapper.updateById(consultant);
