@@ -2,9 +2,12 @@ package com.example.heart_field;
 
 import com.alibaba.fastjson.JSON;
 import com.example.heart_field.dto.WxUserInfo;
+import com.example.heart_field.entity.Chat;
 import com.example.heart_field.entity.Help;
 import com.example.heart_field.entity.Record;
+import com.example.heart_field.mapper.ChatMapper;
 import com.example.heart_field.mapper.RecordMapper;
+import com.example.heart_field.service.ChatService;
 import com.example.heart_field.service.HelpService;
 import com.example.heart_field.service.MsgService;
 import com.example.heart_field.service.RecordService;
@@ -34,6 +37,10 @@ class HeartFieldApplicationTests {
     private RecordService recordService;
     @Autowired
     private HelpService helpService;
+    @Autowired
+    private ChatService chatService;
+    @Autowired
+    private ChatMapper chatMapper;
 
     @Test
     void testTimeConvert(){
@@ -72,6 +79,27 @@ class HeartFieldApplicationTests {
     }
 
     @Test
+    void testEndTime(){
+//        List<Chat> chats = chatService.list();
+//        for(Chat chat : chats){
+//            LocalDateTime now = LocalDateTime.now();
+//            chat.setEndTime(now);
+//            Duration duration = Duration.between(chat.getStartTime(),now);
+//            chatService.updateById(chat);
+//        }
+
+//        List<Record> records = recordService.list();
+//        System.out.println("records = " + records);
+//        for(Record record : records){
+//            LocalDateTime now = LocalDateTime.now();
+//            record.setEndTime(now);
+//            Duration duration = Duration.between(record.getStartTime(),now);
+//            System.out.println("start="+record.getStartTime()+"  duration = " + duration+"  duration.getSeconds() = " + duration.getSeconds());
+//            record.setDuration((int) duration.getSeconds());
+//            recordService.updateById(record);
+//        }
+    }
+    @Test
     void testTime(){
         LocalDateTime time = LocalDateTime.now();
         System.out.println(time.getYear());
@@ -94,6 +122,11 @@ class HeartFieldApplicationTests {
     void testRedisSet() throws Exception {
         HashOperations ops=stringRedisTemplate.opsForHash();
         ops.put("info","a","aa");
+    }
+
+    @Test
+    void testHelpNum(){
+        System.out.println(chatMapper.getHelpNum(2));
     }
 
     @Test
