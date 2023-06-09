@@ -523,6 +523,7 @@ public class ConsultantController {
         if(record==null) return R. resource_error();
         record.setEvaluation(String.valueOf(evaluation.get("evaluation")));
         record.setConsultType(String.valueOf(evaluation.get("consultType")));
+        record.setConsultantCompleted(1);
         //更新record
         recordService.updateById(record);
         return R.success("咨询师填写用户评估成功");
