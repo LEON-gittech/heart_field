@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
+import com.example.heart_field.constant.RegexPattern;
 import com.example.heart_field.dto.*;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.param.UpdateSupervisorPasswordParam;
@@ -26,6 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+
 @Transactional
 @UserLoginToken
 @RestController
@@ -100,6 +103,10 @@ public class SupervisorController {
             log.info("new新增督导电话:{},密码:{}", phone, password);
             if (phone.length() != 11) {
                 return R.error("电话号码不合格");
+            }
+            Pattern phonePattern = Pattern.compile(RegexPattern.MOBILE_PHONE_NUMBER_PATTERN);
+            if(!phonePattern.matcher(phone).matches()){
+                return R.error("请输入正确的手机号");
             }
             //密码最小八位数，最大20位
             if (!PwdCheckUtil.checkPasswordLength(password,"8","20") ) {
@@ -420,10 +427,14 @@ public class SupervisorController {
             supervisor.setGender(Integer.parseInt(updateSupervisorDto.getGender()));
             supervisor.setAge(updateSupervisorDto.getAge());
             //单独处理电话号码更改情况
+            String phone = updateSupervisorDto.getPhone();
             if(updateSupervisorDto.getPhone()!=supervisor.getPhone()){
                 if(updateSupervisorDto.getPhone().length()!=11)
                     return R.argument_error("电话号码长度不合法");
-
+                Pattern phonePattern = Pattern.compile(RegexPattern.MOBILE_PHONE_NUMBER_PATTERN);
+                if(!phonePattern.matcher(phone).matches()){
+                    return R.error("请输入正确的手机号");
+                }
                 supervisor.setPhone(updateSupervisorDto.getPhone());
                 LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 userLambdaQueryWrapper.eq(User::getUserId,supervisorId).eq(User::getType,3);
