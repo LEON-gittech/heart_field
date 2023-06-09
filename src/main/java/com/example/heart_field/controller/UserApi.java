@@ -47,10 +47,10 @@ public class UserApi {
 
     @PostMapping("/backend/login")
     public R<UserLoginDTO> userLogin(@RequestBody UserLoginParam loginParam){
-        BaseResult checkResult = loginParam.checkLoginParam();
-        if(!checkResult.isRight()){
-            return R.login_error("手机号或密码格式错误");
-        }
+//        BaseResult checkResult = loginParam.checkLoginParam();
+//        if(!checkResult.isRight()){
+//            return R.login_error("手机号或密码格式错误");
+//        }
         ResultInfo<UserLoginDTO> loginInfo = userService.login(loginParam);
         return loginInfo.isRight()
                 ? R.success(loginInfo.getData())
