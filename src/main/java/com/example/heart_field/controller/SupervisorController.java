@@ -679,6 +679,7 @@ public class SupervisorController {
         if(schedule==null)
             return R.error("该排班记录不存在");
         scheduleService.removeById(schedule.getId());
+        updateIsOnline();
         return R.success("删除排班成功");
 
     }
@@ -708,6 +709,7 @@ public class SupervisorController {
             schedule.setCreateTime(LocalDateTime.now());
             schedule.setStaffType(3);
             scheduleService.save(schedule);
+            updateIsOnline();
         }
         return R.success("添加成功");
     }
