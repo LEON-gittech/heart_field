@@ -118,7 +118,7 @@ public class ConsultantController {
                     break;
                 case 2:
                     //这里因为空闲是0
-                    queryWrapper.orderByAsc(Consultant::getCurStatus);
+                    queryWrapper.eq(Consultant::getCurStatus,0);
                     break;
                 default:
                     break;
@@ -133,7 +133,7 @@ public class ConsultantController {
                     queryWrapper.orderByAsc(Consultant::getHelpNum);
                     break;
                 case 2:
-                    queryWrapper.orderByDesc(Consultant::getCurStatus);
+                    queryWrapper.eq(Consultant::getCurStatus,1);
                     break;
                 default:
                     break;
