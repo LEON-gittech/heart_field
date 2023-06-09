@@ -4,6 +4,7 @@ import cn.hutool.core.util.PageUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
 import com.example.heart_field.common.result.ResultInfo;
+import com.example.heart_field.dto.HelpDTO;
 import com.example.heart_field.dto.consultant.record.RecordDTO;
 import com.example.heart_field.dto.consultant.record.RecordListDTO;
 import com.example.heart_field.dto.consultant.record.RecordPage;
@@ -47,15 +48,15 @@ public class RecordController {
                                @RequestParam(value = "toDate", required = false) String toDate){
 
         List<RecordDTO> resultInfo = recordService.queryRecords(searchValue, pageSize, pageNum, fromDate, toDate);
-        log.info("从controller中："+resultInfo);
-        int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
         int total = resultInfo.size();
-        log.info("总页数："+pages);
-        Page<RecordDTO> resPage = new Page<RecordDTO>(pageNum,pageSize,total).setRecords(resultInfo);
-        log.info("当前页："+resPage.getRecords());
-        //current – 当前页 ,size – 每页显示条数
-        RecordPage<RecordDTO> res = new RecordPage<RecordDTO>(resPage,pages,total);
-        log.info("返回结果："+res);
+        int pages = PageUtil.totalPage(total, pageSize);
+        int fromIndex = (pageNum-1)*pageSize;
+        int toIndex = pageNum*pageSize>total?total:pageNum*pageSize;
+        if(pageNum>pages){
+            return R.success(new RecordPage<RecordDTO>(null, pages, total));
+        }
+        List<RecordDTO> subList = resultInfo.subList(fromIndex, toIndex);
+        RecordPage<RecordDTO> resPage = new RecordPage<RecordDTO>(subList, pages, total);
         return R.success(resPage);
     }
 

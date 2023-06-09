@@ -7,6 +7,7 @@ import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.dto.HelpDTO;
 import com.example.heart_field.dto.consultant.record.RecordDTO;
 import com.example.heart_field.dto.consultant.record.RecordPage;
+import com.example.heart_field.param.AddHelpParam;
 import com.example.heart_field.service.HelpService;
 import com.example.heart_field.service.RecordService;
 import com.example.heart_field.tokens.AdminOrSupervisorToken;
@@ -45,17 +46,21 @@ public class HelpController {
                                @RequestParam(value = "fromDate", required = false) String fromDate,
                                @RequestParam(value = "toDate", required = false) String toDate){
         List<HelpDTO> resultInfo = helpService.queryRecords(searchValue, pageSize, pageNum, fromDate, toDate);
-        int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
         int total = resultInfo.size();
-        Page<HelpDTO> resPage = new Page<HelpDTO>(pageNum, pageSize,total).setRecords(resultInfo);
-        RecordPage<HelpDTO> res = new RecordPage<HelpDTO>(resPage,pages,total);
+        int pages = PageUtil.totalPage(total, pageSize);
+        int fromIndex = (pageNum-1)*pageSize;
+        int toIndex = pageNum*pageSize>total?total:pageNum*pageSize;
+        if(pageNum>pages){
+            return R.success(new RecordPage<RecordDTO>(null, pages, total));
+        }
+        List<HelpDTO> subList = resultInfo.subList(fromIndex, toIndex);
+        RecordPage<HelpDTO> resPage = new RecordPage<HelpDTO>(subList, pages, total);
         return R.success(resPage);
     }
 
     @PostMapping("/records/supervisor")
-    public R addConsultRecord(@RequestParam(value = "chatId", required = true) Integer chatId,
-                              @RequestParam(value = "recordId", required = true) Integer recordId){
-        ResultInfo resultInfo = helpService.addHelp(chatId, recordId);
+    public R addConsultRecord(@RequestBody AddHelpParam param){
+        ResultInfo resultInfo = helpService.addHelp(param.getChatId(), param.getRecordId());
         return resultInfo.isRight()
                  ?R.success(resultInfo.getData())
                 :R.error(resultInfo.getMessage());

@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -44,16 +45,11 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
 
 
     @Override
-    public List<RecordListDTO> getRecords(Integer visitorId, String state,Integer pageSize, Integer pageNum) {
+    public List<RecordListDTO> getRecords(Integer visitorId,Integer pageSize, Integer pageNum) {
         LambdaQueryWrapper<Record> queryWrapper= Wrappers.lambdaQuery();
         queryWrapper.eq(Record::getVisitorId,visitorId);
         //Integer count=this.baseMapper.selectCount(queryWrapper);
-        if(state!=null&&state.equals("end")){
-            queryWrapper.eq(Record::getIsCompleted,1);
-        }
-        if(state!=null&&state.equals("ing")){
-            queryWrapper.eq(Record::getIsCompleted,0);
-        }
+
         queryWrapper.orderByDesc(Record::getCreateTime);
         List<Record> records=this.baseMapper.selectList(queryWrapper);
         List<RecordListDTO> recordListDTOS=new ArrayList<>();
@@ -161,7 +157,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                         .consultComment(r.getVisitorComment())
 
                         .startTime(r.getStartTime())
-                        .continueTime(r.getEndTime().getSecond() - r.getStartTime().getSecond())
+                        .continueTime(r.getDuration())
 
                         .chatId(r.getChatId())
                         .build();
@@ -218,7 +214,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
             return ResultInfo.error("该chat的咨询师不存在,id:"+chat.getUserB());
         }//即使封禁也正常返回
 
-
+        Duration duration = Duration.between(chat.getStartTime(), chat.getEndTime());
         Record record=Record.builder()
                 .chatId(chatId)
                 .isCompleted(0)//未填写评价、评分，未完成
@@ -226,7 +222,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                 .consultantId(consultant.getId())
                 .startTime(chat.getStartTime())
                 .endTime(chat.getEndTime())
-                .duration(chat.getEndTime().getSecond()-chat.getStartTime().getSecond())
+                .duration((int) duration.getSeconds())
                 .build();
         this.baseMapper.insert(record);
         return ResultInfo.success(record);

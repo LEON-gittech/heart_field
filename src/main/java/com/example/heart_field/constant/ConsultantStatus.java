@@ -6,8 +6,9 @@ package com.example.heart_field.constant;
  */
 public class ConsultantStatus {
 
-    public static final int STATUS_INIT = 0;
+    public static final int FREE = 0;
 
-    public static final int STATUS_INFO_READY = 1;
+    public static final int BUSY = 1;
+
 
 }

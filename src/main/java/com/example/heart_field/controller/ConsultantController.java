@@ -82,6 +82,7 @@ public class ConsultantController {
         int sortType = Integer.parseInt(httpServletRequest.getParameter("sortType"));
         int sort = Integer.parseInt(httpServletRequest.getParameter("sort"));
         log.info("分类信息查询，page={},pageSize={},searchValue={}",page,pageSize,searchValue);
+        log.info("sort={},sortType={}",sort,sortType);
         //构造分页构造器
         Page<Consultant> pageinfo = new Page<>(page,pageSize);
 
@@ -130,11 +131,21 @@ public class ConsultantController {
                     break;
             }
         }
+        //筛选在线的咨询师
+        queryWrapper.eq(Consultant::getIsOnline,1);
+        //筛选今天有绑定督导的咨询师
+        List<Binding> bindings = bindingService.list();
+        Set<Integer> hasBindingConsultants = new HashSet<>();
+        for(Binding binding : bindings){
+            hasBindingConsultants.add(binding.getConsultantId());
+        }
         //执行查询
-        List<Consultant> consultantsLs = consultantService.list();
         consultantService.page(pageinfo,queryWrapper);
         ConsultantsDto consultantsDto = new ConsultantsDto();
         List<Consultant> consultants = pageinfo.getRecords();
+        //筛选今天有绑定督导的咨询师
+        consultants.removeIf(consultant -> !hasBindingConsultants.contains(consultant.getId()));
+        //DTO 转换
         List<ConsultantDto> consultantDtos = new ArrayList<>();
         Integer pageNum = Math.toIntExact(pageinfo.getPages());
         consultantsDto.setPageNum(pageNum);
@@ -514,7 +525,9 @@ public class ConsultantController {
         //获取绑定信息
         LambdaQueryWrapper<Binding> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Binding::getConsultantId,consultantId);
-        queryWrapper.apply("supervisor_id IN (SELECT id FROM supervisor WHERE id IN (" + StringUtils.join(supervisorIds, ",") + "))");
+        if(supervisorIds.size()!=0){
+            queryWrapper.apply("supervisor_id IN (SELECT id FROM supervisor WHERE id IN (" + StringUtils.join(supervisorIds, ",") + "))");
+        }
         List<Binding> bindings = bindingService.list(queryWrapper);
         //输出Dto
         List<OnlineBinding> onlineBindings = new ArrayList<>();
