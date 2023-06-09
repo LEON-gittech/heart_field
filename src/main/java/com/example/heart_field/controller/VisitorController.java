@@ -294,8 +294,13 @@ public class VisitorController {
         int pages = PageUtil.totalPage(total, pageSize);
         int fromIndex = (pageNum-1)*pageSize;
         int toIndex = pageNum*pageSize>total?total:pageNum*pageSize;
+        if(total==0){
+            log.info("no records found");
+            return R.success(new RecordPage<RecordDTO>(new ArrayList<RecordDTO>(), pages, total));
+        }
+
         if(pageNum>pages){
-            return R.success(new RecordPage<RecordDTO>(null, pages, total));
+            return R.success(new RecordPage<RecordDTO>(new ArrayList<RecordDTO>(), pages, total));
         }
         List<RecordListDTO> subList = resultInfo.subList(fromIndex, toIndex);
         RecordPage<RecordListDTO> resPage = new RecordPage<RecordListDTO>(subList, pages, total);
