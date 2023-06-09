@@ -32,6 +32,17 @@ public class ResetTask {
     public void resetDailyProperties(){
         consultantService.resetDailyProperties();
     }
+    //督导的咨询数据属性重置
+    public void resetDailySupervisors(){
+        List<Supervisor> supervisors = supervisorService.list();
+        for(Supervisor supervisor : supervisors) {
+            supervisor.setTodayTotalHelpCount(0);
+            supervisor.setTodayTotalHelpTime(0);
+            supervisor.setIsOnline(0);
+            supervisor.setConcurrentNum(0);
+            supervisorService.updateById(supervisor);
+        }
+    }
     //计算当天存在排班的雇员
     @Scheduled(cron = "0 0 0 * * ?")
     public void isOnline(){

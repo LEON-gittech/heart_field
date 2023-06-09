@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
+import com.example.heart_field.constant.RegexPattern;
 import com.example.heart_field.dto.*;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.param.UpdateSupervisorPasswordParam;
@@ -26,6 +27,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
+
 @Transactional
 @UserLoginToken
 @RestController
@@ -101,6 +104,10 @@ public class SupervisorController {
             if (phone.length() != 11) {
                 return R.error("电话号码不合格");
             }
+            Pattern phonePattern = Pattern.compile(RegexPattern.MOBILE_PHONE_NUMBER_PATTERN);
+            if(!phonePattern.matcher(phone).matches()){
+                return R.error("请输入正确的手机号");
+            }
             //密码最小八位数，最大20位
             if (!PwdCheckUtil.checkPasswordLength(password,"8","20") ) {
                 return R.error("密码长度不符合");
@@ -123,6 +130,11 @@ public class SupervisorController {
             Supervisor supervisor = new Supervisor();
             supervisor.setPhone(phone);
             supervisor.setPassword(password);
+            supervisor.setTotalHelpTime(0);
+            supervisor.setTodayTotalHelpCount(0);
+            supervisor.setHelpTotalNum(0);
+            supervisor.setTodayTotalHelpTime(0);
+            supervisor.setConcurrentNum(0);
             supervisorService.save(supervisor);
             User user = userUtils.saveUser(supervisor);
             //新增到腾讯云
@@ -140,7 +152,7 @@ public class SupervisorController {
         }
 
             log.info("新增成功,新增id:{}", supervisor.getId());
-            return R.success("添加成功");
+            return R.success(null,"添加成功");
 
     }
     /**
@@ -415,10 +427,14 @@ public class SupervisorController {
             supervisor.setGender(Integer.parseInt(updateSupervisorDto.getGender()));
             supervisor.setAge(updateSupervisorDto.getAge());
             //单独处理电话号码更改情况
+            String phone = updateSupervisorDto.getPhone();
             if(updateSupervisorDto.getPhone()!=supervisor.getPhone()){
                 if(updateSupervisorDto.getPhone().length()!=11)
                     return R.argument_error("电话号码长度不合法");
-
+                Pattern phonePattern = Pattern.compile(RegexPattern.MOBILE_PHONE_NUMBER_PATTERN);
+                if(!phonePattern.matcher(phone).matches()){
+                    return R.error("请输入正确的手机号");
+                }
                 supervisor.setPhone(updateSupervisorDto.getPhone());
                 LambdaQueryWrapper<User> userLambdaQueryWrapper = new LambdaQueryWrapper<>();
                 userLambdaQueryWrapper.eq(User::getUserId,supervisorId).eq(User::getType,3);
@@ -663,6 +679,7 @@ public class SupervisorController {
         if(schedule==null)
             return R.error("该排班记录不存在");
         scheduleService.removeById(schedule.getId());
+        updateIsOnline();
         return R.success("删除排班成功");
 
     }
@@ -692,6 +709,7 @@ public class SupervisorController {
             schedule.setCreateTime(LocalDateTime.now());
             schedule.setStaffType(3);
             scheduleService.save(schedule);
+            updateIsOnline();
         }
         return R.success("添加成功");
     }
