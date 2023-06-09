@@ -27,8 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * @author albac0020@gmail.com
@@ -222,10 +225,25 @@ public class VisitorController {
         if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
         log.info("visitorId:{}", visitorId);
         Visitor visitor= visitorService.getById(visitorId);
-        VisitorPcychDTO visitorPcychDTO=visitor.convertToVisitorPcychDTO();
-        return visitor==null||visitor.getIsDisabled()==1
-                ? R.error("该访客不存在")
-                : R.success(visitorPcychDTO);
+        if(visitor==null||visitor.getIsDisabled()==1){
+            return R.auth_error("该访客不存在");
+        }
+        log.info("visitor:{}", visitor);
+        log.info("visitor.getQuestion():{}", visitor.getQuestion());
+        List<Integer> questions = new ArrayList<>();
+        if(visitor.getQuestion()!=null){
+            questions = Arrays.stream(visitor.getQuestion().split(", ")).map(Integer::parseInt).collect(Collectors.toList());
+        }
+        log.info("questions:{}", questions);
+        VisitorPcychDTO visitorPcychDTO=VisitorPcychDTO.builder()
+                .id(visitorId)
+                .direction(visitor.getDirection()==null?"":visitor.getDirection())
+                .question(questions)
+                .history(visitor.getHistory()==null?"":visitor.getHistory())
+                .puzzle(visitor.getPuzzle()==null?"":visitor.getPuzzle())
+                .build();
+        log.info("visitorPcychDTO:{}", visitorPcychDTO);
+        return R.success(visitorPcychDTO);
     }
 
     /**
@@ -248,45 +266,34 @@ public class VisitorController {
         }
         log.info("visitorId:{}", visitorId);
         log.info("visitor:{}", visitor);
-        checkVisitor.setQuestion(visitor.getQuestion().toString().substring(1,visitor.getQuestion().toString().length()-1));
-        checkVisitor.setHistory(visitor.getHistory());
-        checkVisitor.setPuzzle(visitor.getPuzzle());
-        checkVisitor.setDirection(visitor.getDirection());
+        if(visitor.getQuestion().size()!=0) checkVisitor.setQuestion(visitor.getQuestion().toString().substring(1,visitor.getQuestion().toString().length()-1));
+        if(visitor.getHistory()!=null) checkVisitor.setHistory(visitor.getHistory());
+        if(visitor.getPuzzle()!=null) checkVisitor.setPuzzle(visitor.getPuzzle());
+        if(visitor.getDirection()!=null) checkVisitor.setDirection(visitor.getDirection());
         boolean result = visitorService.updateById(checkVisitor);
         return result
                 ? R.success("更新成功")
                 : R.error("更新失败");
     }
 
-    /**
-     * 查看访客的咨询记录
-     * 用于：
-     *  -访客本人
-     *  -管理端
-     * @param visitorId
-     * @param state
-     * @return
-     */
+
     @GetMapping("/{visitor-id}/records")
     @UserLoginToken
     public R getRecords(@PathVariable(value = "visitor-id") Integer visitorId,
-                                             @RequestParam(value = "recordState", required = false) String state,
                                              @RequestParam(value = "pageNum", required = false, defaultValue = "1") Integer pageNum,
                                              @RequestParam(value = "pageSize", required = false, defaultValue = "10") Integer pageSize){
         if(!UserUtils.checkSelfOrBack(visitorId)) return R.auth_error();
         log.info("visitorId:{}", visitorId);
-        if(state!=null&&!state.equals("0")&&!state.equals("1")&&!state.equals("2")){
-            return R.argument_error("recordState参数错误");
-        }
+
         if(visitorService.getById(visitorId)==null||visitorService.getById(visitorId).getIsDisabled()==1){
             return R.resource_error();
         }
-        List<RecordListDTO> resultInfo = recordService.getRecords(visitorId,state,pageSize,pageNum);
+        List<RecordListDTO> resultInfo = recordService.getRecords(visitorId,pageSize,pageNum);
         int pages = PageUtil.totalPage(resultInfo.size(), pageSize);
         int total = resultInfo.size();
         Page<RecordListDTO> resPage = new Page<RecordListDTO>(pageNum, pageSize, pages).setRecords(resultInfo);
-        RecordPage<RecordListDTO> res =new RecordPage(resPage,pages,total);
-        return R.success(res);
+        //RecordPage<RecordListDTO> res =new RecordPage(resPage,pages,total);
+        return R.success(resPage);
     }
 
     /**

@@ -87,7 +87,7 @@ public class R<T> {
 
     public static <T> R<T> auth_error(String msg) {
         R r = new R();
-        r.msg = "没有权限"+msg;
+        r.msg = msg;
         r.code = -4;
         return r;
     }

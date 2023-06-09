@@ -59,6 +59,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public String upload(MultipartFile avatar) throws IOException {
         Long size = avatar.getSize();
         if(size<=MIN_SIZE||size>MAX_SIZE){
+            log.info("文件大小不符合要求");
             throw new IOException("文件大小不符合要求");
         }
         // 首先校验图片格式
@@ -95,11 +96,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public ResultInfo<String> uploadAvatar(MultipartFile avatar) throws Exception {
         try {
-            String url = upload(avatar);
-            if (url != null) {
+            String relativeUrl = upload(avatar);
+            log.info("上传头像成功,url:"+relativeUrl);
+            if (relativeUrl != null) {
                 User user = TokenUtil.getTokenUser();
                 Integer type = user.getType();
                 Integer id = user.getUserId();
+                String url = "http://localhost:8080" + relativeUrl;
+                //todo:更新文件路径
                 switch (type) {
                     case 0:
                         Visitor visitor = visitorMapper.selectById(id);
@@ -192,8 +196,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }
             return ResultInfo.error("上传失败，请重试");
         }catch (Exception e){
-            log.error("上传失败");
-            throw new Exception("上传失败，请重试");
+            log.error(e.toString());
+            return ResultInfo.error("上传失败，请重试");
 
         }
     }

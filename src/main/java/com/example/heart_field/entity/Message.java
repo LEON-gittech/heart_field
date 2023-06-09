@@ -67,17 +67,19 @@ public class Message {
     /**
      * 消息创建时间
      */
-    @TableField(fill = FieldFill.INSERT)
-    private LocalDateTime createTime;
+    //@TableField(fill = FieldFill.INSERT)
+    //private LocalDateTime createTime;
 
     /**
      * 消息更新时间
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
-    private LocalDateTime updateTime;
+    //@TableField(fill = FieldFill.INSERT_UPDATE)
+   // private LocalDateTime updateTime;
 
     /**
      * 该消息是否被删除
      */
     private Boolean isDeleted;
+
+
 }

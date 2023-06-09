@@ -39,6 +39,7 @@ public class RecordListDTO {
     //咨询开始和结束时间
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private Integer duration;
 
     //咨询是否完成，0表示未完成，1表示已完成
     private Integer isCompleted;

@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -146,13 +147,15 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
         /**
          * 创建help
          */
+        Duration duration = Duration.between(chat.getStartTime(), chat.getEndTime());
         Help help=Help.builder()
-                .isDeleted(1)
+                .isDeleted(0)
                 .consultantId(consultant.getId())
                 .supervisorId(supervisor.getId())
                 .startTime(chat.getStartTime())
                 .endTime(chat.getEndTime())
                 .chatId(chatId)
+                .duration((int) duration.getSeconds())
                 .build();
         this.baseMapper.insert(help);
         record.setHelpId(help.getId());
