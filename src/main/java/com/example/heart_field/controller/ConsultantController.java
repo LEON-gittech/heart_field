@@ -2,7 +2,6 @@ package com.example.heart_field.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
 import com.example.heart_field.constant.TypeConstant;
 import com.example.heart_field.dto.consultant.ConsultantDto;
@@ -86,87 +85,10 @@ public class ConsultantController {
         int sort = Integer.parseInt(httpServletRequest.getParameter("sort"));
         log.info("分类信息查询，page={},pageSize={},searchValue={}",page,pageSize,searchValue);
         log.info("sort={},sortType={}",sort,sortType);
-        //构造分页构造器
-        Page<Consultant> pageinfo = new Page<>(page,pageSize);
-
-        //构造条件构造器
-        LambdaQueryWrapper<Consultant> queryWrapper = new LambdaQueryWrapper<>();
-
-        //根据searchValue对姓名，简介，详细介绍，标签进行模糊查询
-        if(!(searchValue == null ||searchValue.equals(""))){
-            queryWrapper.and(wrapper -> wrapper
-                    .like(Consultant::getName, searchValue)
-                    .or()
-                    .like(Consultant::getBriefIntro, searchValue)
-                    .or()
-                    .like(Consultant::getDetailedIntro, searchValue)
-                    .or()
-                    .like(Consultant::getExpertiseTag, searchValue)
-            );
-        }
-        //JSON_CONTAINS函数用于判断json数组中是否包含某个元素
-        ;
-
-        //按照sortType进行排序，并根据sort确认是升序还是降序
-        if(sort == 0){
-            switch (sortType){
-                case 0:
-                    queryWrapper.orderByDesc(Consultant::getRating);
-                    break;
-                case 1:
-                    queryWrapper.orderByDesc(Consultant::getHelpNum);
-                    break;
-                case 2:
-                    //这里因为空闲是0
-                    queryWrapper.eq(Consultant::getCurStatus,0);
-                    break;
-                default:
-                    break;
-            }
-        }
-        else{
-            switch (sortType){
-                case 0:
-                    queryWrapper.orderByAsc(Consultant::getRating);
-                    break;
-                case 1:
-                    queryWrapper.orderByAsc(Consultant::getHelpNum);
-                    break;
-                case 2:
-                    queryWrapper.eq(Consultant::getCurStatus,1);
-                    break;
-                default:
-                    break;
-            }
-        }
-        //角色是访客进行的筛选
-        User user = TokenUtil.getTokenUser();
-        Set<Integer> hasBindingConsultants;
-        if(Objects.equals(user.getType(), TypeConstant.VISITOR)){
-            //筛选在线的咨询师
-            queryWrapper.eq(Consultant::getIsOnline,1);
-            //筛选今天有绑定督导的咨询师
-            List<Binding> bindings = bindingService.list();
-            hasBindingConsultants = new HashSet<>();
-            for(Binding binding : bindings){
-                hasBindingConsultants.add(binding.getConsultantId());
-            }
-        } else {
-            hasBindingConsultants = new HashSet<>();
-        }
-        //执行查询
-        consultantService.page(pageinfo,queryWrapper);
         ConsultantsDto consultantsDto = new ConsultantsDto();
-        List<Consultant> consultants = pageinfo.getRecords();
-        //角色为访客
-        if(Objects.equals(user.getType(), TypeConstant.VISITOR)){
-            //筛选有绑定督导的咨询师
-            consultants.removeIf(consultant -> !hasBindingConsultants.contains(consultant.getId()));
-        }
+        List<Consultant> consultants = consultantService.getConsultantsWrapper(searchValue,sort,sortType,page,pageSize,consultantsDto);
         //DTO 转换
         List<ConsultantDto> consultantDtos = new ArrayList<>();
-        Integer pageNum = Math.toIntExact(pageinfo.getPages());
-        consultantsDto.setPageNum(pageNum);
         //对consultans进行批处理
         for(Consultant consultant:consultants){
             consultantDtos.add(consultant.convert2ConsultantDto(consultantService));
