@@ -40,6 +40,8 @@ public class ConsultantServiceImpl extends ServiceImpl<ConsultantMapper, Consult
         for(Consultant consultant : consultants) {
             consultant.setTodayTotalHelpCount(0);
             consultant.setTodayTotalHelpTime(0);
+            consultant.setIsOnline(0);
+            consultant.setCurrentSessionCount(0);
             this.updateById(consultant);
         }
     }
