@@ -79,8 +79,10 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
             if(consultant==null||supervisor==null){
                 continue;
             }
+
             if(searchValue==null ||
                     (searchValue!=null&&(consultant.getName().contains(searchValue)||supervisor.getName().contains(searchValue)))) {
+                Duration duration = Duration.between(h.getStartTime(), h.getEndTime());
                 HelpDTO helpDTO = HelpDTO.builder()
                         .id(h.getId())
 
@@ -93,7 +95,7 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
                         .supervisorAvatar(supervisor.getAvatar())
 
                         .startTime(h.getStartTime())
-                        .continueTime(h.getEndTime().getSecond() - h.getStartTime().getSecond())
+                        .continueTime((int) duration.getSeconds())
 
                         .chatId(h.getChatId())
                         .build();
@@ -104,7 +106,7 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
     }
 
     @Override
-    public ResultInfo addHelp(Integer chatId, Integer recordId) {
+    public ResultInfo addHelp(Integer chatId) {
         LambdaQueryWrapper<Help> queryWrapper= Wrappers.lambdaQuery();
         queryWrapper.eq(Help::getChatId,chatId);
         /**
@@ -136,13 +138,6 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
             return ResultInfo.error("该chat的督导不存在,id:"+chat.getUserB());
         }//封禁也返回
 
-        /*
-        查record
-         */
-        Record record = recordMapper.selectById(recordId);
-        if(record==null){
-            return ResultInfo.error("该record不存在,id:"+recordId);
-        }
 
         /**
          * 创建help
@@ -158,8 +153,6 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
                 .duration((int) duration.getSeconds())
                 .build();
         this.baseMapper.insert(help);
-        record.setHelpId(help.getId());
-
         return ResultInfo.success(help.getId());
     }
 }
