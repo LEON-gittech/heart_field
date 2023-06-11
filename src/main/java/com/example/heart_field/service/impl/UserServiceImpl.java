@@ -19,6 +19,7 @@ import com.example.heart_field.utils.TokenUtil;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,6 +35,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     public Long MIN_SIZE=0L;
     public Long MAX_SIZE=1024*1024*10L;
+
+    @Value("${avatar.position}")
+    public String AVATAR_POSITION;
+
     @Autowired
     private VisitorMapper visitorMapper;
 
@@ -73,6 +78,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             String newFileName = RandomUtil.genRandomNum(10) + originalFilename;
             // 该方法返回的为当前项目的工作目录，即在哪个地方启动的java线程
             String dirPath = System.getProperty("user.dir");
+            log.info("dirPath:{}", dirPath);//dirPath:/Users/albasmagicjourney/Desktop/heart_field
             String path = File.separator + "uploadImg" + File.separator + newFileName;
             File destFile = new File(dirPath + path);
             if (!destFile.getParentFile().exists()) {
@@ -81,7 +87,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             try {
                 avatar.transferTo(destFile);
                 // 将相对路径返回给前端
-                return path;
+                return dirPath + path;
             } catch (IOException e) {
                 log.error("文件上传失败");
                 throw new IOException("文件上传失败，请检查文件格式");
@@ -102,14 +108,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 User user = TokenUtil.getTokenUser();
                 Integer type = user.getType();
                 Integer id = user.getUserId();
-                String url = "http://localhost:8080" + relativeUrl;
+                String dirPath = System.getProperty("user.dir");
+                String url =  dirPath + relativeUrl;
+                log.info(url);
                 //todo:更新文件路径
                 switch (type) {
                     case 0:
                         Visitor visitor = visitorMapper.selectById(id);
                         visitor.setAvatar(url);
                         visitorMapper.updateById(visitor);
-                        String identifier = "visitor_"+visitor.getId().toString();
+                        String identifier = "0_"+visitor.getId().toString();
                         String name = visitor.getUsername();
                         String avatar_url = url;
                         String sex = null;
@@ -133,7 +141,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                         Admin admin = adminMapper.selectById(id);
                         admin.setAvatar(url);
                         adminMapper.updateById(admin);
-                        identifier = "admin_"+admin.getId().toString();
+                        identifier = "2_"+admin.getId().toString();
                         name = admin.getUsername();
                         avatar_url = url;
                         sex = "未知";
@@ -147,7 +155,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                         consultant.setAvatar(url);
                         consultantMapper.updateById(consultant);
 
-                        identifier = "consultant_"+consultant.getId().toString();
+                        identifier = "1_"+consultant.getId().toString();
                         name = consultant.getName();
                         avatar_url = url;
                         switch (consultant.getGender()){
@@ -170,7 +178,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                         Supervisor supervisor = supervisorMapper.selectById(id);
                         supervisor.setAvatar(url);
                         supervisorMapper.updateById(supervisor);
-                        identifier = "supervisor_"+supervisor.getId().toString();
+                        identifier = "3_"+supervisor.getId().toString();
                         name = supervisor.getName();
                         avatar_url = url;
                         switch (supervisor.getGender()){
