@@ -61,7 +61,7 @@ public class HelpController {
 
     @PostMapping("/records/supervisor")
     public R addConsultRecord(@RequestBody AddHelpParam param){
-        ResultInfo resultInfo = helpService.addHelp(param.getChatId(), param.getRecordId());
+        ResultInfo resultInfo = helpService.addHelp(param.getChatId());
         return resultInfo.isRight()
                  ?R.success(resultInfo.getData())
                 :R.error(resultInfo.getMessage());
