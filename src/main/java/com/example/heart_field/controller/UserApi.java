@@ -123,13 +123,14 @@ public class UserApi {
 
     @UserLoginToken
     @PostMapping("/avatar")
-    public R<String> uploadAvatar(@RequestParam("avatar") MultipartFile image) throws Exception {
+    public R<String> uploadAvatar(@RequestBody MultipartFile image) throws Exception {
         // 首先校验图片格式
         List<String> imageType = Lists.newArrayList("jpg","jpeg", "png", "bmp", "gif");
         // 获取文件名，带后缀
         String originalFilename = image.getOriginalFilename();
         // 获取文件的后缀格式
         String fileSuffix = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
+        log.info(fileSuffix + "文件格式");
         if (imageType.contains(fileSuffix)){
             log.info("文件上传，文件名：{}",image.getOriginalFilename());
             String url = tencentCOSUtils.upload(image);
@@ -174,7 +175,7 @@ public class UserApi {
                     }
                     break;
                 case 1:
-                    Consultant consultant = consultantMapper.selectById(user.getId());
+                    Consultant consultant = consultantMapper.selectById(user.getUserId());
                     consultant.setAvatar(url);
                     consultantMapper.updateById(consultant);
 
