@@ -82,7 +82,6 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
 
             if(searchValue==null ||
                     (searchValue!=null&&(consultant.getName().contains(searchValue)||supervisor.getName().contains(searchValue)))) {
-                Duration duration = Duration.between(h.getStartTime(), h.getEndTime());
                 HelpDTO helpDTO = HelpDTO.builder()
                         .id(h.getId())
 
@@ -95,7 +94,7 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
                         .supervisorAvatar(supervisor.getAvatar())
 
                         .startTime(h.getStartTime())
-                        .continueTime((int) duration.getSeconds())
+                        .continueTime(h.getDuration())
 
                         .chatId(h.getChatId())
                         .build();
