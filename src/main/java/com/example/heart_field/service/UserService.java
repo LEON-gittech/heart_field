@@ -9,7 +9,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 
 public interface UserService extends IService<User> {
-    ResultInfo<String> uploadAvatar(MultipartFile avatar) throws Exception;
 
     ResultInfo<UserLoginDTO> login(UserLoginParam loginParam);
 }
