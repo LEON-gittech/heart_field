@@ -19,4 +19,5 @@ public class VisitorUpdateParam {
     private String emergencyName;
     private String emergencyPhone;
     private Integer gender;
+    private Integer age;
 }
