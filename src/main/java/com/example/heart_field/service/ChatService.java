@@ -19,9 +19,6 @@ public interface ChatService extends IService<Chat> {
 
     Integer getTotalDurationToday();
 
-    Integer getActiveCounselCount();
-
-    Integer getActiveAssistanceCount();
 
     List<Integer> getWeekCounsels();
 

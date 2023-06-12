@@ -6,14 +6,8 @@ import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapp
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.TypeConstant;
-import com.example.heart_field.entity.Chat;
-import com.example.heart_field.entity.Consultant;
-import com.example.heart_field.entity.Supervisor;
-import com.example.heart_field.entity.Visitor;
-import com.example.heart_field.mapper.ChatMapper;
-import com.example.heart_field.mapper.ConsultantMapper;
-import com.example.heart_field.mapper.SupervisorMapper;
-import com.example.heart_field.mapper.VisitorMapper;
+import com.example.heart_field.entity.*;
+import com.example.heart_field.mapper.*;
 import com.example.heart_field.param.ChatParam;
 import com.example.heart_field.service.ChatService;
 import com.example.heart_field.utils.TimeUtil;
@@ -51,6 +45,9 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     @Autowired
     private ChatMapper chatMapper;
 
+    @Autowired
+    private RecordMapper recordMapper;
+
 
     /**
      * 今日咨询总数:
@@ -62,19 +59,16 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
      */
     @Override
     public Integer getTotalCounselToday() {
-        LambdaQueryWrapper<Chat> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Chat::getType, TypeConstant.COUNSEL_CHAT);
-        List<Chat> allChats=baseMapper.selectList(queryWrapper);
+        LambdaQueryWrapper<Record> queryWrapper = new LambdaQueryWrapper<>();
+        List<Record> allRecords=recordMapper.selectList(queryWrapper);
         int totalCount=0;
-        for (Chat chat : allChats) {
-            if(chat.getEndTime()!=null&&chat.getEndTime().getDayOfYear()<LocalDateTime.now().getDayOfYear()){
-                continue;
+        for (Record record : allRecords) {
+            if(record.getEndTime()!=null&&record.getEndTime().getDayOfYear()<LocalDateTime.now().getDayOfYear()){
+                continue;//不是今天结束的，表示是在今天之前结束的
             }
             else{
-                totalCount++;
+                totalCount++;//结束时间在今天
             }
-
-
         }
         return totalCount++;
     }
@@ -88,48 +82,31 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
      */
     @Override
     public Integer getTotalDurationToday() {
-        LambdaQueryWrapper<Chat> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Chat::getType, TypeConstant.COUNSEL_CHAT);
-        List<Chat> allChats=baseMapper.selectList(queryWrapper);
+        LambdaQueryWrapper<Record> queryWrapper = new LambdaQueryWrapper<>();
+        List<Record> allRecords=recordMapper.selectList(queryWrapper);
         int totalDuration=0;
-        for (Chat chat : allChats) {
-            if(chat.getEndTime()!=null&&chat.getEndTime().getDayOfYear()<LocalDateTime.now().getDayOfYear()){
-                continue;
+        for (Record record:allRecords) {
+            if(record.getEndTime()!=null && record.getEndTime().getDayOfYear()<LocalDateTime.now().getDayOfYear()){
+                continue;//不是今天结束的，表示是在今天之前结束的
             }
-            LocalDateTime todayStart=(chat.getStartTime().getDayOfYear()==LocalDateTime.now().getDayOfYear())
-                    ? chat.getStartTime()
+            //如果是今天开始的，开始时间为今天具体时间；如果不是今天开始的，开始时间为今天最小时间
+            LocalDateTime todayStart=(record.getStartTime().getDayOfYear()==LocalDateTime.now().getDayOfYear())
+                    ? record.getStartTime()
                     : TimeUtil.getDayStart();
-            LocalDateTime todayEnd=(chat.getEndTime()==null)
+            //如果是今天结束的，结束时间是今天；如果结束时间不是今天的，不计算；如果还没结束，结束时间是现在
+            LocalDateTime todayEnd=(record.getEndTime()==null)
                     ? LocalDateTime.now()
-                    : chat.getEndTime();
-            totalDuration += todayEnd.getSecond()-todayStart.getSecond();
-
-
+                    : record.getEndTime();
+            Duration duration = Duration.between(todayStart,todayEnd);
+            log.info("todayStart:"+todayStart+",todayEnd:"+todayEnd+",duration"+duration.getSeconds());
+            totalDuration += duration.getSeconds();
         }
         return totalDuration;
     }
 
-    /**
-     * 正在进行的咨询师会话数
-     * @return
-     */
-    @Override
-    public Integer getActiveCounselCount() {
-        LambdaQueryWrapper<Chat> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Chat::getType, TypeConstant.COUNSEL_CHAT).isNotNull(Chat::getEndTime);
-        return baseMapper.selectCount(queryWrapper);
-    }
 
-    /**
-     * 正在进行的督导会话数
-     * @return
-     */
-    @Override
-    public Integer getActiveAssistanceCount() {
-        LambdaQueryWrapper<Chat> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(Chat::getType, TypeConstant.HELP_CHAT).isNotNull(Chat::getEndTime);
-        return baseMapper.selectCount(queryWrapper);
-    }
+
+
 
     /*
     本周情况:今日咨询总数
@@ -138,22 +115,14 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     @Override
     public List<Integer> getWeekCounsels() {
         List<Integer> result = new ArrayList<>();
-        int size = LocalDateTime.now().getDayOfWeek().getValue();
-        for(int i=1;i<=size;i++){
-            LocalDateTime start = TimeUtil.getWeekStart().plusDays(i);
-            LocalDateTime end = TimeUtil.getWeekStart().plusDays(i+1);
-            LambdaQueryWrapper<Chat> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(Chat::getType, TypeConstant.COUNSEL_CHAT)
-                    .or(wrapper->{
-                        wrapper.eq(Chat::getEndTime,null).le(Chat::getStartTime,start);
-                        //会话进行中，且开始时间在start及以前
-                    })
-                    .or(wrapper->{
-                        wrapper.isNotNull(Chat::getEndTime).gt(Chat::getEndTime,end).le(Chat::getStartTime,start);
-                        //会话结束，结束时间比end晚，开始时间比start早
-                    });
+       // int size = LocalDateTime.now().getDayOfWeek().getValue();
+        for(int i=0;i<=6;i++){
+            LocalDateTime start = TimeUtil.getDayStart(LocalDateTime.now().minusDays(i));
+            LocalDateTime end = TimeUtil.getDayEnd(LocalDateTime.now().minusDays(i));
+            log.info("start:"+start+",end:"+end);
 
-            List<Chat> todayChats=baseMapper.selectList(queryWrapper);
+            List<Chat> todayChats=chatMapper.getTodayChats(start,end);
+
             result.add(todayChats.size());
         }
         return result;
@@ -170,21 +139,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         for(int i=0;i<=size;i++){
             LocalDateTime start = TimeUtil.getDayStart().plusHours(i);
             LocalDateTime end = TimeUtil.getDayStart().plusHours(i+1);
-            LambdaQueryWrapper<Chat> queryWrapper = new LambdaQueryWrapper<>();
-            //开始时间在这个小时之前，且当前没结束 ；或者结束时间在当前这个小时之后、开始时间在这个小时之前
-
-
-            queryWrapper.eq(Chat::getType, TypeConstant.COUNSEL_CHAT)
-                    .or(wrapper->{
-                        wrapper.isNull(Chat::getEndTime).le(Chat::getStartTime,start);
-                        //会话进行中，且开始时间在start及以前
-                    })
-                    .or(wrapper->{
-                        wrapper.isNotNull(Chat::getEndTime).gt(Chat::getEndTime,end).le(Chat::getStartTime,start);
-                        //会话结束，结束时间比end晚，开始时间比start早
-                    });
-
-            List<Chat> todayChats=baseMapper.selectList(queryWrapper);
+            List<Chat> todayChats=chatMapper.getTodayChats(start,end);
             result.add(todayChats.size());
         }
         return result;
@@ -233,7 +188,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
             case 1:
                 Supervisor supervisor = supervisorMapper.selectById(chat.getUserB());
                 supervisor.setTotalHelpTime((int) (supervisor.getTotalHelpTime()+durationSeconds));
-                supervisor.setTotalHelpTime((int) (supervisor.getTotalHelpTime()+durationSeconds));
+                supervisor.setTodayTotalHelpTime((int) (supervisor.getTodayTotalHelpTime()+durationSeconds));
                 supervisor.setConcurrentNum(supervisor.getConcurrentNum()-1);
                 supervisorMapper.updateById(supervisor);
                 break;
@@ -308,7 +263,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         if(consultant == null||consultant.getIsValid()==0||consultant.getIsDisabled()==1) {
             return ResultInfo.error("咨询师不存在或已被封禁");
         }
-        if(consultant.getCurStatus()==BUSY){
+        if(consultant.getCurStatus()==1){
             return ResultInfo.error("咨询师忙碌中");
         }
         int count = new LambdaQueryChainWrapper<>(this.baseMapper)
