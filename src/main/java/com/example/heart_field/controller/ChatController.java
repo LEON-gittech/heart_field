@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Map;
 
@@ -96,9 +97,9 @@ public class ChatController {
         if(newMessage.getMessageType()=="4"){
             return R.argument_error("消息类型暂不支持聊天记录");
         }
-        message.setRelatedChat(0);
-        message.setType(Byte.valueOf(newMessage.getMessageType()));
-        message.setSendTime(LocalDateTime.now());
+        //message.setRelatedChat(0);
+        message.setType(Integer.valueOf(newMessage.getMessageType()));
+        message.setSendTime(Timestamp.valueOf(LocalDateTime.now()));
         message.setContent(newMessage.getContent());
 
         //message.setIsDeleted(false);
@@ -117,24 +118,24 @@ public class ChatController {
                 case "1":{
                     message.setSenderId(chat.getUserB());
                     message.setReceiverId(chat.getUserA());
-                    String senderName = consultantService.getById(chat.getUserB()).getName();
+                    /*String senderName = consultantService.getById(chat.getUserB()).getName();
                     message.setSenderName(senderName);
                     String receiverName = visitorService.getById(chat.getUserA()).getName();
-                    message.setReceiverName(receiverName);
+                    message.setReceiverName(receiverName);*/
                     break;
                 }
                 case "0":{
                     message.setSenderId(chat.getUserA());
                     message.setReceiverId(chat.getUserB());
                     log.info("userA:{},userB:{}",chat.getUserA(),chat.getUserB());
-                    String receiverName = consultantService.getById(chat.getUserB()).getName();
+                    /*String receiverName = consultantService.getById(chat.getUserB()).getName();
                     String senderName = visitorService.getById(chat.getUserA()).getName();
                     message.setSenderName(senderName);
-                    message.setReceiverName(receiverName);
+                    message.setReceiverName(receiverName);*/
                     break;
                 }
             }
-            message.setOwner(Byte.valueOf(newMessage.getSenderType()));
+            message.setOwner(Integer.valueOf((newMessage.getSenderType())));
 
         } else if (chat.getType()==1) { //督导与咨询师会话
             switch (newMessage.getSenderType()){
@@ -143,27 +144,28 @@ public class ChatController {
                 case "1":{
                     message.setSenderId(chat.getUserA());
                     message.setReceiverId(chat.getUserB());
-                    String senderName = consultantService.getById(chat.getUserA()).getName();
+                    /*String senderName = consultantService.getById(chat.getUserA()).getName();
                     String receiverName = supervisorService.getById(chat.getUserB()).getName();
                     message.setSenderName(senderName);
-                    message.setReceiverName(receiverName);
+                    message.setReceiverName(receiverName);*/
                     break;
                 }
                 case "2":{
                     message.setSenderId(chat.getUserB());
                     message.setReceiverId(chat.getUserA());
-                    String receiverName = consultantService.getById(chat.getUserB()).getName();
+                    /*tring receiverName = consultantService.getById(chat.getUserB()).getName();
                     String senderName = supervisorService.getById(chat.getUserA()).getName();
                     message.setSenderName(senderName);
-                    message.setReceiverName(receiverName);
+                    message.setReceiverName(receiverName);*/
                     break;
                 }
             }
-            message.setOwner(Byte.valueOf(newMessage.getSenderType()));
+            message.setOwner(Integer.valueOf(newMessage.getSenderType()));
         }
+        log.info("message赋值");
         messageService.save(message);
         MessageIdDto messageIdDto= new MessageIdDto();
-        //log.info("--获取id--");
+        log.info("--获取id--");
         Integer messageId = message.getId();
         messageIdDto.setId(String.valueOf(messageId));
         return R.success(messageIdDto);

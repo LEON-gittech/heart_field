@@ -156,6 +156,7 @@ CREATE TABLE help (
   FOREIGN KEY (consultant_id) REFERENCES consultant(id),
   FOREIGN KEY (supervisor_id) REFERENCES supervisor(id)
 ) COMMENT='咨询记录表';
+DROP TABLE message;
 
 CREATE TABLE message (
   id int auto_increment PRIMARY KEY COMMENT '消息ID',
@@ -163,18 +164,13 @@ CREATE TABLE message (
   send_time timestamp NOT NULL COMMENT '发送时间',
   owner tinyint(1) NOT NULL COMMENT '消息所有者类型，0:咨询师发送 1:访客发送 2:督导发送',
   sender_id int NOT NULL COMMENT '发送方ID',
-  sender_name varchar(50),
-  receiver_name varchar(50),
   receiver_id int NOT NULL COMMENT '接收方ID',
   type tinyint(1) NOT NULL COMMENT '消息类型，0:文字 1:图片 2:语音 3:表情 4:聊天记录 5:无法识别',
   content varchar(255) COMMENT '消息内容',
-  related_chat int DEFAULT 0 COMMENT '关联聊天ID，当消息类型为''聊天记录''时，存储关联的咨询会话记录ID，其余情况设为0',
-  create_time timestamp DEFAULT current_timestamp COMMENT '创建时间',
-  update_time timestamp NULL COMMENT '更新时间',
-  is_deleted tinyint(1) DEFAULT 0 COMMENT '是否删除，0未删除，1已删除',
-  FOREIGN KEY (chat_id) REFERENCES chat(id),
-  FOREIGN KEY (sender_id) REFERENCES visitor(id),
-  FOREIGN KEY (receiver_id) REFERENCES visitor(id)
+  create_time timestamp default now(),
+  update_time timestamp default now()
+
+
 ) COMMENT='消息表';
 
 CREATE TABLE schedule (

@@ -638,7 +638,7 @@ public class SupervisorController {
                 Supervisor supervisor = supervisorService.getById(superId);
                 supervisor.setMaxConcurrent(num);
                 supervisorService.updateById(supervisor);
-                return R.success("修改成功");
+                return R.success(null,"修改成功");
             }
         else
             return R.auth_error();
@@ -656,7 +656,7 @@ public class SupervisorController {
             return R.auth_error();
         supervisor.setMaxNum(supervisorConsultMaxCount.getNum());
         supervisorService.updateById(supervisor);
-        return R.success("修改成功");
+        return R.success(null,"修改成功");
     }
 
     /**
@@ -680,7 +680,7 @@ public class SupervisorController {
             return R.error("该排班记录不存在");
         scheduleService.removeById(schedule.getId());
         updateIsOnline();
-        return R.success("删除排班成功");
+        return R.success(null,"删除排班成功");
 
     }
     /**
@@ -711,7 +711,7 @@ public class SupervisorController {
             scheduleService.save(schedule);
             updateIsOnline();
         }
-        return R.success("添加成功");
+        return R.success(null,"添加成功");
     }
     /**
      * 获取督导排班信息
@@ -731,13 +731,17 @@ public class SupervisorController {
             return R.auth_error();
         }
         else if(type==2){
+            Supervisor supervisor = supervisorService.getById(supervisorId);
+            if(supervisor==null)
+                return R.resource_error();
             Admin admin = adminService.getById(id);
             if(admin==null)
                 return R.auth_error();
         }
         LambdaQueryWrapper<Schedule> scheduleLambdaQueryWrapper = new LambdaQueryWrapper<>();
         scheduleLambdaQueryWrapper.eq(Schedule::getStaffId,superId)
-                .eq(Schedule::getStaffType,3);
+                .eq(Schedule::getStaffType,3)
+                .orderByAsc(Schedule::getWorkday);
         List<Schedule> schedules = scheduleService.list(scheduleLambdaQueryWrapper);
         List<Integer> workdayList = new ArrayList<>();
         for(int i = 0;i<schedules.size();i++){
