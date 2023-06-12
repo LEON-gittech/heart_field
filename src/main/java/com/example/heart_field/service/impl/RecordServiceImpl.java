@@ -42,6 +42,9 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
     @Autowired
     private ChatMapper chatMapper;
 
+    @Autowired
+    private RecordMapper recordMapper;
+
 
 
     @Override
@@ -66,6 +69,8 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
             Consultant consultant= consultantMapper.selectById(rlDTO.getConsultantId());
             rlDTO.setConsultantName(consultant.getName());
             rlDTO.setConsultantAvatar(consultant.getAvatar());
+            rlDTO.setVisitorCompleted(rlDTO.getVisitorCompleted());
+            rlDTO.setConsultantCompleted(rlDTO.getConsultantCompleted());
 
             Integer supervisorId=rlDTO.getSupervisorId();
             if(supervisorId==null){
@@ -118,7 +123,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                 //log.info("咨询师或督导");
                 break;
         }
-        log.info("searchValue:{}", searchValue);
+        log.info("--------searchValue:{}", searchValue);
         if (fromDate != null) {
             LocalDateTime from = LocalDateTime.parse(fromDate+" 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             log.info("from:{}", from);
@@ -159,12 +164,17 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                         .startTime(r.getStartTime())
                         .continueTime(r.getDuration())
 
+                        .consultantCompleted(r.getConsultantCompleted())
+                        .visitorCompleted(r.getVisitorCompleted())
+
+
                         .chatId(r.getChatId())
                         .build();
                 recordDTOS.add(recordDTO);
                 log.info("recordDTO:{}", recordDTO);
             }
         }
+        log.info("recordDTOS:{}", recordDTOS);
         return recordDTOS;
     }
 
@@ -217,7 +227,8 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
         Duration duration = Duration.between(chat.getStartTime(), chat.getEndTime());
         Record record=Record.builder()
                 .chatId(chatId)
-                .isCompleted(0)//未填写评价、评分，未完成
+                .visitorCompleted(0)
+                .consultantCompleted(0)
                 .visitorId(visitor.getId())
                 .consultantId(consultant.getId())
                 .startTime(chat.getStartTime())
@@ -232,19 +243,32 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
     @Override
     public ResultInfo addComment(Integer recordId, String comment, Integer score) {
         Record record = this.baseMapper.selectById(recordId);
+        log.info("userType"+TokenUtil.getTokenUser().getType());
         if(record==null){
             return ResultInfo.error("该record不存在,id:"+recordId);
         }
-        if(record.getIsCompleted()==1){
-            return ResultInfo.error("该record已经完成评价，请勿重复评价，id:"+recordId);
+        if(record.getVisitorCompleted()==1){
+            return ResultInfo.error("该record访客已经完成评价，请勿重复评价，id:"+recordId);
         }
-        if(record.getVisitorId()!=TokenUtil.getTokenUser().getUserId()){
-            return ResultInfo.error("该record不属于当前访客，id:"+recordId);
+        if(!TokenUtil.getTokenUser().getType().equals(2)){
+            if(record.getVisitorId()!=TokenUtil.getTokenUser().getUserId()){
+                return ResultInfo.error("该record不属于当前访客，id:"+recordId);
+            }
         }
         record.setVisitorComment(comment);
         record.setVisitorScore(score);
-        record.setIsCompleted(1);
+        record.setVisitorCompleted(1);
         this.baseMapper.updateById(record);
-        return ResultInfo.success();
+        Consultant consultant = consultantMapper.selectById(record.getConsultantId());
+        List<Integer> scores = recordMapper.selectScoresByConsultantId(consultant.getId());
+        int num=scores.size();
+        int sum=0;
+        for(Integer s:scores){
+            sum+=s;
+        }
+        double average = (double)sum/num;
+        consultant.setRating(average);
+        consultantMapper.updateById(consultant);
+        return ResultInfo.success(record);
     }
 }

@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
+import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.RegexPattern;
 import com.example.heart_field.dto.VisitorPcychDTO;
 import com.example.heart_field.dto.WxLoginDTO;
@@ -21,6 +22,7 @@ import com.example.heart_field.service.VisitorService;
 import com.example.heart_field.tokens.AdminToken;
 import com.example.heart_field.tokens.StaffToken;
 import com.example.heart_field.tokens.UserLoginToken;
+import com.example.heart_field.utils.TencentCloudImUtil;
 import com.example.heart_field.utils.TokenUtil;
 import com.example.heart_field.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +64,9 @@ public class VisitorController {
 
     @Autowired
     private AdminMapper adminMapper;
+
+    @Autowired
+    private TencentCloudImUtil tencentCloudImUtil;
 
     @PostMapping("/auth/login")
     public R<WxLoginDTO> login(@RequestBody WxLoginParam loginParam){
@@ -179,7 +184,7 @@ public class VisitorController {
     @UserLoginToken
     public R updateVisitorProfile(@PathVariable(value = "visitor-id") Integer visitorId,
                                   @RequestBody VisitorUpdateParam visitor) {
-        if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
+        //if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
         Visitor realVisitor = visitorMapper.selectById(visitorId);
         log.info("checkVisitor:{}", realVisitor);
         if(realVisitor==null||realVisitor.getIsDisabled()==1){
@@ -203,6 +208,15 @@ public class VisitorController {
         if(result==false){
             return R.error("更新失败");
         }else{
+            String identifier = "0_"+realVisitor.getId().toString();
+            String name = realVisitor.getName();
+            String avatar_url = realVisitor.getAvatar();
+            String sex = realVisitor.getGender()==0?"女":"男";
+            boolean isSuccess=tencentCloudImUtil.updateAccount(identifier,name,avatar_url,sex);
+            if(!isSuccess){
+                return R.error("腾讯IM更新账号失败");
+            }
+
 //            User user = userMapper.selectOne(new QueryWrapper<User>().eq("type", 0).eq("user_id",visitorId));
 //            log.info("user:{}", user);
 //            user.setPhone(newPhone);
@@ -294,8 +308,13 @@ public class VisitorController {
         int pages = PageUtil.totalPage(total, pageSize);
         int fromIndex = (pageNum-1)*pageSize;
         int toIndex = pageNum*pageSize>total?total:pageNum*pageSize;
+        if(total==0){
+            log.info("no records found");
+            return R.success(new RecordPage<RecordDTO>(new ArrayList<RecordDTO>(), pages, total));
+        }
+
         if(pageNum>pages){
-            return R.success(new RecordPage<RecordDTO>(null, pages, total));
+            return R.success(new RecordPage<RecordDTO>(new ArrayList<RecordDTO>(), pages, total));
         }
         List<RecordListDTO> subList = resultInfo.subList(fromIndex, toIndex);
         RecordPage<RecordListDTO> resPage = new RecordPage<RecordListDTO>(subList, pages, total);

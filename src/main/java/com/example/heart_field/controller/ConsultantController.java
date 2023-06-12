@@ -2,7 +2,6 @@ package com.example.heart_field.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
 import com.example.heart_field.constant.TypeConstant;
 import com.example.heart_field.dto.consultant.ConsultantDto;
@@ -36,6 +35,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -85,78 +85,15 @@ public class ConsultantController {
         int sort = Integer.parseInt(httpServletRequest.getParameter("sort"));
         log.info("分类信息查询，page={},pageSize={},searchValue={}",page,pageSize,searchValue);
         log.info("sort={},sortType={}",sort,sortType);
-        //构造分页构造器
-        Page<Consultant> pageinfo = new Page<>(page,pageSize);
-
-        //构造条件构造器
-        LambdaQueryWrapper<Consultant> queryWrapper = new LambdaQueryWrapper<>();
-
-        //根据searchValue对姓名，简介，详细介绍，标签进行模糊查询
-        if(!(searchValue.equals(null)||searchValue.equals(""))){
-            queryWrapper.like(Consultant::getName,searchValue)
-                    .or().like(Consultant::getBriefIntro,searchValue)
-                    .or().like(Consultant::getDetailedIntro,searchValue)
-                    .or().like(Consultant::getExpertiseTag,searchValue);
-        }
-        //JSON_CONTAINS函数用于判断json数组中是否包含某个元素
-        ;
-
-        //按照sortType进行排序，并根据sort确认是升序还是降序
-        if(sort == 0){
-            switch (sortType){
-                case 0:
-                    queryWrapper.orderByDesc(Consultant::getRating);
-                    break;
-                case 1:
-                    queryWrapper.orderByDesc(Consultant::getHelpNum);
-                    break;
-                case 2:
-                    //这里因为空闲是0
-                    queryWrapper.orderByAsc(Consultant::getCurStatus);
-                    break;
-                default:
-                    break;
-            }
-        }
-        else{
-            switch (sortType){
-                case 0:
-                    queryWrapper.orderByAsc(Consultant::getRating);
-                    break;
-                case 1:
-                    queryWrapper.orderByAsc(Consultant::getHelpNum);
-                    break;
-                case 2:
-                    queryWrapper.orderByDesc(Consultant::getCurStatus);
-                    break;
-                default:
-                    break;
-            }
-        }
-        //筛选在线的咨询师
-        queryWrapper.eq(Consultant::getIsOnline,1);
-        //筛选今天有绑定督导的咨询师
-        List<Binding> bindings = bindingService.list();
-        Set<Integer> hasBindingConsultants = new HashSet<>();
-        for(Binding binding : bindings){
-            hasBindingConsultants.add(binding.getConsultantId());
-        }
-        //执行查询
-        consultantService.page(pageinfo,queryWrapper);
         ConsultantsDto consultantsDto = new ConsultantsDto();
-        List<Consultant> consultants = pageinfo.getRecords();
-        //筛选今天有绑定督导的咨询师
-        consultants.removeIf(consultant -> !hasBindingConsultants.contains(consultant.getId()));
+        List<Consultant> consultants = consultantService.getConsultantsWrapper(searchValue,sort,sortType,page,pageSize,consultantsDto);
         //DTO 转换
         List<ConsultantDto> consultantDtos = new ArrayList<>();
-        Integer pageNum = Math.toIntExact(pageinfo.getPages());
-        consultantsDto.setPageNum(pageNum);
-        consultantsDto.setConsultants(consultantDtos);
         //对consultans进行批处理
         for(Consultant consultant:consultants){
             consultantDtos.add(consultant.convert2ConsultantDto(consultantService));
         }
-
+        consultantsDto.setConsultants(consultantDtos);
         return R.success(consultantsDto);
     }
 
@@ -261,9 +198,6 @@ public class ConsultantController {
      */
     @GetMapping("/{consultantId}/profile")
     public R<AnyConsultantProfileDto> getProfile(@PathVariable("consultantId") Integer consultantId) throws JsonProcessingException {
-        //权限验证
-        R r = consultantUtil.isConsultantOrAdmin(consultantId);
-        if(r!=null) return r;
         //返回数据
         AnyConsultantProfileDto anyConsultantProfileDto = new AnyConsultantProfileDto();
         Consultant consultant = consultantService.getById(consultantId);
@@ -431,12 +365,20 @@ public class ConsultantController {
             queryWrapper.eq(Schedule::getStaffId,consultant.get("consultantId"));
             queryWrapper.eq(Schedule::getWorkday,Integer.valueOf(date));
             if(scheduleService.list(queryWrapper).size()>0){
-                return R.error("该咨询师"+consultant.get("consultantName")+"当天已经有排班");
+                continue;
             }
             Schedule schedule = new Schedule();
             schedule.setStaffType(1);
             schedule.setStaffId((Integer) consultant.get("consultantId"));
             schedule.setWorkday(Integer.valueOf(date));
+            //判断是不是当天，如果是当天的话也要更新咨询师的 isOnline 属性
+            Integer day = LocalDate.now().getDayOfMonth();
+            if(day.toString().equals(date)){
+                Integer id = (Integer) consultant.get("consultantId");
+                Consultant consultant1 = consultantService.getById(id);
+                consultant1.setIsOnline(1);
+                consultantService.updateById(consultant1);
+            }
             scheduleService.save(schedule);
         }
         return R.success("添加咨询师排班成功");
@@ -459,6 +401,13 @@ public class ConsultantController {
         queryWrapper.eq(Schedule::getStaffId,consultantId);
         queryWrapper.eq(Schedule::getWorkday,date);
         scheduleService.remove(queryWrapper);
+        //判断是不是当天，如果是当天的话也要更新咨询师的 isOnline 属性
+        Integer day = LocalDate.now().getDayOfMonth();
+        if(day.toString().equals(date)){
+            Consultant consultant1 = consultantService.getById(consultantId);
+            consultant1.setIsOnline(0);
+            consultantService.updateById(consultant1);
+        }
         return R.success("删除咨询师排班成功");
     }
 
@@ -496,6 +445,7 @@ public class ConsultantController {
         if(record==null) return R. resource_error();
         record.setEvaluation(String.valueOf(evaluation.get("evaluation")));
         record.setConsultType(String.valueOf(evaluation.get("consultType")));
+        record.setConsultantCompleted(1);
         //更新record
         recordService.updateById(record);
         return R.success("咨询师填写用户评估成功");

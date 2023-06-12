@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @NoArgsConstructor
 public class AddHelpParam {
     private Integer chatId;
-    private Integer  recordId;
 
 }
 

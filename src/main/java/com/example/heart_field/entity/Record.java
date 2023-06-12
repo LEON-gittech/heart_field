@@ -91,7 +91,8 @@ public class Record {
      */
     private Integer helpId;
 
-    private Integer isCompleted;//0未完成1已完成
+    private Integer visitorCompleted;//0未完成1已完成
+    private Integer consultantCompleted;//0未完成1已完成
 
 
 
@@ -101,7 +102,8 @@ public class Record {
                 .consultantId(this.consultantId)
                 .visitorId(this.visitorId)
                 .id(this.id)
-                .isCompleted((this.endTime==null?0:1))
+                .visitorCompleted(this.visitorCompleted)
+                .consultantCompleted(this.consultantCompleted)
                 .startTime(this.startTime)
                 .endTime(this.endTime)
                 .duration(this.duration)

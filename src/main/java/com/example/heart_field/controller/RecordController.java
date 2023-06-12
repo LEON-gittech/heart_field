@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -53,7 +54,7 @@ public class RecordController {
         int fromIndex = (pageNum-1)*pageSize;
         int toIndex = pageNum*pageSize>total?total:pageNum*pageSize;
         if(pageNum>pages){
-            return R.success(new RecordPage<RecordDTO>(null, pages, total));
+            return R.success(new RecordPage<RecordDTO>(new ArrayList<>(), pages, total));
         }
         List<RecordDTO> subList = resultInfo.subList(fromIndex, toIndex);
         RecordPage<RecordDTO> resPage = new RecordPage<RecordDTO>(subList, pages, total);
@@ -72,7 +73,7 @@ public class RecordController {
     /**
      * 访客评价咨询师
      */
-    @PostMapping("/visitors/{record-id}/comment")
+    @PostMapping("/visitors/{record_id}/comment")
     public R addComment(@PathVariable(value = "record_id", required=true)Integer recordId,
                         @RequestBody VisitorCommentParam commentParam
                         ){

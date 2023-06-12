@@ -128,6 +128,9 @@ public class TencentCloudImUtil {
             this.genUsersig();
             return updateAccount(userId, userName, faceUrl,gender);
         }
+        if(ErrorCode == 40003){
+            return accountImport(userId, userName, faceUrl);
+        }
         return ErrorCode == 0 ? true:false;
     }
  

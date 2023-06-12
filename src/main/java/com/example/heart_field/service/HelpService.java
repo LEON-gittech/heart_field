@@ -18,5 +18,5 @@ import java.util.List;
 public interface HelpService extends IService<Help> {
     List<HelpDTO> queryRecords(String searchValue, int pageSize, int pageNum, String fromDate, String toDate);
 
-    ResultInfo addHelp(Integer chatId, Integer recordId);
+    ResultInfo addHelp(Integer chatId);
 }

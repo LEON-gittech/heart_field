@@ -8,6 +8,18 @@ server:
 #    key-store-type: PKCS12
 #    key-store: classpath:leonwangblog.xyz.pfx
 #    key-store-password: kfelwbj5
+#腾讯云COS配置
+tencent:
+  cos:
+    #访问域名
+    rootSrc : https://heart-field-1312908194.cos.ap-shanghai.myqcloud.com
+    #所属地域
+    bucketAddr: ap-shanghai
+    SecretId: AKID50lJchZFhvzTr1w3vZzA8rMdfS1MtCLG
+    SecretKey: kFVXLuEJA2g7KI2XM2Vkll37wXu2vZzA
+    #存储桶名称
+    bucketName: heart-field-1312908194
+
 
 spring:
   servlet:

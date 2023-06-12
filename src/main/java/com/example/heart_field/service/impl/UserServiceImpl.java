@@ -19,6 +19,7 @@ import com.example.heart_field.utils.TokenUtil;
 import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -34,6 +35,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     public Long MIN_SIZE=0L;
     public Long MAX_SIZE=1024*1024*10L;
+
+
     @Autowired
     private VisitorMapper visitorMapper;
 
@@ -54,153 +57,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Autowired
     private TokenService tokenService;
-
-
-    public String upload(MultipartFile avatar) throws IOException {
-        Long size = avatar.getSize();
-        if(size<=MIN_SIZE||size>MAX_SIZE){
-            log.info("文件大小不符合要求");
-            throw new IOException("文件大小不符合要求");
-        }
-        // 首先校验图片格式
-        List<String> imageType = Lists.newArrayList("jpg","jpeg", "png", "bmp", "gif");
-        // 获取文件名，带后缀
-        String originalFilename = avatar.getOriginalFilename();
-        // 获取文件的后缀格式
-        String fileSuffix = originalFilename.substring(originalFilename.lastIndexOf(".") + 1).toLowerCase();
-        if (imageType.contains(fileSuffix)) {
-            // 只有当满足图片格式时才进来，重新赋图片名，防止出现名称重复的情况
-            String newFileName = RandomUtil.genRandomNum(10) + originalFilename;
-            // 该方法返回的为当前项目的工作目录，即在哪个地方启动的java线程
-            String dirPath = System.getProperty("user.dir");
-            String path = File.separator + "uploadImg" + File.separator + newFileName;
-            File destFile = new File(dirPath + path);
-            if (!destFile.getParentFile().exists()) {
-                destFile.getParentFile().mkdirs();
-            }
-            try {
-                avatar.transferTo(destFile);
-                // 将相对路径返回给前端
-                return path;
-            } catch (IOException e) {
-                log.error("文件上传失败");
-                throw new IOException("文件上传失败，请检查文件格式");
-            }
-        } else {
-            // 非法文件
-            log.error("文件后缀名非法");
-            throw new IOException("文件上传失败，请检查文件格式");
-        }
-    }
-
-    @Override
-    public ResultInfo<String> uploadAvatar(MultipartFile avatar) throws Exception {
-        try {
-            String relativeUrl = upload(avatar);
-            log.info("上传头像成功,url:"+relativeUrl);
-            if (relativeUrl != null) {
-                User user = TokenUtil.getTokenUser();
-                Integer type = user.getType();
-                Integer id = user.getUserId();
-                String url = "http://localhost:8080" + relativeUrl;
-                //todo:更新文件路径
-                switch (type) {
-                    case 0:
-                        Visitor visitor = visitorMapper.selectById(id);
-                        visitor.setAvatar(url);
-                        visitorMapper.updateById(visitor);
-                        String identifier = "visitor_"+visitor.getId().toString();
-                        String name = visitor.getUsername();
-                        String avatar_url = url;
-                        String sex = null;
-                        switch (visitor.getGender()){
-                            case 0:
-                                sex = "女";
-                                break;
-                            case 1:
-                                sex = "男";
-                                break;
-                            default:
-                                sex = "未知";
-                                break;
-                        }
-                        Boolean isSuccess=tencentCloudImUtil.updateAccount(identifier,name,avatar_url,sex);
-                        if(!isSuccess){
-                            return ResultInfo.error("腾讯IM更新账号失败");
-                        }
-                        break;
-                    case 2:
-                        Admin admin = adminMapper.selectById(id);
-                        admin.setAvatar(url);
-                        adminMapper.updateById(admin);
-                        identifier = "admin_"+admin.getId().toString();
-                        name = admin.getUsername();
-                        avatar_url = url;
-                        sex = "未知";
-                        isSuccess=tencentCloudImUtil.updateAccount(identifier,name,avatar_url,sex);
-                        if(!isSuccess){
-                            return ResultInfo.error("腾讯IM更新账号失败");
-                        }
-                        break;
-                    case 1:
-                        Consultant consultant = consultantMapper.selectById(id);
-                        consultant.setAvatar(url);
-                        consultantMapper.updateById(consultant);
-
-                        identifier = "consultant_"+consultant.getId().toString();
-                        name = consultant.getName();
-                        avatar_url = url;
-                        switch (consultant.getGender()){
-                            case 0:
-                                sex = "女";
-                                break;
-                            case 1:
-                                sex = "男";
-                                break;
-                            default:
-                                sex = "未知";
-                                break;
-                        }
-                        isSuccess=tencentCloudImUtil.updateAccount(identifier,name,avatar_url,sex);
-                        if(!isSuccess){
-                            return ResultInfo.error("腾讯IM更新账号失败");
-                        }
-                        break;
-                    case 3:
-                        Supervisor supervisor = supervisorMapper.selectById(id);
-                        supervisor.setAvatar(url);
-                        supervisorMapper.updateById(supervisor);
-                        identifier = "supervisor_"+supervisor.getId().toString();
-                        name = supervisor.getName();
-                        avatar_url = url;
-                        switch (supervisor.getGender()){
-                            case 0:
-                                sex = "女";
-                                break;
-                            case 1:
-                                sex = "男";
-                                break;
-                            default:
-                                sex = "未知";
-                                break;
-                        }
-                        isSuccess=tencentCloudImUtil.updateAccount(identifier,name,avatar_url,sex);
-                        if(!isSuccess){
-                            return ResultInfo.error("腾讯IM更新账号失败");
-                        }
-                        break;
-                    default:
-                        break;
-                }
-                return ResultInfo.success(url);
-            }
-            return ResultInfo.error("上传失败，请重试");
-        }catch (Exception e){
-            log.error(e.toString());
-            return ResultInfo.error("上传失败，请重试");
-
-        }
-    }
 
     @Override
     public ResultInfo<UserLoginDTO> login(UserLoginParam loginParam) {
