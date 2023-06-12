@@ -3,6 +3,8 @@ package com.example.heart_field.controller;
 import com.example.heart_field.common.R;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.dto.StatDTO;
+import com.example.heart_field.mapper.ConsultantMapper;
+import com.example.heart_field.mapper.SupervisorMapper;
 import com.example.heart_field.service.ChatService;
 import com.example.heart_field.service.RecordService;
 import com.example.heart_field.tokens.AdminToken;
@@ -25,14 +27,20 @@ public class StatController {
 
     @Autowired
     private ChatService chatService;
+    @Autowired
+    private SupervisorMapper supervisorMapper;
+    @Autowired
+    private ConsultantMapper consultantMapper;
 
 
     @GetMapping("/data-statistics")
     public R<StatDTO> getDataStatistics(){
         Integer todayTotalCounsel = chatService.getTotalCounselToday();
         Integer todayTotalDuration = chatService.getTotalDurationToday();
-        Integer activeCounselCount = chatService.getActiveCounselCount();
-        Integer activeAssistanceCount = chatService.getActiveAssistanceCount();
+
+        Integer activeCounselCount = consultantMapper.selectActiveChatCount();
+        Integer activeAssistanceCount = supervisorMapper.selectActiveChatCount();
+
         List<Integer> weekCounsels = chatService.getWeekCounsels();
         List<Integer> todayCounsels = chatService.getTodayCounsels();
 
