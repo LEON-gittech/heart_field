@@ -232,9 +232,12 @@ public class ChatController {
         queryWrapper.eq(Chat::getId, chatId);
         Chat chat = chatService.getOne(queryWrapper);
         //获取对应 chat 的所有 message
-        LambdaQueryWrapper<Message> queryWrapper1 = new LambdaQueryWrapper<>();
-        queryWrapper1.eq(Message::getChatId, chat.getId());
-        List<Message> messages = messageService.list(queryWrapper1);
+        List<Message> messages = new ArrayList<>();
+        if(chat!=null){
+            LambdaQueryWrapper<Message> queryWrapper1 = new LambdaQueryWrapper<>();
+            queryWrapper1.eq(Message::getChatId, chat.getId());
+            messages = messageService.list(queryWrapper1);
+        }
         //构造 DTO
         ChatDetailDto chatDetailDto = new ChatDetailDto();
         chatDetailDto.setEvaluation(record.getEvaluation());
