@@ -164,20 +164,20 @@ public class ChatController {
                 case "1":{
                     message.setSenderId(chat.getUserB());
                     message.setReceiverId(chat.getUserA());
-                    /*String senderName = consultantService.getById(chat.getUserB()).getName();
+                    String senderName = consultantService.getById(chat.getUserB()).getName();
                     message.setSenderName(senderName);
                     String receiverName = visitorService.getById(chat.getUserA()).getName();
-                    message.setReceiverName(receiverName);*/
+                    message.setReceiverName(receiverName);
                     break;
                 }
                 case "0":{
                     message.setSenderId(chat.getUserA());
                     message.setReceiverId(chat.getUserB());
                     log.info("userA:{},userB:{}",chat.getUserA(),chat.getUserB());
-                    /*String receiverName = consultantService.getById(chat.getUserB()).getName();
+                    String receiverName = consultantService.getById(chat.getUserB()).getName();
                     String senderName = visitorService.getById(chat.getUserA()).getName();
                     message.setSenderName(senderName);
-                    message.setReceiverName(receiverName);*/
+                    message.setReceiverName(receiverName);
                     break;
                 }
             }
@@ -190,19 +190,19 @@ public class ChatController {
                 case "1":{
                     message.setSenderId(chat.getUserA());
                     message.setReceiverId(chat.getUserB());
-                    /*String senderName = consultantService.getById(chat.getUserA()).getName();
+                    String senderName = consultantService.getById(chat.getUserA()).getName();
                     String receiverName = supervisorService.getById(chat.getUserB()).getName();
                     message.setSenderName(senderName);
-                    message.setReceiverName(receiverName);*/
+                    message.setReceiverName(receiverName);
                     break;
                 }
                 case "2":{
                     message.setSenderId(chat.getUserB());
                     message.setReceiverId(chat.getUserA());
-                    /*tring receiverName = consultantService.getById(chat.getUserB()).getName();
-                    String senderName = supervisorService.getById(chat.getUserA()).getName();
+                    String receiverName = consultantService.getById(chat.getUserA()).getName();
+                    String senderName = supervisorService.getById(chat.getUserB()).getName();
                     message.setSenderName(senderName);
-                    message.setReceiverName(receiverName);*/
+                    message.setReceiverName(receiverName);
                     break;
                 }
             }
@@ -219,26 +219,36 @@ public class ChatController {
 
     @GetMapping("/detail")
     public R<ChatDetailDto> getChatDetail(HttpServletRequest request){
-        Integer recordId = Integer.parseInt(request.getParameter("recordId"));
+        //Integer recordId = Integer.parseInt(request.getParameter("recordId"));
+        //传参改为chatId
+        Integer chatId = Integer.parseInt(request.getParameter("chatId"));
         Integer type = Integer.valueOf(request.getParameter("type"));
         //获取 chatId
-        LambdaQueryWrapper<Record> queryWrapper2 = new LambdaQueryWrapper<>();
+        /*LambdaQueryWrapper<Record> queryWrapper2 = new LambdaQueryWrapper<>();
         queryWrapper2.eq(Record::getId, recordId);
         Record record = recordService.getOne(queryWrapper2);
-        Integer chatId = record.getChatId();
+        Integer chatId = record.getChatId();*/
         //获取对应 type,id 的 chat
         LambdaQueryWrapper<Chat> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Chat::getType, type);
         queryWrapper.eq(Chat::getId, chatId);
         Chat chat = chatService.getOne(queryWrapper);
+        if(chat == null)
+            return R.argument_error("会话ID与会话类型不匹配");
         //获取对应 chat 的所有 message
         LambdaQueryWrapper<Message> queryWrapper1 = new LambdaQueryWrapper<>();
         queryWrapper1.eq(Message::getChatId, chat.getId());
         List<Message> messages = messageService.list(queryWrapper1);
         //构造 DTO
+        //如果type=0,查询record获取评论
         ChatDetailDto chatDetailDto = new ChatDetailDto();
-        chatDetailDto.setEvaluation(record.getEvaluation());
-        chatDetailDto.setConsultType(record.getConsultType());
+        if (type == 0) {
+            LambdaQueryWrapper<Record> queryWrapper2 = new LambdaQueryWrapper<>();
+            queryWrapper2.eq(Record::getChatId, chatId);
+            Record record = recordService.getOne(queryWrapper2);
+            chatDetailDto.setEvaluation(record.getEvaluation());
+            chatDetailDto.setConsultType(record.getConsultType());
+        }
         //遍历 messages
         List<ChatDetailDto.Message> messages2 = new ArrayList<>();
         for (Message message : messages) {
