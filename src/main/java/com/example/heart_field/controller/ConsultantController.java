@@ -247,9 +247,6 @@ public class ConsultantController {
      */
     @GetMapping("/{consultantId}/comments")
     public R<CommentsDto> getComments(@PathVariable("consultantId") Integer consultantId, HttpServletRequest httpServletRequest){
-        //权限验证
-        R r = consultantUtil.isConsultantOrAdmin(consultantId);
-        if(r!=null) return r;
         //分页查询
         int page = Integer.parseInt(httpServletRequest.getParameter("page"));
         int pageSize = Integer.parseInt(httpServletRequest.getParameter("pageSize"));
@@ -403,7 +400,7 @@ public class ConsultantController {
         scheduleService.remove(queryWrapper);
         //判断是不是当天，如果是当天的话也要更新咨询师的 isOnline 属性
         Integer day = LocalDate.now().getDayOfMonth();
-        if(day.toString().equals(date)){
+        if(day.equals(date)){
             Consultant consultant1 = consultantService.getById(consultantId);
             consultant1.setIsOnline(0);
             consultantService.updateById(consultant1);
