@@ -236,9 +236,12 @@ public class ChatController {
         if(chat == null)
             return R.argument_error("会话ID与会话类型不匹配");
         //获取对应 chat 的所有 message
-        LambdaQueryWrapper<Message> queryWrapper1 = new LambdaQueryWrapper<>();
-        queryWrapper1.eq(Message::getChatId, chat.getId());
-        List<Message> messages = messageService.list(queryWrapper1);
+        List<Message> messages = new ArrayList<>();
+        if(chat!=null){
+            LambdaQueryWrapper<Message> queryWrapper1 = new LambdaQueryWrapper<>();
+            queryWrapper1.eq(Message::getChatId, chat.getId());
+            messages = messageService.list(queryWrapper1);
+        }
         //构造 DTO
         //如果type=0,查询record获取评论
         ChatDetailDto chatDetailDto = new ChatDetailDto();
