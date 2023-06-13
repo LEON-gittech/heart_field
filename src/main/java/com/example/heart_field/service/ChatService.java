@@ -27,5 +27,7 @@ public interface ChatService extends IService<Chat> {
     ResultInfo createChat(ChatParam chat);
 
     ResultInfo endChat(Integer chatId);
+
+    List<Chat> getNowChat(Integer visitorId);
 }
 

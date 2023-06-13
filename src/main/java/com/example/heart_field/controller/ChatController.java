@@ -2,15 +2,19 @@ package com.example.heart_field.controller;
 
 import com.example.heart_field.common.R;
 import com.example.heart_field.common.result.ResultInfo;
+import com.example.heart_field.dto.ChatDTO;
 import com.example.heart_field.dto.MessageIdDto;
 import com.example.heart_field.entity.Chat;
 import com.example.heart_field.entity.Consultant;
 import com.example.heart_field.entity.Message;
+import com.example.heart_field.entity.User;
+import com.example.heart_field.mapper.VisitorMapper;
 import com.example.heart_field.param.ChatEndParam;
 import com.example.heart_field.param.ChatParam;
 import com.example.heart_field.param.NewMessageParam;
 import com.example.heart_field.service.*;
 import com.example.heart_field.tokens.UserLoginToken;
+import com.example.heart_field.utils.TokenUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import static com.example.heart_field.constant.TypeConstant.COUNSEL_CHAT;
@@ -39,6 +45,8 @@ public class ChatController {
     private VisitorService visitorService;
     @Autowired
     private SupervisorService supervisorService;
+    @Autowired
+    private VisitorMapper visitorMapper;
     /**
      * 更新咨询师正在进行的会话数
      * @param consultantId
@@ -52,6 +60,37 @@ public class ChatController {
         consultant.setCurrentSessionCount(concurrentCount);
         consultantService.updateById(consultant);
         return R.success("更新咨询师正在进行的会话数成功");
+    }
+
+    @GetMapping
+    @UserLoginToken
+    public R getChat(){
+        User u = TokenUtil.getTokenUser();
+        if(!u.getType().equals(0)){
+            return R.error("用户类型错误");
+        }
+        Integer visitorId = u.getUserId();
+        if(visitorMapper.selectById(visitorId)==null||visitorMapper.selectById(visitorId).getIsDisabled()==0){
+            return R.error("用户不存在");
+        }
+        //Integer visitorId = id;
+        List<Chat> chats = chatService.getNowChat(visitorId);
+        List<ChatDTO> chatResults = new ArrayList<ChatDTO>();
+        if(chats.size()==0){
+            return R.success(chatResults);
+        }
+        for(Chat chat : chats){
+            Consultant consultant = consultantService.getById(chat.getUserB());
+            ChatDTO chatResult = ChatDTO.builder()
+                    .chatId(chat.getId())
+                    .startTime(chat.getStartTime().toString())
+                    .consultantId(consultant.getId())
+                    .consultantName(consultant.getName())
+                    .consultantAvatar(consultant.getAvatar())
+                    .build();
+            chatResults.add(chatResult);
+        }
+        return R.success(chatResults);
     }
 
     /**
