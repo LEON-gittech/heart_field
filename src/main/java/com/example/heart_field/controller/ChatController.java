@@ -1,13 +1,12 @@
 package com.example.heart_field.controller;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.heart_field.common.R;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.dto.ChatDTO;
+import com.example.heart_field.dto.ChatDetailDto;
 import com.example.heart_field.dto.MessageIdDto;
-import com.example.heart_field.entity.Chat;
-import com.example.heart_field.entity.Consultant;
-import com.example.heart_field.entity.Message;
-import com.example.heart_field.entity.User;
+import com.example.heart_field.entity.*;
 import com.example.heart_field.mapper.VisitorMapper;
 import com.example.heart_field.param.ChatEndParam;
 import com.example.heart_field.param.ChatParam;
@@ -20,14 +19,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-
-import static com.example.heart_field.constant.TypeConstant.COUNSEL_CHAT;
-import static com.example.heart_field.constant.TypeConstant.HELP_CHAT;
 
 @Slf4j
 @RestController
@@ -36,7 +33,8 @@ import static com.example.heart_field.constant.TypeConstant.HELP_CHAT;
 public class ChatController {
     @Autowired
     private ConsultantService consultantService;
-
+    @Autowired
+    private RecordService recordService;
     @Autowired
     private ChatService chatService;
     @Autowired
@@ -217,9 +215,41 @@ public class ChatController {
         Integer messageId = message.getId();
         messageIdDto.setId(String.valueOf(messageId));
         return R.success(messageIdDto);
-
     }
 
-
-
+    @GetMapping("/detail")
+    public R<ChatDetailDto> getChatDetail(HttpServletRequest request){
+        Integer recordId = Integer.parseInt(request.getParameter("recordId"));
+        Integer type = Integer.valueOf(request.getParameter("type"));
+        //获取 chatId
+        LambdaQueryWrapper<Record> queryWrapper2 = new LambdaQueryWrapper<>();
+        queryWrapper2.eq(Record::getId, recordId);
+        Record record = recordService.getOne(queryWrapper2);
+        Integer chatId = record.getChatId();
+        //获取对应 type,id 的 chat
+        LambdaQueryWrapper<Chat> queryWrapper = new LambdaQueryWrapper<>();
+        queryWrapper.eq(Chat::getType, type);
+        queryWrapper.eq(Chat::getId, chatId);
+        Chat chat = chatService.getOne(queryWrapper);
+        //获取对应 chat 的所有 message
+        LambdaQueryWrapper<Message> queryWrapper1 = new LambdaQueryWrapper<>();
+        queryWrapper1.eq(Message::getChatId, chat.getId());
+        List<Message> messages = messageService.list(queryWrapper1);
+        //构造 DTO
+        ChatDetailDto chatDetailDto = new ChatDetailDto();
+        chatDetailDto.setEvaluation(record.getEvaluation());
+        chatDetailDto.setConsultType(record.getConsultType());
+        //遍历 messages
+        List<ChatDetailDto.Message> messages2 = new ArrayList<>();
+        for (Message message : messages) {
+            ChatDetailDto.Message message1 = new ChatDetailDto.Message();
+            message1.setTime(String.valueOf(message.getSendTime()));
+            message1.setSenderName(message.getSenderName());
+            message1.setType(String.valueOf(message.getType()));
+            message1.setContent(message.getContent());
+            messages2.add(message1);
+        }
+        chatDetailDto.setMessages(messages2);
+        return R.success(chatDetailDto,"获取聊天记录详情成功");
+    }
 }

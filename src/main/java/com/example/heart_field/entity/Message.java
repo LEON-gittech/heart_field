@@ -42,13 +42,13 @@ public class Message {
      * 消息发送者id
      */
     private Integer senderId;
-   // private String senderName;
+    private String senderName;
 
     /**
      * 消息接收者id
      */
     private Integer receiverId;
-    //private String receiverName;
+    private String receiverName;
 
     /**
      * 消息类型，0:文字 1:图片 2:语音 3:表情 4:聊天记录 5:无法识别
