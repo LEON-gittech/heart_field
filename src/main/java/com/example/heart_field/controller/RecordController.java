@@ -47,7 +47,6 @@ public class RecordController {
                                @RequestParam(value = "pageNum", required = false,defaultValue = "1") int pageNum,
                                @RequestParam(value = "fromDate", required = false) String fromDate,
                                @RequestParam(value = "toDate", required = false) String toDate){
-
         List<RecordDTO> resultInfo = recordService.queryRecords(searchValue, pageSize, pageNum, fromDate, toDate);
         int total = resultInfo.size();
         int pages = PageUtil.totalPage(total, pageSize);

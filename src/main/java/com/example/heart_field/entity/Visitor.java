@@ -35,6 +35,7 @@ public class Visitor {
     private String history;
     private String question;
     private Byte gender;//0女1男2未知
+    private Integer age;
     private String openId;
 
 

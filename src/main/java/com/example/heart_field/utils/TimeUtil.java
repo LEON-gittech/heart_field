@@ -18,6 +18,11 @@ public class TimeUtil {
         return LocalDateTime.of(LocalDate.now(), LocalTime.MIN);
     }
 
+    public static LocalDateTime getDayStart(LocalDateTime time) {
+        LocalDate thatDay = time.toLocalDate();
+        return LocalDateTime.of(thatDay, LocalTime.MIN);
+    }
+
     /**
      * 使用localdatetime获取当天24点的值
      *
@@ -27,6 +32,13 @@ public class TimeUtil {
     public static LocalDateTime getDayEnd() {
 
         return LocalDateTime.of(LocalDate.now(), LocalTime.MAX);
+
+    }
+
+    public static LocalDateTime getDayEnd(LocalDateTime time) {
+
+        LocalDate thatDay = time.toLocalDate();
+        return LocalDateTime.of(thatDay, LocalTime.MAX);
 
     }
 

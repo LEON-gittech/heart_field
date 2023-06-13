@@ -156,7 +156,7 @@ CREATE TABLE help (
   FOREIGN KEY (consultant_id) REFERENCES consultant(id),
   FOREIGN KEY (supervisor_id) REFERENCES supervisor(id)
 ) COMMENT='咨询记录表';
-DROP TABLE message;
+
 
 CREATE TABLE message (
   id int auto_increment PRIMARY KEY COMMENT '消息ID',

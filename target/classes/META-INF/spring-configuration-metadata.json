@@ -9,6 +9,11 @@
       "name": "tencent-im",
       "type": "com.example.heart_field.config.CustomProperties",
       "sourceType": "com.example.heart_field.config.CustomProperties"
+    },
+    {
+      "name": "tencent.cos",
+      "type": "com.example.heart_field.config.TencentCOSproperties",
+      "sourceType": "com.example.heart_field.config.TencentCOSproperties"
     }
   ],
   "properties": [
@@ -51,6 +56,31 @@
       "name": "tencent-im.secret-key",
       "type": "java.lang.String",
       "sourceType": "com.example.heart_field.config.CustomProperties"
+    },
+    {
+      "name": "tencent.cos.bucket-addr",
+      "type": "java.lang.String",
+      "sourceType": "com.example.heart_field.config.TencentCOSproperties"
+    },
+    {
+      "name": "tencent.cos.bucket-name",
+      "type": "java.lang.String",
+      "sourceType": "com.example.heart_field.config.TencentCOSproperties"
+    },
+    {
+      "name": "tencent.cos.root-src",
+      "type": "java.lang.String",
+      "sourceType": "com.example.heart_field.config.TencentCOSproperties"
+    },
+    {
+      "name": "tencent.cos.secret-id",
+      "type": "java.lang.String",
+      "sourceType": "com.example.heart_field.config.TencentCOSproperties"
+    },
+    {
+      "name": "tencent.cos.secret-key",
+      "type": "java.lang.String",
+      "sourceType": "com.example.heart_field.config.TencentCOSproperties"
     }
   ],
   "hints": []

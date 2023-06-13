@@ -2,18 +2,14 @@ package com.example.heart_field;
 
 import com.alibaba.fastjson.JSON;
 import com.example.heart_field.dto.WxUserInfo;
-import com.example.heart_field.entity.Chat;
 import com.example.heart_field.entity.Help;
-import com.example.heart_field.entity.Record;
 import com.example.heart_field.mapper.ChatMapper;
-import com.example.heart_field.mapper.RecordMapper;
 import com.example.heart_field.service.ChatService;
 import com.example.heart_field.service.HelpService;
 import com.example.heart_field.service.MsgService;
 import com.example.heart_field.service.RecordService;
 import com.example.heart_field.service.impl.MsgServiceImpl;
 import com.example.heart_field.utils.RedisUtil;
-import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,7 +20,6 @@ import javax.annotation.Resource;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootTest
@@ -47,7 +42,6 @@ class HeartFieldApplicationTests {
         String dateStr = "2021-08-19";
         LocalDateTime date2 = LocalDateTime.parse(dateStr+" 00:00:00", DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         System.out.println(date2);
-
     }
 
     @Test

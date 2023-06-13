@@ -203,6 +203,7 @@ public class VisitorController {
         realVisitor.setEmergencyName(visitor.getEmergencyName());
         realVisitor.setEmergencyPhone(emergencyPhone);
         realVisitor.setGender(visitor.getGender().byteValue());
+        realVisitor.setAge(visitor.getAge());
         boolean result=visitorService.updateById(realVisitor);
         log.info("result:{}", result);
         if(result==false){
