@@ -196,6 +196,16 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         return ResultInfo.success(chat);
     }
 
+    @Override
+    public List<Chat> getNowChat(Integer visitorId) {
+        List<Chat> chats=new LambdaQueryChainWrapper<>(this.baseMapper)
+                .eq(Chat::getType, TypeConstant.COUNSEL_CHAT)
+                .eq(Chat::getUserA,visitorId)
+                .isNull(Chat::getEndTime)
+                .list();
+        return chats;
+    }
+
     /**
      * 求助会话，userA为咨询师，userB为督导
      * @param userA
