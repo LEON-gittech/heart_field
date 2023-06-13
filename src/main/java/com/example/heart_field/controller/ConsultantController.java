@@ -357,13 +357,7 @@ public class ConsultantController {
         for(LinkedHashMap<String, Object> consultant:consultantSchedules){
             //判断该咨询师是否存在
             consultantUtil.isExist((Integer) consultant.get("consultantId"));
-            //判断该咨询师当天是否已经有排班
-            LambdaQueryWrapper<Schedule> queryWrapper = new LambdaQueryWrapper<>();
-            queryWrapper.eq(Schedule::getStaffId,consultant.get("consultantId"));
-            queryWrapper.eq(Schedule::getWorkday,Integer.valueOf(date));
-            if(scheduleService.list(queryWrapper).size()>0){
-                continue;
-            }
+            //添加排班
             Schedule schedule = new Schedule();
             schedule.setStaffType(1);
             schedule.setStaffId((Integer) consultant.get("consultantId"));
