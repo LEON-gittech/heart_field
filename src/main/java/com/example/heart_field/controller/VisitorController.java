@@ -238,7 +238,7 @@ public class VisitorController {
     @GetMapping("/{visitor-id}/psych-archive")
     @UserLoginToken
     public R<VisitorPcychDTO> getPsychArchive(@PathVariable(value = "visitor-id") Integer visitorId) {
-        if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
+        //if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
         log.info("visitorId:{}", visitorId);
         Visitor visitor= visitorService.getById(visitorId);
         if(visitor==null||visitor.getIsDisabled()==1){

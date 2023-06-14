@@ -53,7 +53,7 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
         switch (user.getType()){
             ////type为0是Visitor，1是Consultant，2是Admin，3是Supervisor
             case 3:
-                queryWrapper.eq(Help::getSupervisorId,user.getId());
+                queryWrapper.eq(Help::getSupervisorId,user.getUserId());
                 break;
             case 2:
                 //管理员-全平台会话（即所有的咨询记录列表）
