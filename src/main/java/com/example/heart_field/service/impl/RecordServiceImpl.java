@@ -116,7 +116,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                 return new ArrayList<>();
             case 1:
                 //咨询师-自己负责的咨询会话
-                queryWrapper.eq(Record::getConsultantId, user.getId());
+                queryWrapper.eq(Record::getConsultantId, user.getUserId());
                 break;
             default:
                 //督导/管理员-全平台会话（即所有的咨询记录列表）
