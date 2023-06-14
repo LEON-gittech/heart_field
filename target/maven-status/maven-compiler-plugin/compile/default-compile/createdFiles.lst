@@ -9,7 +9,6 @@ com/example/heart_field/controller/UserApi.class
 com/example/heart_field/utils/TencentCloudImUtil$1ProfileItem.class
 com/example/heart_field/param/AddHelpParam.class
 com/example/heart_field/utils/TencentCloudImUtil.class
-com/example/heart_field/config/TomcatServerCustomer.class
 com/example/heart_field/param/AddHelpParam$AddHelpParamBuilder.class
 com/example/heart_field/service/impl/UserServiceImpl.class
 com/example/heart_field/service/impl/RecordServiceImpl.class

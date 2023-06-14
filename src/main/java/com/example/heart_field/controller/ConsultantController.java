@@ -162,7 +162,7 @@ public class ConsultantController {
             //同步更新Consultant表
             consultantService.updateById(consultant);
             //同步更新User表
-            userUtils.updateUser(consultant);
+            userUtils.updateUser(consultant,null);
         }
         return R.success("修改咨询师详情成功");
     }
@@ -456,7 +456,7 @@ public class ConsultantController {
         consultant.setPassword(body.getPassword());
         consultantService.updateById(consultant);
         //同步更新User表
-        userUtils.updateUser(consultant);
+        userUtils.updateUser(consultant,"password");
         return R.success("更新密码成功");
     }
 
@@ -469,7 +469,7 @@ public class ConsultantController {
         consultant.setPhone((String) body.get("phone"));
         consultantService.updateById(consultant);
         //同步更新User表
-        userUtils.updateUser(consultant);
+        userUtils.updateUser(consultant,null);
         return R.success("更新手机号成功");
     }
 

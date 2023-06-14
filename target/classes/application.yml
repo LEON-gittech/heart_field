@@ -2,12 +2,12 @@ server:
   port: 443
   ssl:
     enabled: true
-    key-store: src/main/resources/ssl/cert.p12
-    key-store-password: leon
-#    key-alias: alias
-#    key-store-type: PKCS12
-#    key-store: classpath:leonwangblog.xyz.pfx
-#    key-store-password: kfelwbj5
+#    key-store: src/main/resources/ssl/cert.p12
+#    key-store-password: leon
+    key-alias: alias
+    key-store-type: PKCS12
+    key-store: classpath:leonwangblog.xyz.pfx
+    key-store-password: kfelwbj5
 #腾讯云COS配置
 tencent:
   cos:

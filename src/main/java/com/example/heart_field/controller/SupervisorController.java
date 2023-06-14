@@ -390,7 +390,7 @@ public class SupervisorController {
             supervisor.setPassword(password);
             supervisorService.updateById(supervisor);
             log.info("supervisor:{}",supervisor);
-            userUtils.updateUser(supervisor);
+            userUtils.updateUser(supervisor,"password");
             return R.success("密码修改成功");
         } else {
             return R.auth_error();
