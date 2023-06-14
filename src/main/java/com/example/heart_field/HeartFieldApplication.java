@@ -27,7 +27,7 @@ public class HeartFieldApplication {
         Connector connector = new Connector("org.apache.coyote.http11.Http11NioProtocol");
         // 捕获http请求，并将其重定向到443端口
         connector.setScheme("http");
-        connector.setPort(80);
+        connector.setPort(8080);
         connector.setSecure(false);
         connector.setRedirectPort(443);
         return connector;

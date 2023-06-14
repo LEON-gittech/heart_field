@@ -460,18 +460,19 @@ public class ConsultantController {
         return R.success("更新密码成功");
     }
 
-//    @PutMapping("/{consultant-id}/phone")
-//    public R<String> updatePhone(@PathVariable("consultant-id") String consultantId,@RequestBody Map body) {
-//        //权限判断
-//        consultantUtil.isConsultantOrAdmin(Integer.valueOf(consultantId));
-//        //更新手机号
-//        Consultant consultant = consultantService.getById(consultantId);
-//        consultant.setPhone((String) body.get("phone"));
-//        consultantService.updateById(consultant);
-//        //同步更新User表
-//        userUtils.updateUser(consultant);
-//        return R.success("更新手机号成功");
-//    }
+    @PutMapping("/{consultant-id}/phone")
+    public R<String> updatePhone(@PathVariable("consultant-id") String consultantId,@RequestBody Map body) {
+        //权限判断
+        consultantUtil.isConsultantOrAdmin(Integer.valueOf(consultantId));
+        //更新手机号
+        Consultant consultant = consultantService.getById(consultantId);
+        consultant.setPhone((String) body.get("phone"));
+        consultantService.updateById(consultant);
+        //同步更新User表
+        userUtils.updateUser(consultant);
+        return R.success("更新手机号成功");
+    }
+
     @GetMapping("/{consultant-id}/online/bindings")
     public R<List<OnlineBinding>> getOnlineBindings(@PathVariable("consultant-id") String consultantId) {
         //权限判断
