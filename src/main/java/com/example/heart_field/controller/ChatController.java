@@ -223,6 +223,7 @@ public class ChatController {
         //传参改为chatId
         Integer chatId = Integer.parseInt(request.getParameter("chatId"));
         Integer type = Integer.valueOf(request.getParameter("type"));
+        log.info("chatId: " + chatId + " type: " + type);
         //获取 chatId
         /*LambdaQueryWrapper<Record> queryWrapper2 = new LambdaQueryWrapper<>();
         queryWrapper2.eq(Record::getId, recordId);
