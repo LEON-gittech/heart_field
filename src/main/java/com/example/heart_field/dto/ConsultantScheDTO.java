@@ -13,4 +13,6 @@ public class ConsultantScheDTO {
     private Integer consultantId;
     private String consultantName;
     private String consultantAvatar;
+    private Integer isValid;
+    private Integer isDisabled;
 }

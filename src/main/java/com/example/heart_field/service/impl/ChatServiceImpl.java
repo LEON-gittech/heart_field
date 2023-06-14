@@ -78,6 +78,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
                 totalCount++;//结束时间在今天
             }
         }
+        log.info("完成今日分时会话统计");
         return totalCount++;
     }
 
@@ -109,6 +110,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
             log.info("todayStart:"+todayStart+",todayEnd:"+todayEnd+",duration"+duration.getSeconds());
             totalDuration += duration.getSeconds();
         }
+        log.info("完成今日咨询总时长统计");
         return totalDuration;
     }
 
@@ -133,6 +135,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
             result.add(todayChats.size());
         }
+        log.info("完成本周的会话统计");
         return result;
     }
 
@@ -150,6 +153,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
             List<Chat> todayChats=chatMapper.getTodayChats(start,end);
             result.add(todayChats.size());
         }
+        log.info("完成今日分时会话统计");
         return result;
 
     }
