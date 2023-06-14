@@ -39,10 +39,14 @@ public class StatController {
         Integer todayTotalDuration = chatService.getTotalDurationToday();
 
         Integer activeCounselCount = consultantMapper.selectActiveChatCount();
+
         Integer activeAssistanceCount = supervisorMapper.selectActiveChatCount();
+//        log.info("完成正在进行的求助会话数统计"+activeAssistanceCount);
 
         List<Integer> weekCounsels = chatService.getWeekCounsels();
+
         List<Integer> todayCounsels = chatService.getTodayCounsels();
+
 
         StatDTO statDTO = StatDTO.builder()
                 .todayTotalCounsel(todayTotalCounsel)

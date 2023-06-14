@@ -17,4 +17,7 @@ public class SupervisorDTO {
 
     private String avatar;
 
+    private Integer isValid;
+    private Integer isDisabled;
+
 }

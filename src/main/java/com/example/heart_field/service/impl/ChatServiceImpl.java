@@ -10,6 +10,8 @@ import com.example.heart_field.entity.*;
 import com.example.heart_field.mapper.*;
 import com.example.heart_field.param.ChatParam;
 import com.example.heart_field.service.ChatService;
+import com.example.heart_field.service.HelpService;
+import com.example.heart_field.service.RecordService;
 import com.example.heart_field.utils.TimeUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +50,12 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
     @Autowired
     private RecordMapper recordMapper;
 
+    @Autowired
+    private RecordService recordService;
+
+    @Autowired
+    private HelpService helpService;
+
 
     /**
      * 今日咨询总数:
@@ -70,6 +78,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
                 totalCount++;//结束时间在今天
             }
         }
+        log.info("完成今日分时会话统计");
         return totalCount++;
     }
 
@@ -101,6 +110,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
             log.info("todayStart:"+todayStart+",todayEnd:"+todayEnd+",duration"+duration.getSeconds());
             totalDuration += duration.getSeconds();
         }
+        log.info("完成今日咨询总时长统计");
         return totalDuration;
     }
 
@@ -125,6 +135,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
 
             result.add(todayChats.size());
         }
+        log.info("完成本周的会话统计");
         return result;
     }
 
@@ -142,6 +153,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
             List<Chat> todayChats=chatMapper.getTodayChats(start,end);
             result.add(todayChats.size());
         }
+        log.info("完成今日分时会话统计");
         return result;
 
     }
@@ -171,7 +183,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
         Duration duration = Duration.between(chat.getStartTime(),chat.getEndTime());
         Long durationSeconds = duration.getSeconds();
         switch (chat.getType()){
-            case 0:
+            case 0://咨询会话
                 Consultant consultant = consultantMapper.selectById(chat.getUserB());
                 if(consultant.getCurStatus()==1){
                     if(consultant.getCurrentSessionCount()-1<consultant.getMaxConcurrent()){
@@ -184,6 +196,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
                 consultant.setCurrentSessionCount(consultant.getCurrentSessionCount()-1);
                 consultant.setHelpNum(newHelpNum);
                 consultantMapper.updateById(consultant);
+                recordService.addRecordByChatId(chat.getId());
                 break;
             case 1:
                 Supervisor supervisor = supervisorMapper.selectById(chat.getUserB());
@@ -191,6 +204,7 @@ public class ChatServiceImpl extends ServiceImpl<ChatMapper, Chat> implements Ch
                 supervisor.setTodayTotalHelpTime((int) (supervisor.getTodayTotalHelpTime()+durationSeconds));
                 supervisor.setConcurrentNum(supervisor.getConcurrentNum()-1);
                 supervisorMapper.updateById(supervisor);
+                helpService.addHelp(chat.getId());
                 break;
         }
         return ResultInfo.success(chat);
