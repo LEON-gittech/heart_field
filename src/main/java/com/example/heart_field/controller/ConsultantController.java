@@ -4,17 +4,18 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.heart_field.common.R;
 import com.example.heart_field.constant.TypeConstant;
-import com.example.heart_field.dto.consultant.ConsultantDto;
-import com.example.heart_field.dto.consultant.ConsultantsDto;
-import com.example.heart_field.dto.user.ExpertiseTag;
-import com.example.heart_field.dto.consultant.PasswordDto;
 import com.example.heart_field.dto.binding.OnlineBinding;
 import com.example.heart_field.dto.binding.SupervisorBindedDto;
+import com.example.heart_field.dto.consultant.ConsultantDto;
+import com.example.heart_field.dto.consultant.ConsultantsDto;
+import com.example.heart_field.dto.consultant.PasswordDto;
+import com.example.heart_field.dto.consultant.PhoneDto;
 import com.example.heart_field.dto.consultant.comment.CommentDto;
 import com.example.heart_field.dto.consultant.comment.CommentsDto;
 import com.example.heart_field.dto.consultant.profile.AnyConsultantProfileDto;
 import com.example.heart_field.dto.consultant.profile.ConsultantProfileDto;
 import com.example.heart_field.dto.consultant.profile.UpdateConsultantProfileDto;
+import com.example.heart_field.dto.user.ExpertiseTag;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.service.*;
 import com.example.heart_field.tokens.AdminOrSupervisorToken;
@@ -137,7 +138,7 @@ public class ConsultantController {
         //权限验证
         R r = consultantUtil.isConsultantOrAdmin(consultantId);
         if(r!=null) return r;
-        //将consultantDto的值复制给consultant
+        //将consultantDto的值复制给consultan
         Consultant consultant = consultantService.getById(updateConsultantProfileDto.getId());
         BeanUtils.copyProperties(updateConsultantProfileDto,consultant,"expertiseTag");
         if(updateConsultantProfileDto.getExpertiseTag()!=null) consultant.setExpertiseTag(objectMapper.writeValueAsString(updateConsultantProfileDto.getExpertiseTag()));
@@ -165,6 +166,37 @@ public class ConsultantController {
             userUtils.updateUser(consultant,null);
         }
         return R.success("修改咨询师详情成功");
+    }
+
+    /**
+     * 更新密码
+     * @return
+     */
+    @PutMapping("/{consultant-id}/password")
+    public R<String> updatePassword(@PathVariable("consultant-id") String consultantId,@Validated @RequestBody PasswordDto body) {
+        //权限判断
+        R r = consultantUtil.isConsultantOrAdmin(Integer.valueOf(consultantId));
+        if(r!=null) return r;
+        //更新密码
+        Consultant consultant = consultantService.getById(consultantId);
+        consultant.setPassword(body.getPassword());
+        consultantService.updateById(consultant);
+        //同步更新User表
+        userUtils.updateUser(consultant,"password");
+        return R.success("更新密码成功");
+    }
+
+    @PutMapping("/{consultant-id}/phone")
+    public R<String> updatePhone(@PathVariable("consultant-id") String consultantId,@Validated @RequestBody PhoneDto body) {
+        //权限判断
+        consultantUtil.isConsultantOrAdmin(Integer.valueOf(consultantId));
+        //更新手机号
+        Consultant consultant = consultantService.getById(consultantId);
+        consultant.setPhone(body.getPhone());
+        consultantService.updateById(consultant);
+        //同步更新User表
+        userUtils.updateUser(consultant,null);
+        return R.success("更新手机号成功");
     }
 
     /**
@@ -439,37 +471,6 @@ public class ConsultantController {
         //更新record
         recordService.updateById(record);
         return R.success("咨询师填写用户评估成功");
-    }
-
-    /**
-     * 更新密码
-     * @return
-     */
-    @PutMapping("/{consultant-id}/password")
-    public R<String> updatePassword(@PathVariable("consultant-id") String consultantId,@Validated @RequestBody PasswordDto body) {
-        //权限判断
-        R r = consultantUtil.isConsultantOrAdmin(Integer.valueOf(consultantId));
-        if(r!=null) return r;
-        //更新密码
-        Consultant consultant = consultantService.getById(consultantId);
-        consultant.setPassword(body.getPassword());
-        consultantService.updateById(consultant);
-        //同步更新User表
-        userUtils.updateUser(consultant,"password");
-        return R.success("更新密码成功");
-    }
-
-    @PutMapping("/{consultant-id}/phone")
-    public R<String> updatePhone(@PathVariable("consultant-id") String consultantId,@RequestBody Map body) {
-        //权限判断
-        consultantUtil.isConsultantOrAdmin(Integer.valueOf(consultantId));
-        //更新手机号
-        Consultant consultant = consultantService.getById(consultantId);
-        consultant.setPhone((String) body.get("phone"));
-        consultantService.updateById(consultant);
-        //同步更新User表
-        userUtils.updateUser(consultant,null);
-        return R.success("更新手机号成功");
     }
 
     @GetMapping("/{consultant-id}/online/bindings")
