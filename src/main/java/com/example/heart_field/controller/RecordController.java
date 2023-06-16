@@ -12,6 +12,7 @@ import com.example.heart_field.tokens.StaffToken;
 import com.example.heart_field.tokens.UserLoginToken;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,6 +45,7 @@ public class RecordController {
                                @RequestParam(value = "toDate", required = false) String toDate){
         List<RecordDTO> resultInfo = recordService.queryRecords(searchValue, pageSize, pageNum, fromDate, toDate);
         int total = resultInfo.size();
+        if(total==0) return R.success(new RecordPage<RecordDTO>(new ArrayList<>(), 0, 0));
         int pages = PageUtil.totalPage(total, pageSize);
         int fromIndex = (pageNum-1)*pageSize;
         int toIndex = pageNum*pageSize>total?total:pageNum*pageSize;

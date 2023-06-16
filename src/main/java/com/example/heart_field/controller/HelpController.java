@@ -54,12 +54,11 @@ public class HelpController {
         return R.success(resPage);
     }
 
-//    @PostMapping("/records/supervisor")
-//    public R addConsultRecord(@RequestBody AddHelpParam param){
-//        ResultInfo resultInfo = helpService.addHelp(param.getChatId());
-//        return resultInfo.isRight()
-//                 ?R.success(resultInfo.getData())
-//                :R.error(resultInfo.getMessage());
-//    }
+    @Deprecated
+    @PostMapping("/records/supervisor")
+    public R addConsultRecord(@RequestBody AddHelpParam param) throws Exception {
+        int id= helpService.addHelp(param.getChatId());
+        return R.success(id);
+    }
 
 }

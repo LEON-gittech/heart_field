@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @author albac0020@gmail.com
@@ -143,9 +144,16 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
             if(consultant==null||visitor==null){
                 continue;
             }
+            //搜索值为空
+            //或者
+                //如果访客姓名满足
+                //或者访客username满足
+                //或者咨询师姓名满足
             if (searchValue == null
-                    || (searchValue != null && (visitor.getName().contains(searchValue) || visitor.getUsername().contains(searchValue)
-                             || consultant.getName().contains(searchValue)))) {
+                    ||
+                    (searchValue != null && (visitor.getName()!=null&&visitor.getName().toLowerCase(Locale.ROOT).contains(searchValue.toLowerCase(Locale.ROOT)))
+                            || (visitor.getUsername()!=null&&visitor.getUsername().toLowerCase(Locale.ROOT).contains(searchValue.toLowerCase(Locale.ROOT)))
+                             || (consultant.getName()!=null&&consultant.getName().toLowerCase(Locale.ROOT).contains(searchValue.toLowerCase(Locale.ROOT))))) {
                 log.info("有符合的记录");
                 RecordDTO recordDTO = RecordDTO.builder()
                         .id(r.getId())
@@ -166,7 +174,6 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                         .consultantCompleted(r.getConsultantCompleted())
                         .visitorCompleted(r.getVisitorCompleted())
 
-
                         .chatId(r.getChatId())
                         .build();
                 recordDTOS.add(recordDTO);
@@ -174,6 +181,9 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
             }
         }
         log.info("recordDTOS:{}", recordDTOS);
+        if(recordDTOS.size()==0){
+            return new ArrayList<>();
+        }
         return recordDTOS;
     }
 

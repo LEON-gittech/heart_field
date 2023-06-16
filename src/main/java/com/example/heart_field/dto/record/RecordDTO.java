@@ -21,7 +21,7 @@ public class RecordDTO {
 
     private Integer consultantId;
     private String consultantName;
-    private String consultantAvatar;
+    private String consultantAvatar=null;
 
     private LocalDateTime startTime;
     private Integer continueTime;//持续时长

@@ -19,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * 根据不同角色返回求助记录
@@ -79,7 +80,9 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
             }
 
             if(searchValue==null ||
-                    (searchValue!=null&&(consultant.getName().contains(searchValue)||supervisor.getName().contains(searchValue)))) {
+                    (searchValue!=null&&
+                            (consultant.getName()!=null&&consultant.getName().toLowerCase(Locale.ROOT).contains(searchValue.toLowerCase(Locale.ROOT)))
+                            ||(supervisor.getName()!=null&&supervisor.getName().toLowerCase(Locale.ROOT).contains(searchValue.toLowerCase(Locale.ROOT))))) {
                 HelpDTO helpDTO = HelpDTO.builder()
                         .id(h.getId())
 
