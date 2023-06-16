@@ -16,6 +16,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 @NoArgsConstructor
 public class VisitorCommentParam {
     private String comment;
-    private Integer score;
+    private Integer rank;
 
 }
