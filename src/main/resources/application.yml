@@ -1,7 +1,7 @@
 server:
-  port: 443
+  port: 80
   ssl:
-#    enabled: true
+    enabled: true
 #    key-store: src/main/resources/ssl/cert.p12
 #    key-store-password: leon
     key-alias: alias

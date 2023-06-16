@@ -2,7 +2,6 @@ package com.example.heart_field.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.example.heart_field.dto.UserLoginDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

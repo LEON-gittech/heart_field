@@ -2,7 +2,7 @@ package com.example.heart_field.dto.consultant.profile;
 
 import com.example.heart_field.annotation.Id;
 import com.example.heart_field.annotation.Name;
-import com.example.heart_field.dto.consultant.ExpertiseTag;
+import com.example.heart_field.dto.user.ExpertiseTag;
 import lombok.Data;
 
 import javax.validation.constraints.Email;

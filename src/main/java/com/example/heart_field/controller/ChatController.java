@@ -3,8 +3,8 @@ package com.example.heart_field.controller;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.heart_field.common.R;
 import com.example.heart_field.common.result.ResultInfo;
-import com.example.heart_field.dto.ChatDTO;
-import com.example.heart_field.dto.ChatDetailDto;
+import com.example.heart_field.dto.chat.ChatDTO;
+import com.example.heart_field.dto.chat.ChatDetailDto;
 import com.example.heart_field.dto.MessageIdDto;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.mapper.VisitorMapper;
@@ -45,6 +45,7 @@ public class ChatController {
     private SupervisorService supervisorService;
     @Autowired
     private VisitorMapper visitorMapper;
+
     /**
      * 更新咨询师正在进行的会话数
      * @param consultantId
@@ -106,7 +107,6 @@ public class ChatController {
         return R.success(concurrentCountDto);
     }
 
-
     @PostMapping
     public R createChat(@RequestBody ChatParam chat){
         log.info("进入新建---");
@@ -125,7 +125,7 @@ public class ChatController {
     public R endChat(@RequestBody ChatEndParam chat){
         ResultInfo resultInfo = chatService.endChat(chat.getChatId());
         return resultInfo.isRight()
-                ? R.success("结束成功")
+                ? R.success(resultInfo.getData())
                 : R.error(resultInfo.getMessage());
     }
 
@@ -143,12 +143,10 @@ public class ChatController {
         if(newMessage.getMessageType()=="4"){
             return R.argument_error("消息类型暂不支持聊天记录");
         }
-        //message.setRelatedChat(0);
         message.setType(Integer.valueOf(newMessage.getMessageType()));
         message.setSendTime(Timestamp.valueOf(LocalDateTime.now()));
         message.setContent(newMessage.getContent());
 
-        //message.setIsDeleted(false);
         //查找chat表，获取两天双方信息
         log.info("chat-------------");
         Chat chat = chatService.getById(newMessage.getChatId());
@@ -219,16 +217,9 @@ public class ChatController {
 
     @GetMapping("/detail")
     public R<ChatDetailDto> getChatDetail(HttpServletRequest request){
-        //Integer recordId = Integer.parseInt(request.getParameter("recordId"));
-        //传参改为chatId
         Integer chatId = Integer.parseInt(request.getParameter("chatId"));
         Integer type = Integer.valueOf(request.getParameter("type"));
-        //获取 chatId
-        /*LambdaQueryWrapper<Record> queryWrapper2 = new LambdaQueryWrapper<>();
-        queryWrapper2.eq(Record::getId, recordId);
-        Record record = recordService.getOne(queryWrapper2);
-        Integer chatId = record.getChatId();*/
-        //获取对应 type,id 的 chat
+        log.info("chatId: " + chatId + " type: " + type);
         LambdaQueryWrapper<Chat> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Chat::getType, type);
         queryWrapper.eq(Chat::getId, chatId);

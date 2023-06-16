@@ -5,9 +5,9 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.TypeConstant;
-import com.example.heart_field.dto.ConsultantScheDTO;
+import com.example.heart_field.dto.schedule.ConsultantScheDTO;
 import com.example.heart_field.dto.ScheduleDTO;
-import com.example.heart_field.dto.SupervisorDTO;
+import com.example.heart_field.dto.supervisor.SupervisorDTO;
 import com.example.heart_field.entity.Consultant;
 import com.example.heart_field.entity.Schedule;
 import com.example.heart_field.entity.Supervisor;
@@ -70,6 +70,8 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                         .consultantId(consultant.getId())
                         .consultantName(consultant.getName())
                         .consultantAvatar(consultant.getAvatar())
+                        .isDisabled(consultant.getIsDisabled())
+                        .isValid(consultant.getIsValid())
                         .build();
                 return consultantDTO;
 
@@ -100,6 +102,8 @@ public class ScheduleServiceImpl extends ServiceImpl<ScheduleMapper, Schedule> i
                         .id(supervisor.getId())
                         .supervisorName(supervisor.getName())
                         .avatar(supervisor.getAvatar())
+                        .isValid(supervisor.getIsValid())
+                        .isDisabled(supervisor.getIsDisabled())
                         .build();
                 return supervisorDTO;
             }).collect(Collectors.toList());

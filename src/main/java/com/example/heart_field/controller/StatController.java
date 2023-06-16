@@ -37,10 +37,8 @@ public class StatController {
     public R<StatDTO> getDataStatistics(){
         Integer todayTotalCounsel = chatService.getTotalCounselToday();
         Integer todayTotalDuration = chatService.getTotalDurationToday();
-
         Integer activeCounselCount = consultantMapper.selectActiveChatCount();
         Integer activeAssistanceCount = supervisorMapper.selectActiveChatCount();
-
         List<Integer> weekCounsels = chatService.getWeekCounsels();
         List<Integer> todayCounsels = chatService.getTodayCounsels();
 

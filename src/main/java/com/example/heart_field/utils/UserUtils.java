@@ -69,22 +69,22 @@ public class UserUtils {
      * @return
      * @param <T>
      */
-    public <T> User newUser(T object){
+    public <T> User newUser(T object, String type){
         User user = new User();
         Integer id = null;
         String password = null;
         String phone =null;
+        Consultant consultant = new Consultant();
+        Supervisor supervisor = new Supervisor();
+        Admin admin = new Admin();
         //咨询师
         if (object.getClass().equals(Consultant.class)) {
             LambdaQueryWrapper<Consultant> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(Consultant::getPhone, ((Consultant) object).getPhone());
-            Consultant consultant = consultantService.getOne(lambdaQueryWrapper);
+            consultant = consultantService.getOne(lambdaQueryWrapper);
             id = consultant.getId();
             phone = consultant.getPhone();
-            password = bCryptPasswordEncoder.encode(consultant.getPassword()) ;
-            //更新角色表中password为加密后的密码
-            consultant.setPassword(password);
-            consultantService.updateById(consultant);
+            password = consultant.getPassword() ;
             user.setType(1);
         }
         //督导
@@ -92,26 +92,20 @@ public class UserUtils {
             log.info("----进入判断-----");
             LambdaQueryWrapper<Supervisor> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(Supervisor::getPhone, ((Supervisor) object).getPhone());
-            Supervisor supervisor = supervisorService.getOne(lambdaQueryWrapper);
+            supervisor = supervisorService.getOne(lambdaQueryWrapper);
             id = supervisor.getId();
             phone = supervisor.getPhone();
-            password = bCryptPasswordEncoder.encode(supervisor.getPassword()) ;
-            //更新角色表中password为加密后的密码
-            supervisor.setPassword(password);
-            supervisorService.updateById(supervisor);
+            password = supervisor.getPassword() ;
             user.setType(3);
         }
         //管理员
         else if (object.getClass().equals(Admin.class)) {
             LambdaQueryWrapper<Admin> lambdaQueryWrapper = new LambdaQueryWrapper<>();
             lambdaQueryWrapper.eq(Admin::getPhone, ((Admin) object).getPhone());
-            Admin admin = adminService.getOne(lambdaQueryWrapper);
+            admin = adminService.getOne(lambdaQueryWrapper);
             id = admin.getId();
             phone = admin.getPhone();
-            password = bCryptPasswordEncoder.encode(admin.getPassword()) ;
-            //更新角色表中password为加密后的密码
-            admin.setPassword(password);
-            adminService.updateById(admin);
+            password = admin.getPassword() ;
             user.setType(2);
         }
         //访客
@@ -126,6 +120,22 @@ public class UserUtils {
         }
         user.setUserId(id);
         user.setPhone(phone);
+        //如果type为password，则更新密码
+        if(type!=null&&type.equals("password")) {
+            password=bCryptPasswordEncoder.encode(password);
+            if(object.getClass().equals(Consultant.class)){
+                consultant.setPassword(password);
+                consultantService.updateById(consultant);
+            }
+            else if(object.getClass().equals(Supervisor.class)){
+                supervisor.setPassword(password);
+                supervisorService.updateById(supervisor);
+            }
+            else if(object.getClass().equals(Admin.class)){
+                admin.setPassword(password);
+                adminService.updateById(admin);
+            }
+        }
         user.setPassword(password);
         log.info("同步visitor，userid为：{}"+user.getId());
         log.info("phone为:{}",user.getPhone());
@@ -135,13 +145,13 @@ public class UserUtils {
     }
 
     public <T> User saveUser(T object){
-        User user = newUser(object);
+        User user = newUser(object,"password");
         userService.save(user);
         return user;
     }
 
-    public <T> User updateUser(T object){
-        User user = newUser(object);
+    public <T> User updateUser(T object,String type){
+        User user = newUser(object,type);
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getPhone, user.getPhone());
         userService.update(user,queryWrapper);

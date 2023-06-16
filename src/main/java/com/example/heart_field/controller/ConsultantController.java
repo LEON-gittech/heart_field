@@ -6,10 +6,10 @@ import com.example.heart_field.common.R;
 import com.example.heart_field.constant.TypeConstant;
 import com.example.heart_field.dto.consultant.ConsultantDto;
 import com.example.heart_field.dto.consultant.ConsultantsDto;
-import com.example.heart_field.dto.consultant.ExpertiseTag;
+import com.example.heart_field.dto.user.ExpertiseTag;
 import com.example.heart_field.dto.consultant.PasswordDto;
-import com.example.heart_field.dto.consultant.binding.OnlineBinding;
-import com.example.heart_field.dto.consultant.binding.SupervisorBindedDto;
+import com.example.heart_field.dto.binding.OnlineBinding;
+import com.example.heart_field.dto.binding.SupervisorBindedDto;
 import com.example.heart_field.dto.consultant.comment.CommentDto;
 import com.example.heart_field.dto.consultant.comment.CommentsDto;
 import com.example.heart_field.dto.consultant.profile.AnyConsultantProfileDto;
@@ -89,7 +89,7 @@ public class ConsultantController {
         List<Consultant> consultants = consultantService.getConsultantsWrapper(searchValue,sort,sortType,page,pageSize,consultantsDto);
         //DTO 转换
         List<ConsultantDto> consultantDtos = new ArrayList<>();
-        //对consultans进行批处理
+        //对consultants进行批处理
         for(Consultant consultant:consultants){
             consultantDtos.add(consultant.convert2ConsultantDto(consultantService));
         }
@@ -162,7 +162,7 @@ public class ConsultantController {
             //同步更新Consultant表
             consultantService.updateById(consultant);
             //同步更新User表
-            userUtils.updateUser(consultant);
+            userUtils.updateUser(consultant,null);
         }
         return R.success("修改咨询师详情成功");
     }
@@ -240,14 +240,13 @@ public class ConsultantController {
     }
 
     /**
-     * 获取咨询师的评价列表
+     * 分页查询咨询师的评价列表
      * @param consultantId
      * @param httpServletRequest
      * @return
      */
     @GetMapping("/{consultantId}/comments")
     public R<CommentsDto> getComments(@PathVariable("consultantId") Integer consultantId, HttpServletRequest httpServletRequest){
-        //分页查询
         int page = Integer.parseInt(httpServletRequest.getParameter("page"));
         int pageSize = Integer.parseInt(httpServletRequest.getParameter("pageSize"));
         CommentsDto commentsDto = new CommentsDto();
@@ -304,7 +303,7 @@ public class ConsultantController {
         consultantUtil.isExist(consultantId);
         //更新权限
         Consultant consultant = consultantService.getById(consultantId);
-            //权限取反
+        //权限取反
         consultant.setIsDisabled(consultant.getIsDisabled()==1?0:1);
         consultantService.updateById(consultant);
         return R.success("更新咨询师权限成功");
@@ -456,22 +455,23 @@ public class ConsultantController {
         consultant.setPassword(body.getPassword());
         consultantService.updateById(consultant);
         //同步更新User表
-        userUtils.updateUser(consultant);
+        userUtils.updateUser(consultant,"password");
         return R.success("更新密码成功");
     }
 
-//    @PutMapping("/{consultant-id}/phone")
-//    public R<String> updatePhone(@PathVariable("consultant-id") String consultantId,@RequestBody Map body) {
-//        //权限判断
-//        consultantUtil.isConsultantOrAdmin(Integer.valueOf(consultantId));
-//        //更新手机号
-//        Consultant consultant = consultantService.getById(consultantId);
-//        consultant.setPhone((String) body.get("phone"));
-//        consultantService.updateById(consultant);
-//        //同步更新User表
-//        userUtils.updateUser(consultant);
-//        return R.success("更新手机号成功");
-//    }
+    @PutMapping("/{consultant-id}/phone")
+    public R<String> updatePhone(@PathVariable("consultant-id") String consultantId,@RequestBody Map body) {
+        //权限判断
+        consultantUtil.isConsultantOrAdmin(Integer.valueOf(consultantId));
+        //更新手机号
+        Consultant consultant = consultantService.getById(consultantId);
+        consultant.setPhone((String) body.get("phone"));
+        consultantService.updateById(consultant);
+        //同步更新User表
+        userUtils.updateUser(consultant,null);
+        return R.success("更新手机号成功");
+    }
+
     @GetMapping("/{consultant-id}/online/bindings")
     public R<List<OnlineBinding>> getOnlineBindings(@PathVariable("consultant-id") String consultantId) {
         //权限判断
