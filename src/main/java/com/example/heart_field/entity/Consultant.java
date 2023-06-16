@@ -7,7 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.example.heart_field.annotation.Password;
 import com.example.heart_field.annotation.Phone;
 import com.example.heart_field.dto.consultant.ConsultantDto;
-import com.example.heart_field.dto.consultant.ExpertiseTag;
+import com.example.heart_field.dto.user.ExpertiseTag;
 import com.example.heart_field.service.ConsultantService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;

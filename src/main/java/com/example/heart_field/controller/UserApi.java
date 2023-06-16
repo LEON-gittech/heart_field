@@ -3,7 +3,7 @@ package com.example.heart_field.controller;
 import com.alibaba.fastjson.JSONObject;
 import com.example.heart_field.common.R;
 import com.example.heart_field.common.result.ResultInfo;
-import com.example.heart_field.dto.UserLoginDTO;
+import com.example.heart_field.dto.user.UserLoginDTO;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.mapper.AdminMapper;
 import com.example.heart_field.mapper.ConsultantMapper;
@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
@@ -33,55 +32,45 @@ import java.util.List;
 @Slf4j
 public class UserApi {
     @Autowired
-    UserService userService;
+    private UserService userService;
     @Autowired
-    TokenService tokenService;
+    private TokenService tokenService;
     @Autowired
-    UserUtils userUtils;
+    private UserUtils userUtils;
     @Autowired
     private AdminMapper adminMapper;
-
     @Autowired
     private VisitorMapper visitorMapper;
     @Autowired
     private TencentCloudImUtil tencentCloudImUtil;
-
     @Autowired
     AdminService adminService;
-
     @Autowired
     private TencentCOSUtils tencentCOSUtils;
-
     @Autowired
-    SupervisorService supervisorService;
-
+    private ConsultantMapper consultantMapper;
     @Autowired
-    ConsultantService consultantService;
-    @Autowired
-    ConsultantMapper consultantMapper;
-    @Autowired
-    SupervisorMapper supervisorMapper;
-
-    @Autowired
-    private VisitorService visitorService;
-
+    private SupervisorMapper supervisorMapper;
     @Resource
     private BCryptPasswordEncoder bCryptPasswordEncoder;  //注入bcryct加密
 
 
+    /**
+     * 登录时不做手机号码格式校验
+     * @param loginParam
+     * @return
+     */
     @PostMapping("/backend/login")
     public R<UserLoginDTO> userLogin(@RequestBody UserLoginParam loginParam){
-//        BaseResult checkResult = loginParam.checkLoginParam();
-//        if(!checkResult.isRight()){
-//            return R.login_error("手机号或密码格式错误");
-//        }
         ResultInfo<UserLoginDTO> loginInfo = userService.login(loginParam);
         return loginInfo.isRight()
                 ? R.success(loginInfo.getData())
                 : R.login_error("用户不存在或密码错误");
     }
 
-    // 登录
+    /*
+    测试登录
+     */
     @Deprecated
     @GetMapping("/login")
     public Object login(@RequestBody User user, HttpServletResponse response) {
@@ -96,11 +85,9 @@ public class UserApi {
         }
         String token = tokenService.getToken(user_r);
         jsonObject.put("token", token);
-
         Cookie cookie = new Cookie("token", token);
         cookie.setPath("/");
         response.addCookie(cookie);
-
         return jsonObject;
     }
 
@@ -111,6 +98,7 @@ public class UserApi {
      * @date 2019年5月27日 下午5:45:19
      * @return String 返回类型
      */
+    @Deprecated
     @UserLoginToken
     @GetMapping("/getMessage")
     public String getMessage() {
@@ -124,7 +112,7 @@ public class UserApi {
     @UserLoginToken
     @PostMapping("/avatar")
     public R<String> uploadAvatar(@RequestBody MultipartFile image) throws Exception {
-        // 首先校验图片格式
+        // 校验图片格式
         List<String> imageType = Lists.newArrayList("jpg","jpeg", "png", "bmp", "gif");
         // 获取文件名，带后缀
         String originalFilename = image.getOriginalFilename();
@@ -228,7 +216,5 @@ public class UserApi {
         }else{
             return R.argument_error("图片格式错误");
         }
-
     }
-
 }

@@ -1,6 +1,7 @@
 package com.example.heart_field.dto;
 
-import com.example.heart_field.dto.consultant.ConsultantDto;
+import com.example.heart_field.dto.schedule.ConsultantScheDTO;
+import com.example.heart_field.dto.supervisor.SupervisorDTO;
 import lombok.Builder;
 import lombok.Data;
 

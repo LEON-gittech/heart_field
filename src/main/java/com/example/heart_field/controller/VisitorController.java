@@ -2,16 +2,14 @@ package com.example.heart_field.controller;
 
 import cn.hutool.core.util.PageUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
-import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.RegexPattern;
-import com.example.heart_field.dto.VisitorPcychDTO;
-import com.example.heart_field.dto.WxLoginDTO;
-import com.example.heart_field.dto.consultant.record.RecordDTO;
-import com.example.heart_field.dto.consultant.record.RecordListDTO;
-import com.example.heart_field.dto.consultant.record.RecordPage;
+import com.example.heart_field.dto.visitor.VisitorPcychDTO;
+import com.example.heart_field.dto.visitor.WxLoginDTO;
+import com.example.heart_field.dto.record.RecordDTO;
+import com.example.heart_field.dto.record.RecordListDTO;
+import com.example.heart_field.dto.record.RecordPage;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.mapper.*;
 import com.example.heart_field.param.VisitorPcychParam;
@@ -29,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -46,25 +43,16 @@ import java.util.stream.Collectors;
 public class VisitorController {
     @Autowired
     private VisitorService visitorService;
-
     @Autowired
     private RecordService recordService;
-
-    @Autowired
-    private UserMapper userMapper;
-
     @Autowired
     private VisitorMapper visitorMapper;
-
     @Autowired
     private ConsultantMapper consultantMapper;
-
     @Autowired
     private SupervisorMapper supervisorMapper;
-
     @Autowired
     private AdminMapper adminMapper;
-
     @Autowired
     private TencentCloudImUtil tencentCloudImUtil;
 
@@ -171,7 +159,6 @@ public class VisitorController {
 
     }
 
-
     /**
      * 用于
      *  -微信小程序端：可以自己的修改昵称、真实姓名、紧急联系人、电话号码
@@ -184,7 +171,6 @@ public class VisitorController {
     @UserLoginToken
     public R updateVisitorProfile(@PathVariable(value = "visitor-id") Integer visitorId,
                                   @RequestBody VisitorUpdateParam visitor) {
-        //if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
         Visitor realVisitor = visitorMapper.selectById(visitorId);
         log.info("checkVisitor:{}", realVisitor);
         if(realVisitor==null||realVisitor.getIsDisabled()==1){
@@ -217,11 +203,6 @@ public class VisitorController {
             if(!isSuccess){
                 return R.error("腾讯IM更新账号失败");
             }
-
-//            User user = userMapper.selectOne(new QueryWrapper<User>().eq("type", 0).eq("user_id",visitorId));
-//            log.info("user:{}", user);
-//            user.setPhone(newPhone);
-//            userMapper.updateById(user);
             return R.success("更新成功");
         }
 
@@ -238,7 +219,6 @@ public class VisitorController {
     @GetMapping("/{visitor-id}/psych-archive")
     @UserLoginToken
     public R<VisitorPcychDTO> getPsychArchive(@PathVariable(value = "visitor-id") Integer visitorId) {
-        //if(!UserUtils.checkSelfOrAdmin(visitorId)) return R.auth_error();
         log.info("visitorId:{}", visitorId);
         Visitor visitor= visitorService.getById(visitorId);
         if(visitor==null||visitor.getIsDisabled()==1){
@@ -292,7 +272,6 @@ public class VisitorController {
                 : R.error("更新失败");
     }
 
-
     @GetMapping("/{visitor-id}/records")
     @UserLoginToken
     public R getRecords(@PathVariable(value = "visitor-id") Integer visitorId,
@@ -313,7 +292,6 @@ public class VisitorController {
             log.info("no records found");
             return R.success(new RecordPage<RecordDTO>(new ArrayList<RecordDTO>(), pages, total));
         }
-
         if(pageNum>pages){
             return R.success(new RecordPage<RecordDTO>(new ArrayList<RecordDTO>(), pages, total));
         }
@@ -350,5 +328,4 @@ public class VisitorController {
         R res=visitorService.testLogin();
         return res;
     }
-
 }

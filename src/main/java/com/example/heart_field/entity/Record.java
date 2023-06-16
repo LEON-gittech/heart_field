@@ -4,13 +4,9 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.example.heart_field.dto.consultant.record.RecordListDTO;
-import com.example.heart_field.mapper.ConsultantMapper;
-import com.example.heart_field.mapper.SupervisorMapper;
-import com.example.heart_field.mapper.VisitorMapper;
+import com.example.heart_field.dto.record.RecordListDTO;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 

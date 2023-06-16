@@ -1,13 +1,10 @@
 package com.example.heart_field.controller;
 
 import cn.hutool.core.util.PageUtil;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
 import com.example.heart_field.common.result.ResultInfo;
-import com.example.heart_field.dto.HelpDTO;
-import com.example.heart_field.dto.consultant.record.RecordDTO;
-import com.example.heart_field.dto.consultant.record.RecordListDTO;
-import com.example.heart_field.dto.consultant.record.RecordPage;
+import com.example.heart_field.dto.record.RecordDTO;
+import com.example.heart_field.dto.record.RecordPage;
 import com.example.heart_field.param.AddRecordParam;
 import com.example.heart_field.param.VisitorCommentParam;
 import com.example.heart_field.service.RecordService;
@@ -16,9 +13,6 @@ import com.example.heart_field.tokens.UserLoginToken;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +24,7 @@ import java.util.List;
 @RestController
 @UserLoginToken
 public class RecordController {
+
     @Autowired
     private RecordService recordService;
 
@@ -60,14 +55,17 @@ public class RecordController {
         return R.success(resPage);
     }
 
-    @UserLoginToken
-    @PostMapping("/records/consult")
-    public R addConsultRecord(@RequestBody AddRecordParam param){
-        ResultInfo<String> resultInfo = recordService.addRecordByChatId(param.getChatId());
-        return resultInfo.isRight()
-                 ?R.success(resultInfo.getData())
-                 :R.error(resultInfo.getMessage());
-    }
+//    /*
+//        根据chatId添加咨询记录
+//     */
+//    @UserLoginToken
+//    @PostMapping("/records/consult")
+//    public R addConsultRecord(@RequestBody AddRecordParam param){
+//        ResultInfo<String> resultInfo = recordService.addRecordByChatId(param.getChatId());
+//        return resultInfo.isRight()
+//                 ?R.success(resultInfo.getData())
+//                 :R.error(resultInfo.getMessage());
+//    }
 
     /**
      * 访客评价咨询师
