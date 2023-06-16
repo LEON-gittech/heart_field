@@ -2,7 +2,7 @@ package com.example.heart_field.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.heart_field.dto.consultant.ConsultantsDto;
-import com.example.heart_field.dto.consultant.binding.SupervisorBinding;
+import com.example.heart_field.dto.binding.SupervisorBinding;
 import com.example.heart_field.dto.consultant.comment.CommentDto;
 import com.example.heart_field.dto.consultant.comment.CommentsDto;
 import com.example.heart_field.entity.Consultant;

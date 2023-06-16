@@ -5,12 +5,11 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.TypeConstant;
-import com.example.heart_field.dto.consultant.record.RecordDTO;
-import com.example.heart_field.dto.consultant.record.RecordListDTO;
+import com.example.heart_field.dto.record.RecordDTO;
+import com.example.heart_field.dto.record.RecordListDTO;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.entity.Record;
 import com.example.heart_field.mapper.*;
-import com.example.heart_field.service.ChatService;
 import com.example.heart_field.service.RecordService;
 import com.example.heart_field.utils.TokenUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -22,6 +21,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @author albac0020@gmail.com
@@ -144,9 +144,16 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
             if(consultant==null||visitor==null){
                 continue;
             }
+            //搜索值为空
+            //或者
+                //如果访客姓名满足
+                //或者访客username满足
+                //或者咨询师姓名满足
             if (searchValue == null
-                    || (searchValue != null && (visitor.getName().contains(searchValue) || visitor.getUsername().contains(searchValue)
-                             || consultant.getName().contains(searchValue)))) {
+                    ||
+                    (searchValue != null && (visitor.getName()!=null&&visitor.getName().toLowerCase(Locale.ROOT).contains(searchValue.toLowerCase(Locale.ROOT)))
+                            || (visitor.getUsername()!=null&&visitor.getUsername().toLowerCase(Locale.ROOT).contains(searchValue.toLowerCase(Locale.ROOT)))
+                             || (consultant.getName()!=null&&consultant.getName().toLowerCase(Locale.ROOT).contains(searchValue.toLowerCase(Locale.ROOT))))) {
                 log.info("有符合的记录");
                 RecordDTO recordDTO = RecordDTO.builder()
                         .id(r.getId())
@@ -167,7 +174,6 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                         .consultantCompleted(r.getConsultantCompleted())
                         .visitorCompleted(r.getVisitorCompleted())
 
-
                         .chatId(r.getChatId())
                         .build();
                 recordDTOS.add(recordDTO);
@@ -175,6 +181,9 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
             }
         }
         log.info("recordDTOS:{}", recordDTOS);
+        if(recordDTOS.size()==0){
+            return new ArrayList<>();
+        }
         return recordDTOS;
     }
 
@@ -184,7 +193,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
      * @return
      */
     @Override
-    public ResultInfo addRecordByChatId(Integer chatId) {
+    public Integer addRecordByChatId(Integer chatId) throws Exception{
         LambdaQueryWrapper<Record> queryWrapper= Wrappers.lambdaQuery();
         queryWrapper.eq(Record::getChatId,chatId);
         /**
@@ -192,17 +201,17 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
          */
         int count=this.baseMapper.selectCount(queryWrapper);
         if(count>0){
-            return ResultInfo.error("该chat已创建过record,id:"+this.baseMapper.selectOne(queryWrapper).getId());
+           throw new Exception("该chat已创建过record,id:"+chatId);
         }
         /**
          * 查chat是否存在,是否是咨询类型
          */
         Chat chat = chatMapper.selectById(chatId);
         if(chat==null||chat.getType()!=TypeConstant.COUNSEL_CHAT){
-            return ResultInfo.error("该chat不存在,id:"+chatId);
+            throw new Exception("该chat不存在,id:"+chatId);
         }
         if(chat.getEndTime()==null){
-            return ResultInfo.error("该chat还未结束,id:"+chatId);
+            throw new Exception("该chat还未结束,id:"+chatId);
         }
         /**
          * 根据chat查咨询师和访客
@@ -216,12 +225,12 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
          */
         Visitor visitor = visitorMapper.selectById(chat.getUserA());
         if(visitor==null){
-            return ResultInfo.error("该chat的访客不存在,id:"+chat.getUserA());
+            throw new Exception("该chat的访客不存在,id:"+chat.getUserA());
         }//即使封禁也正常返回
 
         Consultant consultant = consultantMapper.selectById(chat.getUserB());
         if(consultant==null){
-            return ResultInfo.error("该chat的咨询师不存在,id:"+chat.getUserB());
+            throw new Exception("该chat的咨询师不存在,id:"+chat.getUserB());
         }//即使封禁也正常返回
 
         Duration duration = Duration.between(chat.getStartTime(), chat.getEndTime());
@@ -236,7 +245,7 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
                 .duration((int) duration.getSeconds())
                 .build();
         this.baseMapper.insert(record);
-        return ResultInfo.success(record);
+        return record.getId();
 
     }
 

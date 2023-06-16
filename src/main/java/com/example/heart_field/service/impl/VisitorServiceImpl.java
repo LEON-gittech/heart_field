@@ -7,12 +7,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.R;
-import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.TypeConstant;
-import com.example.heart_field.dto.WxLoginDTO;
-import com.example.heart_field.dto.WxUserInfo;
-import com.example.heart_field.entity.Admin;
-import com.example.heart_field.entity.Consultant;
+import com.example.heart_field.dto.visitor.WxLoginDTO;
+import com.example.heart_field.dto.visitor.WxUserInfo;
 import com.example.heart_field.entity.User;
 import com.example.heart_field.entity.Visitor;
 import com.example.heart_field.mapper.UserMapper;
@@ -21,7 +18,6 @@ import com.example.heart_field.param.WxLoginParam;
 import com.example.heart_field.service.VisitorService;
 import com.example.heart_field.tokens.TokenService;
 import com.example.heart_field.utils.TencentCloudImUtil;
-import com.example.heart_field.utils.TokenUtil;
 import com.example.heart_field.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -211,12 +207,12 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
             Visitor visitor = baseMapper.selectOne(query);
             if(visitor != null){//用户已经存在
                 log.info("此次登陆为fastLogin");
-                //更新用户信息
-                visitor.setOpenId(openId);
-                visitor.setUsername(wxUserInfo.getNickName());
-                visitor.setAvatar(wxUserInfo.getAvatarUrl());
-                visitor.setGender(Byte.parseByte(wxUserInfo.getGender()));
-                baseMapper.updateById(visitor);
+//                //更新用户信息
+//                visitor.setOpenId(openId);
+//                visitor.setUsername(wxUserInfo.getNickName());
+//                visitor.setAvatar(wxUserInfo.getAvatarUrl());
+//                visitor.setGender(Byte.parseByte(wxUserInfo.getGender()));
+//                baseMapper.updateById(visitor);
 
                 //获取token
                 LambdaQueryWrapper<User> queryWrapper= Wrappers.lambdaQuery();
@@ -225,21 +221,8 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
                 String token = tokenService.getToken(user);
                 log.info("token为：{}"+token);
 
-                //获取im相关信息，更新im信息
+//                //获取im相关信息，更新im信息
                 String identifier = user.getType().toString()+"_"+user.getUserId().toString();
-                String sex = null;
-                switch (visitor.getGender()){
-                    case 0:
-                        sex = "女";
-                        break;
-                    case 1:
-                        sex = "男";
-                        break;
-                    default:
-                        break;
-                }
-                tencentCloudImUtil.updateAccount(identifier, visitor.getUsername(), visitor.getAvatar(),sex);
-
                 WxLoginDTO res=WxLoginDTO.builder()
                         .accessToken(token)
                         .fstLogin(true)

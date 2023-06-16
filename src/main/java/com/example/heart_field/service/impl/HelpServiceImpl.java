@@ -6,9 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.constant.TypeConstant;
 import com.example.heart_field.dto.HelpDTO;
-import com.example.heart_field.dto.consultant.record.RecordDTO;
 import com.example.heart_field.entity.*;
-import com.example.heart_field.entity.Record;
 import com.example.heart_field.mapper.*;
 import com.example.heart_field.service.HelpService;
 import com.example.heart_field.utils.TokenUtil;
@@ -21,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * 根据不同角色返回求助记录
@@ -81,7 +80,9 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
             }
 
             if(searchValue==null ||
-                    (searchValue!=null&&(consultant.getName().contains(searchValue)||supervisor.getName().contains(searchValue)))) {
+                    (searchValue!=null&&
+                            (consultant.getName()!=null&&consultant.getName().toLowerCase(Locale.ROOT).contains(searchValue.toLowerCase(Locale.ROOT)))
+                            ||(supervisor.getName()!=null&&supervisor.getName().toLowerCase(Locale.ROOT).contains(searchValue.toLowerCase(Locale.ROOT))))) {
                 HelpDTO helpDTO = HelpDTO.builder()
                         .id(h.getId())
 
@@ -105,7 +106,7 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
     }
 
     @Override
-    public ResultInfo addHelp(Integer chatId) {
+    public Integer addHelp(Integer chatId)throws Exception {
         LambdaQueryWrapper<Help> queryWrapper= Wrappers.lambdaQuery();
         queryWrapper.eq(Help::getChatId,chatId);
         /**
@@ -113,14 +114,14 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
          */
         int count=this.baseMapper.selectCount(queryWrapper);
         if(count>0){
-            return ResultInfo.error("该chat已创建过help,id:"+this.baseMapper.selectOne(queryWrapper).getId());
+            throw new Exception("该chat已创建过help,id:"+this.baseMapper.selectOne(queryWrapper).getId());
         }
         /**
          * 查chat是否存在,是否是求助类型
          */
         Chat chat = chatMapper.selectById(chatId);
         if(chat==null||!chat.getType().equals( TypeConstant.HELP_CHAT)){
-            return ResultInfo.error("该chat不存在,id:"+chatId);
+            throw new Exception("该chat不存在,id:"+chatId);
         }
         /**
          * 根据chat查咨询师和督导
@@ -129,12 +130,12 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
          */
         Consultant consultant = consultantMapper.selectById(chat.getUserA());
         if(consultant==null){
-            return ResultInfo.error("该chat的咨询师不存在,id:"+chat.getUserA());
+            throw new Exception("该chat的咨询师不存在,id:"+chat.getUserA());
         }//封禁也返回
 
         Supervisor supervisor = supervisorMapper.selectById(chat.getUserB());
         if(supervisor==null){
-            return ResultInfo.error("该chat的督导不存在,id:"+chat.getUserB());
+            throw new Exception("该chat的督导不存在,id:"+chat.getUserB());
         }//封禁也返回
 
 
@@ -152,7 +153,7 @@ public class HelpServiceImpl extends ServiceImpl<HelpMapper, Help> implements He
                 .duration((int) duration.getSeconds())
                 .build();
         this.baseMapper.insert(help);
-        return ResultInfo.success(help.getId());
+        return help.getId();
     }
 }
 

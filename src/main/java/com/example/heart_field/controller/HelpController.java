@@ -1,22 +1,17 @@
 package com.example.heart_field.controller;
 
 import cn.hutool.core.util.PageUtil;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.example.heart_field.common.R;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.dto.HelpDTO;
-import com.example.heart_field.dto.consultant.record.RecordDTO;
-import com.example.heart_field.dto.consultant.record.RecordPage;
+import com.example.heart_field.dto.record.RecordDTO;
+import com.example.heart_field.dto.record.RecordPage;
 import com.example.heart_field.param.AddHelpParam;
 import com.example.heart_field.service.HelpService;
-import com.example.heart_field.service.RecordService;
 import com.example.heart_field.tokens.AdminOrSupervisorToken;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,12 +54,11 @@ public class HelpController {
         return R.success(resPage);
     }
 
+    @Deprecated
     @PostMapping("/records/supervisor")
-    public R addConsultRecord(@RequestBody AddHelpParam param){
-        ResultInfo resultInfo = helpService.addHelp(param.getChatId());
-        return resultInfo.isRight()
-                 ?R.success(resultInfo.getData())
-                :R.error(resultInfo.getMessage());
+    public R addConsultRecord(@RequestBody AddHelpParam param) throws Exception {
+        int id= helpService.addHelp(param.getChatId());
+        return R.success(id);
     }
 
 }
