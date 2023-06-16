@@ -579,6 +579,7 @@ public class SupervisorController {
         for(int i = 0;i<bindings.size();i++){
             Binding oneBind = bindings.get(i);
             oneBind.setIsDeleted(1);
+            bindingService.save(oneBind);
         }
         for(int j = 0;j<consultantBinded.getConsultantBinded().size();j++){
             Binding newBind = new Binding();
