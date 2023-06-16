@@ -4,13 +4,9 @@ import com.baomidou.mybatisplus.annotation.FieldFill;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.example.heart_field.dto.consultant.record.RecordListDTO;
-import com.example.heart_field.mapper.ConsultantMapper;
-import com.example.heart_field.mapper.SupervisorMapper;
-import com.example.heart_field.mapper.VisitorMapper;
+import com.example.heart_field.dto.record.RecordListDTO;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.LocalDateTime;
 
@@ -44,55 +40,55 @@ public class Record {
     /**
      * 该记录对应的咨询师id
      */
-    private Integer consultantId;
+    private Integer consultantId=-1;
 
     /**
      * 该记录对应的访客id
      */
-    private Integer visitorId;
+    private Integer visitorId=-1;
 
 
     /**
      * 该咨询的开始时间
      */
-    private LocalDateTime startTime;
-    private LocalDateTime endTime;
-    private Integer duration;
+    private LocalDateTime startTime=null;
+    private LocalDateTime endTime=null;
+    private Integer duration=-1;
 
 
     /**
      * 访客给咨询师评分，1-5的整数
      */
-    private Integer visitorScore;
+    private Integer visitorScore=-1;
 
     /**
      * 访客对咨询师的评价
      */
-    private String visitorComment;
+    private String visitorComment=null;
 
 
     /**
      * 咨询师对访客病情的评价
      */
-    private String evaluation;
+    private String evaluation=null;
 
     /**
      * 咨询师-判定访客咨询类型，字符串列表
      */
-    private String consultType;
+    private String consultType=null;
 
     /**
      * 该咨询记录对应的咨询会话id
      */
-    private Integer chatId;
+    private Integer chatId=-1;
 
     /**
      * 该咨询记录对应的求助会话id
      */
-    private Integer helpId;
+    private Integer helpId=-1;
 
-    private Integer visitorCompleted;//0未完成1已完成
-    private Integer consultantCompleted;//0未完成1已完成
+    private Integer visitorCompleted=0;//0未完成1已完成
+    private Integer consultantCompleted=0;//0未完成1已完成
 
 
 

@@ -1,11 +1,8 @@
 package com.example.heart_field.controller;
 
 import com.example.heart_field.common.R;
-import com.example.heart_field.common.result.BaseResult;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.entity.Admin;
-import com.example.heart_field.entity.Consultant;
-import com.example.heart_field.param.AdminRegisterParam;
 import com.example.heart_field.service.AdminService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

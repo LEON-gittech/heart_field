@@ -1,7 +1,6 @@
 package com.example.heart_field.dto;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.example.heart_field.dto.consultant.record.RecordListDTO;
+import com.example.heart_field.dto.record.RecordListDTO;
 import lombok.Builder;
 import lombok.Data;
 

@@ -1,36 +1,18 @@
 package com.example.heart_field.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.conditions.query.LambdaQueryChainWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.common.result.ResultInfo;
-import com.example.heart_field.constant.TypeConstant;
-import com.example.heart_field.dto.UserLoginDTO;
 import com.example.heart_field.entity.*;
 import com.example.heart_field.mapper.AdminMapper;
-import com.example.heart_field.mapper.ConsultantMapper;
-import com.example.heart_field.mapper.SupervisorMapper;
-import com.example.heart_field.mapper.VisitorMapper;
-import com.example.heart_field.param.AdminRegisterParam;
-import com.example.heart_field.param.UserLoginParam;
 import com.example.heart_field.service.AdminService;
 import com.example.heart_field.tokens.TokenService;
-import com.example.heart_field.utils.Md5Util;
-import com.example.heart_field.utils.RandomUtil;
-import com.example.heart_field.utils.TokenUtil;
 import com.example.heart_field.utils.UserUtils;
-import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
-
-import static com.alibaba.druid.util.FnvHash.Constants.MAX_SIZE;
 
 @Service
 public class AdminServiceImpl extends ServiceImpl<AdminMapper, Admin> implements AdminService {

@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.constant.TypeConstant;
 import com.example.heart_field.dto.consultant.ConsultantsDto;
-import com.example.heart_field.dto.consultant.binding.SupervisorBinding;
+import com.example.heart_field.dto.binding.SupervisorBinding;
 import com.example.heart_field.dto.consultant.comment.CommentDto;
 import com.example.heart_field.dto.consultant.comment.CommentsDto;
 import com.example.heart_field.entity.*;

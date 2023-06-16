@@ -1,6 +1,7 @@
 package com.example.heart_field.dto.consultant;
 
-import com.example.heart_field.dto.consultant.binding.SupervisorBinding;
+import com.example.heart_field.dto.binding.SupervisorBinding;
+import com.example.heart_field.dto.user.ExpertiseTag;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
