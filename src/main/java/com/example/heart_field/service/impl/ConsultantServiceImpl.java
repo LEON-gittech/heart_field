@@ -122,7 +122,7 @@ public class ConsultantServiceImpl extends ServiceImpl<ConsultantMapper, Consult
     }
 
     @Override
-    public List<Consultant> getConsultantsWrapper(String searchValue, Integer sort, Integer sortType, Integer page, Integer pageSize, ConsultantsDto consultantsDto) {
+    public List<Consultant> getConsultants(String searchValue, Integer sort, Integer sortType, Integer page, Integer pageSize, ConsultantsDto consultantsDto) {
         //构造分页构造器
         Page<Consultant> pageinfo = new Page<>(page,pageSize);
 

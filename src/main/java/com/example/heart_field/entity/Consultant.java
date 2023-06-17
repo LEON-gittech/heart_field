@@ -70,7 +70,7 @@ public class Consultant {
                 .supervisorBindings(consultantService.getSupervisorBindings(this))
                 .workArrangement(consultantService.getWorkArrangement(this))
                 .consultTotalTime(this.totalHelpTime)
-                .averageRank(this.rating.intValue())
+                .averageRank(this.rating)
                 .phone(this.getPhone())
                 .build();
     }

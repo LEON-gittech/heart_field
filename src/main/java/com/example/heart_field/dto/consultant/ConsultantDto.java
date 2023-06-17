@@ -25,8 +25,6 @@ public class ConsultantDto{
     private List<SupervisorBinding> supervisorBindings;
     private List<Integer> workArrangement;
     private Integer consultTotalTime;
-    private Integer averageRank;
+    private Double averageRank;
     private String phone;
-
-
 }

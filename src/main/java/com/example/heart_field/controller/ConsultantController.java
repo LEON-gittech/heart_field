@@ -87,7 +87,7 @@ public class ConsultantController {
         log.info("分类信息查询，page={},pageSize={},searchValue={}",page,pageSize,searchValue);
         log.info("sort={},sortType={}",sort,sortType);
         ConsultantsDto consultantsDto = new ConsultantsDto();
-        List<Consultant> consultants = consultantService.getConsultantsWrapper(searchValue,sort,sortType,page,pageSize,consultantsDto);
+        List<Consultant> consultants = consultantService.getConsultants(searchValue,sort,sortType,page,pageSize,consultantsDto);
         //DTO 转换
         List<ConsultantDto> consultantDtos = new ArrayList<>();
         //对consultants进行批处理
