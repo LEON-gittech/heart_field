@@ -253,7 +253,7 @@ public class ConsultantController {
         //averageRank
         anyConsultantProfileDto.setAverageRank(consultant.getRating());
         //comments
-        List<CommentDto> list = consultantService.getCommentDto(consultantId,1,10,null);
+        List<CommentDto> list = consultantService.getCommentDto(consultantId,1,10).getCommentDtos();
             //将comments转为Comment格式
         List<AnyConsultantProfileDto.Comment> comments = new ArrayList<>();
         for(CommentDto commentDto:list){

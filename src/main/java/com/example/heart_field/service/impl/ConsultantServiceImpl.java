@@ -4,8 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.heart_field.constant.TypeConstant;
-import com.example.heart_field.dto.consultant.ConsultantsDto;
 import com.example.heart_field.dto.binding.SupervisorBinding;
+import com.example.heart_field.dto.consultant.ConsultantsDto;
 import com.example.heart_field.dto.consultant.comment.CommentDto;
 import com.example.heart_field.dto.consultant.comment.CommentsDto;
 import com.example.heart_field.entity.*;
@@ -13,6 +13,7 @@ import com.example.heart_field.mapper.ConsultantMapper;
 import com.example.heart_field.service.*;
 import com.example.heart_field.tokens.TokenService;
 import com.example.heart_field.utils.TokenUtil;
+import lombok.Data;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -76,13 +77,14 @@ public class ConsultantServiceImpl extends ServiceImpl<ConsultantMapper, Consult
     }
 
     @Override
-    public List<CommentDto> getCommentDto(Integer consultantId, Integer page, Integer pageSize, Integer pageNum) {
+    public Comments getCommentDto(Integer consultantId, Integer page, Integer pageSize) {
         Page<Record> pageInfo = new Page<>(page,pageSize);
         LambdaQueryWrapper<Record> queryWrapper = new LambdaQueryWrapper<>();
         queryWrapper.eq(Record::getConsultantId,consultantId);
         recordService.page(pageInfo,queryWrapper);
+        Comments comments = new Comments();
         //修改pageNum
-        pageNum = Math.toIntExact(pageInfo.getPages());
+        comments.setPageNum( ((Long)pageInfo.getPages()).intValue());
         //转为返回给前端的CommentDto
         Page<CommentDto> commentDtoPage = new Page<>();
         BeanUtils.copyProperties(pageInfo,commentDtoPage,"records");
@@ -109,15 +111,19 @@ public class ConsultantServiceImpl extends ServiceImpl<ConsultantMapper, Consult
             commentDto.setCommentTime(item.getEndTime().toString());
             return commentDto;
         }).collect(Collectors.toList());
-        return list;
+        comments.setCommentDtos(list);
+        return comments;
     }
-
+    @Data
+    public class Comments{
+        List<CommentDto> commentDtos;
+        Integer pageNum;
+    }
     @Override
     public CommentsDto getCommentsDto(CommentsDto commentsDto,Integer consultantId, Integer page, Integer pageSize) {
-        Integer pageNum = 1;
-        List<CommentDto> commentDtos = getCommentDto(consultantId,page,pageSize,pageNum);
-        commentsDto.setPageNum(pageNum);
-        commentsDto.setCommentsDto(commentDtos);
+        Comments comments = getCommentDto(consultantId,page,pageSize);
+        commentsDto.setPageNum(comments.getPageNum());
+        commentsDto.setCommentsDto(comments.getCommentDtos());
         return commentsDto;
     }
 
