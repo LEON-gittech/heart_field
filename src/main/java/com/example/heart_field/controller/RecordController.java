@@ -5,14 +5,19 @@ import com.example.heart_field.common.R;
 import com.example.heart_field.common.result.ResultInfo;
 import com.example.heart_field.dto.record.RecordDTO;
 import com.example.heart_field.dto.record.RecordPage;
+import com.example.heart_field.entity.Consultant;
+import com.example.heart_field.mapper.ConsultantMapper;
+import com.example.heart_field.mapper.RecordMapper;
 import com.example.heart_field.param.AddRecordParam;
 import com.example.heart_field.param.VisitorCommentParam;
+import com.example.heart_field.service.ConsultantService;
 import com.example.heart_field.service.RecordService;
 import com.example.heart_field.tokens.StaffToken;
 import com.example.heart_field.tokens.UserLoginToken;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.parameters.P;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +33,15 @@ public class RecordController {
 
     @Autowired
     private RecordService recordService;
+
+    @Autowired
+    private RecordMapper recordMapper;
+
+    @Autowired
+    ConsultantService consultantService;
+
+    @Autowired
+    ConsultantMapper consultantMapper;
 
     /**
      *
@@ -73,12 +87,36 @@ public class RecordController {
      * 访客评价咨询师
      */
     @PostMapping("/visitors/{record_id}/comment")
+    @Transactional
     public R addComment(@PathVariable(value = "record_id", required=true)Integer recordId,
                         @RequestBody VisitorCommentParam commentParam
                         ){
-        ResultInfo<String> resultInfo = recordService.addComment(recordId,commentParam.getComment(),commentParam.getScore());
+        ResultInfo<String> resultInfo = recordService.addComment(recordId,commentParam.getComment(),commentParam.getRank());
         return resultInfo.isRight()
                 ?R.success(resultInfo.getData())
                 :R.error(resultInfo.getMessage());
+    }
+
+    @GetMapping("/test")
+    @Transactional
+    public void testAddComment(){
+        List<Consultant> consultantList = consultantService.list();
+        System.out.println("consultantList = " + consultantList);
+        for(Consultant consultant:consultantList){
+            List<Integer> scores = recordMapper.selectScoresByConsultantId(consultant.getId());
+            int num=scores.size();
+            if(num==0){
+                consultant.setRating(-1.0);
+                consultantMapper.updateById(consultant);
+                continue;
+            }
+            int sum=0;
+            for(Integer s:scores){
+                sum+=s;
+            }
+            double average = (double)sum/num;
+            consultant.setRating(average);
+            consultantMapper.updateById(consultant);
+        }
     }
 }

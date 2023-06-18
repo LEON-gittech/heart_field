@@ -259,23 +259,26 @@ public class RecordServiceImpl extends ServiceImpl<RecordMapper, Record> impleme
         if(record.getVisitorCompleted()==1){
             return ResultInfo.error("该record访客已经完成评价，请勿重复评价，id:"+recordId);
         }
-        if(!TokenUtil.getTokenUser().getType().equals(2)){
-            if(record.getVisitorId()!=TokenUtil.getTokenUser().getUserId()){
-                return ResultInfo.error("该record不属于当前访客，id:"+recordId);
-            }
-        }
+//        if(!TokenUtil.getTokenUser().getType().equals(2)){
+//            if(record.getVisitorId()!=TokenUtil.getTokenUser().getUserId()){
+//                return ResultInfo.error("该record不属于当前访客，id:"+recordId);
+//            }
+//        }
         record.setVisitorComment(comment);
         record.setVisitorScore(score);
         record.setVisitorCompleted(1);
         this.baseMapper.updateById(record);
         Consultant consultant = consultantMapper.selectById(record.getConsultantId());
         List<Integer> scores = recordMapper.selectScoresByConsultantId(consultant.getId());
+        log.info("scores:"+scores);
         int num=scores.size();
         int sum=0;
         for(Integer s:scores){
             sum+=s;
         }
+        log.info("sum:"+sum);
         double average = (double)sum/num;
+        log.info("average:"+average);
         consultant.setRating(average);
         consultantMapper.updateById(consultant);
         return ResultInfo.success(record);
