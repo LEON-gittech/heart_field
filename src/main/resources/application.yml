@@ -19,6 +19,10 @@ tencent:
     SecretKey: kFVXLuEJA2g7KI2XM2Vkll37wXu2vZzA
     #存储桶名称
     bucketName: heart-field-1312908194
+  im:
+    sdkAppId: 1400810558
+    key: 0e0f240d8a421fe5593f5b505883598e6ef4d5bce487a1aa082af72e2f18ed81
+
 
 
 spring:

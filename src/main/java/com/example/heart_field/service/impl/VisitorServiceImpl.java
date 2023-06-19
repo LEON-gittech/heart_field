@@ -17,6 +17,7 @@ import com.example.heart_field.mapper.VisitorMapper;
 import com.example.heart_field.param.WxLoginParam;
 import com.example.heart_field.service.VisitorService;
 import com.example.heart_field.tokens.TokenService;
+import com.example.heart_field.utils.TLSSigAPIv2;
 import com.example.heart_field.utils.TencentCloudImUtil;
 import com.example.heart_field.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +43,8 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
 
     @Value("${weixin.secret}")
     private String secret;
+
+    private TLSSigAPIv2 tlsSigAPIv2=new TLSSigAPIv2();
 
     @Autowired
     StringRedisTemplate redisTemplate;
@@ -171,7 +174,7 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
                     .accessToken(token)
                     .fstLogin(false)
                     .chatUserId(identifier)
-                    .chatUserSig(tencentCloudImUtil.getTxCloudUserSig())
+                    .chatUserSig(tlsSigAPIv2.genUserSig(identifier))
                     .userId(visitor.getId())
                     .userInfo(visitor)
                     .build();
@@ -229,7 +232,7 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
                         .accessToken(token)
                         .fstLogin(true)
                         .chatUserId(identifier)
-                        .chatUserSig(tencentCloudImUtil.getTxCloudUserSig())
+                        .chatUserSig(tlsSigAPIv2.genUserSig(identifier))
                         .userId(visitor.getId())
                         .userInfo(visitor)
                         .build();
@@ -271,7 +274,7 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
                         .accessToken(token)
                         .fstLogin(false)
                         .chatUserId(identifier)
-                        .chatUserSig(tencentCloudImUtil.getTxCloudUserSig())
+                        .chatUserSig(tlsSigAPIv2.genUserSig(identifier))
                         .userId(visitor.getId())
                         .userInfo(visitor)
                         .build();
