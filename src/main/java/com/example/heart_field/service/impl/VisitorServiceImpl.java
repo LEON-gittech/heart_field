@@ -213,7 +213,9 @@ public class VisitorServiceImpl extends ServiceImpl<VisitorMapper, Visitor> impl
 //                visitor.setAvatar(wxUserInfo.getAvatarUrl());
 //                visitor.setGender(Byte.parseByte(wxUserInfo.getGender()));
 //                baseMapper.updateById(visitor);
-
+                if(visitor.getIsDisabled()==1){
+                    return R.error("用户已被禁用");
+                }
                 //获取token
                 LambdaQueryWrapper<User> queryWrapper= Wrappers.lambdaQuery();
                 queryWrapper.eq(User::getType, TypeConstant.VISITOR).eq(User::getUserId,visitor.getId());
