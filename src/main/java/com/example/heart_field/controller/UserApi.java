@@ -10,7 +10,9 @@ import com.example.heart_field.mapper.ConsultantMapper;
 import com.example.heart_field.mapper.SupervisorMapper;
 import com.example.heart_field.mapper.VisitorMapper;
 import com.example.heart_field.param.UserLoginParam;
-import com.example.heart_field.service.*;
+import com.example.heart_field.param.VisitorAvatarParam;
+import com.example.heart_field.service.AdminService;
+import com.example.heart_field.service.UserService;
 import com.example.heart_field.tokens.TokenService;
 import com.example.heart_field.tokens.UserLoginToken;
 import com.example.heart_field.utils.TencentCOSUtils;
@@ -21,13 +23,22 @@ import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
 import javax.annotation.Resource;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
-
+//import org.apache.commons.codec.binary.Base64;
 @RestController
 @Slf4j
 public class UserApi {
@@ -109,6 +120,83 @@ public class UserApi {
         return "你已通过验证";
     }
 
+    /**访客上传头像
+     * @throws Exception
+     */
+    @UserLoginToken
+    @PostMapping("/visitors/avatar")
+    public R<String> uploadVisitorAvatar(@RequestBody VisitorAvatarParam uploadAvatar) throws Exception {
+        String avatar = uploadAvatar.getAvatar();
+        //base64字符中若含有“data:image/jpeg;base64,”，截去这一段；
+        String titleDelete = "data:image/jpeg;base64,";
+        avatar = avatar.replace(titleDelete,"");
+        //log.info("avatar-base64:{}",avatar);
+        //base64转为文件字节数组
+        byte[] imageBytes = Base64.getDecoder().decode(avatar);
+        //创建临时文件
+        String tempFilePath = "temp_Avatar.jpg";
+        Path tempPath = Paths.get(tempFilePath);
+        try{
+            Files.write(tempPath,imageBytes);
+        }catch (IOException e){
+            e.printStackTrace();
+            return R.error("base64数据转为文件出错");
+        }
+        //上传至腾讯云IM
+        List<String> imageType = Lists.newArrayList("jpg","jpeg", "png", "bmp", "gif");
+        String fileSuffix = tempFilePath.substring(tempFilePath.lastIndexOf(".") + 1).toLowerCase();
+        log.info(fileSuffix + "文件格式");
+        String imageUrl=null;
+        if (imageType.contains(fileSuffix)){
+            log.info("文件上传，文件名：{}",tempFilePath);
+            String url = tencentCOSUtils.uploadImageBytes(imageBytes,tempFilePath);
+            log.info("文件上传完成，文件访问的url为：{}",url);
+            User user = TokenUtil.getTokenUser();
+            switch (user.getType()) {
+                case 0:
+                    Visitor visitor = visitorMapper.selectById(user.getUserId());
+                    visitor.setAvatar(url);
+                    visitorMapper.updateById(visitor);
+                    String identifier = "0_"+visitor.getId().toString();
+                    String name = visitor.getUsername();
+                    String avatar_url = url;
+                    String sex = null;
+                    switch (visitor.getGender()){
+                        case 0:
+                            sex = "女";
+                            break;
+                        case 1:
+                            sex = "男";
+                            break;
+                        default:
+                            sex = "未知";
+                            break;
+                    }
+                    Boolean isSuccess=tencentCloudImUtil.updateAccount(identifier,name,avatar_url,sex);
+                    if(!isSuccess){
+                        return R.error("腾讯IM更新账号失败");
+                    }
+                    break;
+                default:
+                    return R.error("非访客不可使用");
+            }
+            //return R.success(url);
+            imageUrl = url;
+        }else{
+            return R.argument_error("图片格式错误");
+        }
+
+        //删除临时文件
+        try{
+            Files.deleteIfExists(tempPath);
+            return R.success(imageUrl,"头像上传成功");
+        }catch (IOException e){
+            e.printStackTrace();
+            String msg = "头像上传成功，但本地临时文件未删除，请手动删除文件，文件路径为"+tempPath;
+            return R.error(msg);
+        }
+
+    }
     @UserLoginToken
     @PostMapping("/avatar")
     public R<String> uploadAvatar(@RequestBody MultipartFile image) throws Exception {
