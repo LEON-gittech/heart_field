@@ -140,7 +140,7 @@ public class ConsultantController {
         if(r!=null) return r;
         //将consultantDto的值复制给consultan
         Consultant consultant = consultantService.getById(updateConsultantProfileDto.getId());
-        BeanUtils.copyProperties(updateConsultantProfileDto,consultant,"expertiseTag");
+        BeanUtils.copyProperties(updateConsultantProfileDto,consultant,"expertiseTag","id");
         if(updateConsultantProfileDto.getExpertiseTag()!=null) consultant.setExpertiseTag(objectMapper.writeValueAsString(updateConsultantProfileDto.getExpertiseTag()));
         //同步更新腾讯云IM
         String identifier = "1"+"_"+consultantId.toString();
