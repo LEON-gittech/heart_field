@@ -2,6 +2,7 @@ package com.example.heart_field.filter;
 
 import com.example.heart_field.constant.TypeConstant;
 import com.example.heart_field.entity.User;
+import com.example.heart_field.entity.Visitor;
 import com.example.heart_field.service.AdminService;
 import com.example.heart_field.service.UserService;
 import com.example.heart_field.service.VisitorService;
@@ -88,6 +89,24 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                 User user_r = userUtils.getUser(TokenUtil.getTokenUser());
                 if(user_r.getType()==TypeConstant.VISITOR){
                     throw new RuntimeException("非管理员端（咨询师、督导、管理员），权限限制");
+                }
+            }
+        }
+
+        if(method.isAnnotationPresent(DisableToken.class)){
+            DisableToken disableToken = method.getAnnotation(DisableToken.class);
+            if(disableToken.required()) {
+                // 执行认证
+                if (token == null) {
+                    throw new RuntimeException("无token，请重新登录");
+                }
+                // 获取 token 中的 user id
+                User user_r = userUtils.getUser(TokenUtil.getTokenUser());
+                if(user_r.getType()==TypeConstant.VISITOR){
+                    Visitor visitor = visitorService.getById(user_r.getUserId());
+                    if(visitor.getIsDisabled()==1){
+                        throw new RuntimeException("访客已被禁用");
+                    }
                 }
             }
         }
