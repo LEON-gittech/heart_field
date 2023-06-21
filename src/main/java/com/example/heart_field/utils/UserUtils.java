@@ -137,7 +137,7 @@ public class UserUtils {
             }
         }
         user.setPassword(password);
-        log.info("同步visitor，userid为：{}"+user.getId());
+        log.info("同步visitor，userid为：{}"+user.getUserId());
         log.info("phone为:{}",user.getPhone());
         log.info("password为默认值：{}",user.getPassword());
 
@@ -153,7 +153,7 @@ public class UserUtils {
     public <T> User updateUser(T object,String type){
         User user = newUser(object,type);
         LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getPhone, user.getPhone());
+        queryWrapper.eq(User::getUserId, user.getUserId());
         userService.update(user,queryWrapper);
         return user;
     }

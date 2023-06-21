@@ -58,6 +58,7 @@
 /Users/macbook/workspace/heart_field/src/main/java/com/example/heart_field/dto/visitor/WxUserInfo.java
 /Users/macbook/workspace/heart_field/src/main/java/com/example/heart_field/mapper/AdminMapper.java
 /Users/macbook/workspace/heart_field/src/main/java/com/example/heart_field/dto/ScheduleDTO.java
+/Users/macbook/workspace/heart_field/src/main/java/com/example/heart_field/param/VisitorAvatarParam.java
 /Users/macbook/workspace/heart_field/src/main/java/com/example/heart_field/entity/Visitor.java
 /Users/macbook/workspace/heart_field/src/main/java/com/example/heart_field/dto/supervisor/SupervisorConsultMaxCountDto.java
 /Users/macbook/workspace/heart_field/src/main/java/com/example/heart_field/service/UserService.java
@@ -142,6 +143,7 @@
 /Users/macbook/workspace/heart_field/src/main/java/com/example/heart_field/mapper/MsgPropertiesMapper.java
 /Users/macbook/workspace/heart_field/src/main/java/com/example/heart_field/param/ChatParam.java
 /Users/macbook/workspace/heart_field/src/main/java/com/example/heart_field/mapper/ScheduleMapper.java
+/Users/macbook/workspace/heart_field/src/main/java/com/example/heart_field/utils/TLSSigAPIv2.java
 /Users/macbook/workspace/heart_field/src/main/java/com/example/heart_field/controller/HelpController.java
 /Users/macbook/workspace/heart_field/src/main/java/com/example/heart_field/entity/Help.java
 /Users/macbook/workspace/heart_field/src/main/java/com/example/heart_field/service/ScheduleService.java

@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.example.heart_field.constant.RegexPattern;
 import com.example.heart_field.entity.Consultant;
 import com.example.heart_field.entity.Supervisor;
+import com.example.heart_field.entity.User;
 import com.example.heart_field.service.ConsultantService;
 import com.example.heart_field.service.SupervisorService;
+import com.example.heart_field.utils.TokenUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -29,7 +31,23 @@ public class IdValidator implements ConstraintValidator<Id, String> {
         Pattern namePattern_15 = Pattern.compile(RegexPattern.ID_PATTERN_15);
         boolean pattern_18 = namePattern_18.matcher(value).matches();
         boolean pattern_15 = namePattern_15.matcher(value).matches();
-        // 假设 cardid 是一个变量
+        // 获取本人身份证号
+        User user = TokenUtil.getTokenUser();
+        Integer id = user.getUserId();
+        Integer type = user.getType();
+        //查看是否和本人身份证相同
+        if(type==1){
+            Consultant consultant = consultantService.getById(id);
+            if(consultant.getCardId().equals(value)){
+                return true;
+            }
+        }
+        else if(type==3){
+            Supervisor supervisor = supervisorService.getById(id);
+            if(supervisor.getCardId().equals(value)){
+                return true;
+            }
+        }
 
         // 创建查询包装器
         LambdaQueryWrapper<Consultant> consultantQueryWrapper = new LambdaQueryWrapper<>();
