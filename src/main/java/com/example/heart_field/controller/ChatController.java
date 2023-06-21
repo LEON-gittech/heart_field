@@ -248,9 +248,33 @@ public class ChatController {
         for (Message message : messages) {
             ChatDetailDto.Message message1 = new ChatDetailDto.Message();
             message1.setTime(String.valueOf(message.getSendTime()));
-            message1.setSenderName(message.getSenderName());
+           //message1.setSenderName(message.getSenderName());
             message1.setType(String.valueOf(message.getType()));
             message1.setContent(message.getContent());
+
+            //查表获取用户当前的名称与头像
+            switch(message.getOwner()){
+                case 0:{
+                    Visitor sender = visitorService.getById(message.getSenderId());
+                    message1.setSenderAvatar(sender.getAvatar());
+                    message1.setSenderName(sender.getName());
+                    break;
+                }
+                case 1:{
+                    Consultant sender = consultantService.getById(message.getSenderId());
+                    message1.setSenderAvatar(sender.getAvatar());
+                    message1.setSenderName(sender.getName());
+                    break;
+                }
+                case 2:{
+                    Supervisor sender = supervisorService.getById(message.getSenderId());
+                    message1.setSenderAvatar(sender.getAvatar());
+                    message1.setSenderName(sender.getName());
+                    break;
+                }
+                default:
+                    return R.resource_error();
+            }
             messages2.add(message1);
         }
         chatDetailDto.setMessages(messages2);

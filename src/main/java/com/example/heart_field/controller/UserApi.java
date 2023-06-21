@@ -128,8 +128,15 @@ public class UserApi {
     public R<String> uploadVisitorAvatar(@RequestBody VisitorAvatarParam uploadAvatar) throws Exception {
         String avatar = uploadAvatar.getAvatar();
         //base64字符中若含有“data:image/jpeg;base64,”，截去这一段；
-        String titleDelete = "data:image/jpeg;base64,";
-        avatar = avatar.replace(titleDelete,"");
+//        String titleDelete = "data:image/jpeg;base64,";
+//        avatar = avatar.replace(titleDelete,"");
+        if(avatar.contains("base64"))
+        {
+           // log.info("判断成功");
+            int location = avatar.indexOf("base64");
+            //log.info("location:{}",location);
+            avatar = avatar.substring(location+7);
+        }
         //log.info("avatar-base64:{}",avatar);
         //base64转为文件字节数组
         byte[] imageBytes = Base64.getDecoder().decode(avatar);

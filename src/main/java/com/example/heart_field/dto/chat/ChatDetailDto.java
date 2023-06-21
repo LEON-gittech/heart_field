@@ -12,6 +12,7 @@ public class ChatDetailDto {
         private String senderName;
         private String type;
         private String content;
+        private String senderAvatar;
     }
     private String evaluation;
     private String consultType;
