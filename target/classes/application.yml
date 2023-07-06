@@ -1,12 +1,66 @@
 server:
-  port: 8080
+  port: 80
+  ssl:
+    enabled: true
+    key-store: src/main/resources/ssl/cert.p12
+    key-store-password: leon
+#    key-alias: alias
+#    key-store-type: PKCS12
+#    key-store: classpath:leonwangblog.xyz.pfx
+#    key-store-password: kfelwbj5
+#腾讯云COS配置
+tencent:
+  cos:
+    #访问域名
+    rootSrc : https://heart-field-1312908194.cos.ap-shanghai.myqcloud.com
+    #所属地域
+    bucketAddr: ap-shanghai
+    SecretId: AKID50lJchZFhvzTr1w3vZzA8rMdfS1MtCLG
+    SecretKey: kFVXLuEJA2g7KI2XM2Vkll37wXu2vZzA
+    #存储桶名称
+    bucketName: heart-field-1312908194
+  im:
+    sdkAppId: 1400810558
+    key: 0e0f240d8a421fe5593f5b505883598e6ef4d5bce487a1aa082af72e2f18ed81
+
+
+
 spring:
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 1000MB
+
+  redis:
+    host: localhost
+    port: 6379
+    timeout: 10000
+    client-name: jedis
+    password:
+
+    #配置jedis
+    jedis:
+      pool:
+        max-active: 8
+        max-wait: -1
+        max-idle: 8
+        min-idle: 0
   datasource:
     druid:
       driver-class-name: com.mysql.cj.jdbc.Driver
       url: jdbc:mysql://121.43.147.87:3306/heart_field?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf-8&zeroDateTimeBehavior=convertToNull&useSSL=false&allowPublicKeyRetrieval=true
       username: root
       password: Aaaa@1234
+
+weixin:
+  appid: wxb9f9c2c27af57638
+  secret: 590c67ac1ae76ecebf7728d511b5fcb3
+##pageHelper分页插件配置
+pagehelper:
+  ##方言配置为mysql数据库
+  helper-dialect: mysql
+
+
 mybatis-plus:
   configuration:
     #在映射实体或者属性时，将数据库中表名和字段名中的下划线去掉，按照驼峰命名法映射
@@ -15,3 +69,25 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: ASSIGN_ID
+
+silence:
+  tencent:
+    cloud:
+      im:
+        sdkAppId: 1400810558
+        key: 0e0f240d8a421fe5593f5b505883598e6ef4d5bce487a1aa082af72e2f18ed81
+
+default:
+  int: 0
+  string: ""
+  boolean: false
+
+aliyun:
+  msg:
+    #  "cn-beijing"
+    regionid: "cn-hangzhou"
+    access-key-id: "LTAI5t77W7H7aXVyuG8c8Kw7"
+    access-key-secret: "FBVPdFFglM9ZYJ4yPIRVtKyp5hjCF9"
+    sign-name: "王泽洲的博客"
+    template-code: "SMS_461060677"
+
